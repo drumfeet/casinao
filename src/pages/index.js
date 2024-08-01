@@ -123,10 +123,10 @@ export default function Home() {
           name: "Action",
           value: "Flip",
         },
-        // {
-        //   name: "Host",
-        //   value: hostId,
-        // },
+        {
+          name: "Host",
+          value: hostId,
+        },
       ]
       console.log("_tags", _tags)
 
