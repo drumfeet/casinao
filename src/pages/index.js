@@ -156,10 +156,6 @@ export default function Home() {
   const fetchUserBalance = async () => {
     try {
       await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
-
-      const userAddress = await window.arweaveWallet.getActiveAddress()
-      const _balance = await getBalance({ recipient: userAddress })
-      setBalance(_balance)
     } catch (e) {
       console.error("Wallet missing!", e)
       toast({
@@ -171,15 +167,40 @@ export default function Home() {
       return
     }
 
-    // try {
-    //   const _balance = await getBalance()
-    //   console.log("_balance", _balance)
-    // } catch (e) {
-    //   console.log(e)
-    // }
+    try {
+      const userAddress = await window.arweaveWallet.getActiveAddress()
+      const _balance = await getBalance({ recipient: userAddress })
+      setBalance(_balance)
+    } catch (e) {
+      console.error("fetchUserBalance() error!", e)
+    }
   }
 
-  const fetchStakeAmount = async () => {}
+  const fetchStakeAmount = async () => {
+    try {
+      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
+    try {
+      const userAddress = await window.arweaveWallet.getActiveAddress()
+      const _stakers = await getStakers()
+      if (_stakers.hasOwnProperty(userAddress)) {
+        const userStakerInfo = _stakers[userAddress]
+        setStakeAmount(userStakerInfo.amount)
+      }
+    } catch (e) {
+      console.error("fetchStakeAmount() error!", e)
+    }
+  }
 
   const flipMatch = async ({ hostId }) => {
     try {
