@@ -59,7 +59,8 @@ Variant = "0.0.3"
 Denomination = Denomination or 0
 Balances = Balances or { [ao.id] = utils.toBalanceValue(10000 * 10 ^ Denomination) }
 TotalSupply = TotalSupply or utils.toBalanceValue(10000 * 10 ^ Denomination)
-Name = Name or 'Flip Coin'
+if Name ~= 'FLIP Coin' then Name = 'FLIP Coin' end
+
 Ticker = Ticker or 'FLIP'
 Logo = Logo or 'dLbFWaJ1DpLpsyxdFX38AkzuMwSA6A598uRFBlHMvJo'
 
