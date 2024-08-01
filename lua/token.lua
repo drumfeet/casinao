@@ -56,12 +56,12 @@ local utils = {
 Variant = "0.0.3"
 
 -- token should be idempotent and not change previous state updates
-Denomination = Denomination or 12
+Denomination = Denomination or 0
 Balances = Balances or { [ao.id] = utils.toBalanceValue(10000 * 10 ^ Denomination) }
 TotalSupply = TotalSupply or utils.toBalanceValue(10000 * 10 ^ Denomination)
 Name = Name or 'Flip Coin'
 Ticker = Ticker or 'FLIP'
-Logo = Logo or 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
+Logo = Logo or 'dLbFWaJ1DpLpsyxdFX38AkzuMwSA6A598uRFBlHMvJo'
 
 --[[
      Add handlers for each incoming Action defined by the ao Standard Token Specification
