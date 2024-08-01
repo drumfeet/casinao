@@ -7,8 +7,8 @@ import {
 } from "@permaweb/aoconnect"
 import {
   Button,
+  Divider,
   Flex,
-  Heading,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -17,7 +17,8 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react"
-import { getStakers } from "@/lib/utils"
+import { getStakers, getBalance } from "@/lib/utils"
+import AppHeader from "@/components/AppHeader"
 
 const FLIP_PID = process.env.NEXT_PUBLIC_PROCESS_ID
 
@@ -27,6 +28,8 @@ export default function Home() {
   const [withdrawQty, setWithdrawQty] = useState(0)
   const [delay, setDelay] = useState(0)
   const [stakers, setStakers] = useState([])
+  const [balance, setBalance] = useState(0)
+  const [stakeAmount, setStakeAmount] = useState(0)
 
   const loadStakers = async () => {
     try {
@@ -93,12 +96,12 @@ export default function Home() {
       })
     } catch (e) {
       console.error("depositStake() error!", e)
-    } finally{
+    } finally {
       setStakers([])
     }
   }
 
-  const withdraw = async (id) => {
+  const withdrawStake = async () => {
     try {
       await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
     } catch (e) {
@@ -144,11 +147,39 @@ export default function Home() {
         isClosable: true,
       })
     } catch (e) {
-      console.error("withdraw() error!", e)
+      console.error("withdrawStake() error!", e)
     } finally {
       setStakers([])
     }
   }
+
+  const fetchUserBalance = async () => {
+    try {
+      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
+
+      const userAddress = await window.arweaveWallet.getActiveAddress()
+      const _balance = await getBalance({ recipient: userAddress })
+      setBalance(_balance)
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
+    // try {
+    //   const _balance = await getBalance()
+    //   console.log("_balance", _balance)
+    // } catch (e) {
+    //   console.log(e)
+    // }
+  }
+
+  const fetchStakeAmount = async () => {}
 
   const flipMatch = async ({ hostId }) => {
     try {
@@ -235,12 +266,39 @@ export default function Home() {
     )
   }
 
+  // useEffect(() => {
+  //   fetchUserBalance()
+  // }, [])
+
   return (
     <>
-      <Flex minH="100%" direction="column" p={4}>
+      {/* <AppHeader /> */}
+      <Flex minH="100%" direction="column" p={20}>
         <Flex alignItems="center" flexDirection="column" gap={4}>
-          <Text>{FLIP_PID}</Text>
-          <Flex flexDirection="column" gap={4}>
+          <Text>Process ID: {FLIP_PID}</Text>
+
+          <Flex
+            flexDirection="column"
+            gap={4}
+            border="1px solid black"
+            padding={8}
+          >
+            <Flex alignItems="center" gap={4}>
+              <Button variant="outline" size={"sm"} onClick={fetchUserBalance}>
+                Get
+              </Button>
+              <Text>Balance: {balance}</Text>
+            </Flex>
+            <Flex alignItems="center" gap={4}>
+              <Button variant="outline" size={"sm"} onClick={fetchStakeAmount}>
+                Get
+              </Button>
+              <Text>Stake: {stakeAmount}</Text>
+            </Flex>
+          </Flex>
+
+          <Flex flexDirection="column" gap={8} paddingY={8}>
+            <Divider />
             <Flex gap={4}>
               <NumberInput
                 step={1}
@@ -271,14 +329,18 @@ export default function Home() {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <Button variant="outline" onClick={withdraw}>
+              <Button variant="outline" onClick={withdrawStake}>
                 Withdraw
               </Button>
             </Flex>
+            <Divider />
           </Flex>
+
+          {/* <Divider /> */}
           <Button variant="outline" onClick={loadStakers}>
-            Get Stakers
+            List Stakers
           </Button>
+
           {stakers.length > 0 && <StakersComponent stakers={stakers} />}
         </Flex>
       </Flex>
