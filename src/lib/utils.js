@@ -9,6 +9,7 @@ const getStakers = async ({ limit, skip } = {}) => {
     process: process.env.NEXT_PUBLIC_PROCESS_ID,
     tags,
   })
+  console.log("getStakers result", result)
 
   return JSON.parse(result.Messages[0].Data)
 }
@@ -22,6 +23,7 @@ const getMatches = async ({ limit, skip } = {}) => {
       process: process.env.NEXT_PUBLIC_PROCESS_ID,
       tags,
     })
+    console.log("getMatches result", result)
   
     return JSON.parse(result.Messages[0].Data)
   }
