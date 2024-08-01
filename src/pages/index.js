@@ -259,6 +259,8 @@ export default function Home() {
           isClosable: true,
         })
       }
+
+      loadStakers()
     } catch (e) {
       console.error("flipMatch() error!", e)
     }
