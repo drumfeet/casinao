@@ -26,10 +26,17 @@ export default function Home() {
   const [skip, setSkip] = useState(0)
   const [quantity, setQuantity] = useState(5)
   const [delay, setDelay] = useState(0)
+  const [stakers, setStakers] = useState([])
 
   const loadStakers = async () => {
     try {
-      await getStakers({ limit, skip })
+      const _stakers = await getStakers({ limit, skip })
+      const stakersArray = Object.entries(_stakers).map(([key, item]) => ({
+        id: key,
+        ...item,
+      }))
+      console.log("stakersArray", stakersArray)
+      setStakers(stakersArray)
     } catch (e) {
       console.log(e)
     }
@@ -89,6 +96,35 @@ export default function Home() {
     }
   }
 
+  const flipMatch = async () => {
+    toast({
+      description: "FLIPING...",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    })
+  }
+
+  const StakersComponent = ({ stakers }) => {
+    return (
+      <Flex flexDirection="column" gap={8} padding={8}>
+        {stakers.map((staker) => (
+          <Flex
+            key={staker.id}
+            flexDirection="column"
+            border="1px solid #999"
+            gap={1}
+            padding={4}
+          >
+            <Text>ID: {staker.id}</Text>
+            <Text>Amount: {staker.amount}</Text>
+            <Button variant="outline" onClick={flipMatch}>Flip</Button>
+          </Flex>
+        ))}
+      </Flex>
+    )
+  }
+
   return (
     <>
       <Flex minH="100%" direction="column" p={4}>
@@ -114,6 +150,7 @@ export default function Home() {
           <Button variant="outline" onClick={loadStakers}>
             Get Stakers
           </Button>
+          {stakers.length > 0 && <StakersComponent stakers={stakers} />}
         </Flex>
       </Flex>
     </>
