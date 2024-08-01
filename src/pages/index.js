@@ -15,7 +15,17 @@ import {
   NumberInputField,
   NumberInputStepper,
   Text,
+  useDisclosure,
   useToast,
+} from "@chakra-ui/react"
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
 } from "@chakra-ui/react"
 import { getStakers, getBalance } from "@/lib/utils"
 import AppHeader from "@/components/AppHeader"
@@ -26,11 +36,13 @@ export default function Home() {
   const toast = useToast()
   const [depositQty, setDepositQty] = useState(1)
   const [withdrawQty, setWithdrawQty] = useState(0)
-  const [delay, setDelay] = useState(0)
+  const [delay, setDelay] = useState(1)
   const [stakers, setStakers] = useState([])
   const [balance, setBalance] = useState(0)
   const [stakeAmount, setStakeAmount] = useState(0)
   const [wallet, setWallet] = useState("")
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const loadStakers = async () => {
     try {
@@ -282,6 +294,40 @@ export default function Home() {
       {/* <AppHeader /> */}
       <Flex minH="100%" direction="column" p={20}>
         <Flex alignItems="center" flexDirection="column" gap={4}>
+          <Button variant="outline" size="xs" onClick={onOpen}>
+            How it works
+          </Button>
+
+          <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>How it works</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <Flex flexDirection="column" gap={2}>
+                  <Text>1. Get $FLIP</Text>
+                  <Text>2. Stake any amount of $FLIP</Text>
+                  <Text>3. Find a match equal to your stake.</Text>
+                  <Text>4. Click the Flip button to match.</Text>
+                  <Text>
+                    5. A winner will be selected randomly from the flip.lua
+                    contract.
+                  </Text>
+                  <Text>
+                    6. The loser loses their stake and the winner gets their
+                    stake added automatically.
+                  </Text>
+                  <Text>7. Withdraw(Unstake) if you want to stop playing.</Text>
+                </Flex>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button variant="outline" mr={3} onClick={onClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
           <Text>Process ID: {FLIP_PID}</Text>
 
           <Flex
@@ -338,9 +384,25 @@ export default function Home() {
             <Divider />
           </Flex>
 
-          <Button variant="outline" onClick={loadStakers}>
-            List Stakers
-          </Button>
+          <Flex gap={4}>
+            <Button variant="outline" onClick={loadStakers}>
+              Find a match
+            </Button>
+
+            <Button
+              variant="link"
+              onClick={() => {
+                toast({
+                  description: "Top 10 Flippers not implemented yet!",
+                  status: "success",
+                  duration: 5000,
+                  isClosable: true,
+                })
+              }}
+            >
+              Top Flippers
+            </Button>
+          </Flex>
 
           {stakers.length > 0 && <StakersComponent stakers={stakers} />}
         </Flex>
