@@ -23,7 +23,7 @@ const FLIP_PID = process.env.NEXT_PUBLIC_PROCESS_ID
 
 export default function Home() {
   const toast = useToast()
-  const [quantity, setQuantity] = useState(1)
+  const [depositQty, setDepositQty] = useState(1)
   const [withdrawQty, setWithdrawQty] = useState(0)
   const [delay, setDelay] = useState(0)
   const [stakers, setStakers] = useState([])
@@ -42,7 +42,7 @@ export default function Home() {
     }
   }
 
-  const hostMatch = async () => {
+  const depositStake = async () => {
     try {
       await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
     } catch (e) {
@@ -68,7 +68,7 @@ export default function Home() {
         },
         {
           name: "Quantity",
-          value: quantity.toString(),
+          value: depositQty.toString(),
         },
       ]
       console.log("_tags", _tags)
@@ -92,7 +92,7 @@ export default function Home() {
         isClosable: true,
       })
     } catch (e) {
-      console.error("hostMatch() error!", e)
+      console.error("depositStake() error!", e)
     } finally{
       setStakers([])
     }
@@ -144,7 +144,7 @@ export default function Home() {
         isClosable: true,
       })
     } catch (e) {
-      console.error("hostMatch() error!", e)
+      console.error("withdraw() error!", e)
     } finally {
       setStakers([])
     }
@@ -206,7 +206,7 @@ export default function Home() {
         })
       }
     } catch (e) {
-      console.error("hostMatch() error!", e)
+      console.error("flipMatch() error!", e)
     }
   }
 
@@ -244,9 +244,9 @@ export default function Home() {
             <Flex gap={4}>
               <NumberInput
                 step={1}
-                defaultValue={quantity}
-                min={quantity}
-                onChange={(amount) => setQuantity(amount)}
+                defaultValue={depositQty}
+                min={depositQty}
+                onChange={(amount) => setDepositQty(amount)}
               >
                 <NumberInputField />
                 <NumberInputStepper>
@@ -254,7 +254,7 @@ export default function Home() {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <Button variant="outline" onClick={hostMatch}>
+              <Button variant="outline" onClick={depositStake}>
                 Stake
               </Button>
             </Flex>
