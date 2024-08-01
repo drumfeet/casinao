@@ -47,12 +47,12 @@ Handlers.add('flip', Handlers.utils.hasMatchingTag('Action', 'Flip'), function(m
         Stakers[msg.From].amount = utils.subtract(Stakers[host].amount, quantity)
         Stakers[host].amount = utils.add(Stakers[msg.From].amount, quantity)
         print(msg.From .. " LOST")
-        ao.send({ Target = msg.From, Data = msg.From .. " LOST" })
+        ao.send({ Target = msg.From, Won = false, Data = "You Lose!" })
     else
         -- Flipper won
         Stakers[host].amount = utils.subtract(Stakers[host].amount, quantity)
         Stakers[msg.From].amount = utils.add(Stakers[msg.From].amount, quantity)
         print(msg.From .. " WON")
-        ao.send({ Target = msg.From, Data = msg.From .. " WON" })
+        ao.send({ Target = msg.From, Won = true, Data = "You Won!" })
     end
 end)

@@ -93,6 +93,8 @@ export default function Home() {
       })
     } catch (e) {
       console.error("hostMatch() error!", e)
+    } finally{
+      setStakers([])
     }
   }
 
@@ -143,17 +145,12 @@ export default function Home() {
       })
     } catch (e) {
       console.error("hostMatch() error!", e)
+    } finally {
+      setStakers([])
     }
   }
 
   const flipMatch = async ({ hostId }) => {
-    toast({
-      description: "FLIPING...",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    })
-
     try {
       await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
     } catch (e) {
@@ -192,12 +189,22 @@ export default function Home() {
         process: FLIP_PID,
       })
       console.log("_result", _result)
-      toast({
-        description: `${_result.Messages[0].Data}`,
-        status: "info",
-        duration: 5000,
-        isClosable: true,
-      })
+
+      if (_result.Messages[0].Tags[6].value === true) {
+        toast({
+          description: `${_result.Messages[0].Data}`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        })
+      } else {
+        toast({
+          description: `${_result.Messages[0].Data}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        })
+      }
     } catch (e) {
       console.error("hostMatch() error!", e)
     }
