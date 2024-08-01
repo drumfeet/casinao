@@ -30,6 +30,7 @@ export default function Home() {
   const [stakers, setStakers] = useState([])
   const [balance, setBalance] = useState(0)
   const [stakeAmount, setStakeAmount] = useState(0)
+  const [wallet, setWallet] = useState("")
 
   const loadStakers = async () => {
     try {
@@ -169,8 +170,16 @@ export default function Home() {
 
     try {
       const userAddress = await window.arweaveWallet.getActiveAddress()
+      setWallet(userAddress)
+
       const _balance = await getBalance({ recipient: userAddress })
       setBalance(_balance)
+
+      const _stakers = await getStakers()
+      if (_stakers.hasOwnProperty(userAddress)) {
+        const userStakerInfo = _stakers[userAddress]
+        setStakeAmount(userStakerInfo.amount)
+      }
     } catch (e) {
       console.error("fetchUserBalance() error!", e)
     }
@@ -303,19 +312,14 @@ export default function Home() {
             gap={4}
             border="1px solid black"
             padding={8}
+            minWidth={550}
           >
-            <Flex alignItems="center" gap={4}>
-              <Button variant="outline" size={"sm"} onClick={fetchUserBalance}>
-                Get
-              </Button>
-              <Text>Balance: {balance}</Text>
-            </Flex>
-            <Flex alignItems="center" gap={4}>
-              <Button variant="outline" size={"sm"} onClick={fetchStakeAmount}>
-                Get
-              </Button>
-              <Text>Stake: {stakeAmount}</Text>
-            </Flex>
+            <Text>Balance: {balance}</Text>
+            <Text>Stake: {stakeAmount}</Text>
+            <Text>Wallet: {wallet}</Text>
+            <Button variant="outline" onClick={fetchUserBalance}>
+              Get Wallet
+            </Button>
           </Flex>
 
           <Flex flexDirection="column" gap={8} paddingY={8}>
