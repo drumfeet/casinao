@@ -44,8 +44,8 @@ Handlers.add('flip', Handlers.utils.hasMatchingTag('Action', 'Flip'), function(m
 
     if (tonumber(_result) == 1) then
         -- Host won
-        Stakers[msg.From].amount = utils.subtract(Stakers[host].amount, quantity)
-        Stakers[host].amount = utils.add(Stakers[msg.From].amount, quantity)
+        Stakers[msg.From].amount = utils.subtract(Stakers[msg.From].amount, quantity)
+        Stakers[host].amount = utils.add(Stakers[host].amount, quantity)
         print(msg.From .. " LOST")
         ao.send({ Target = msg.From, Won = false, Data = "You Lose!" })
     else
