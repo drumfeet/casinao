@@ -17,20 +17,19 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react"
-import { getMatches, getStakers } from "@/lib/utils"
+import { getStakers } from "@/lib/utils"
 
 const FLIP_PID = process.env.NEXT_PUBLIC_PROCESS_ID
-const limit = 10
+
 export default function Home() {
   const toast = useToast()
-  const [skip, setSkip] = useState(0)
   const [quantity, setQuantity] = useState(5)
   const [delay, setDelay] = useState(0)
   const [stakers, setStakers] = useState([])
 
   const loadStakers = async () => {
     try {
-      const _stakers = await getStakers({ limit, skip })
+      const _stakers = await getStakers()
       const stakersArray = Object.entries(_stakers).map(([key, item]) => ({
         id: key,
         ...item,
@@ -130,24 +129,24 @@ export default function Home() {
       ]
       console.log("_tags", _tags)
 
-      // const messageId = await message({
-      //   process: FLIP_PID,
-      //   tags: _tags,
-      //   signer: createDataItemSigner(window.arweaveWallet),
-      // })
-      // console.log("messageId", messageId)
+      const messageId = await message({
+        process: FLIP_PID,
+        tags: _tags,
+        signer: createDataItemSigner(window.arweaveWallet),
+      })
+      console.log("messageId", messageId)
 
-      // const _result = await result({
-      //   message: messageId,
-      //   process: FLIP_PID,
-      // })
-      // console.log("_result", _result)
-      // toast({
-      //   description: `${_result.Output.data}`,
-      //   status: "success",
-      //   duration: 5000,
-      //   isClosable: true,
-      // })
+      const _result = await result({
+        message: messageId,
+        process: FLIP_PID,
+      })
+      console.log("_result", _result)
+      toast({
+        description: `${_result.Output.data}`,
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      })
     } catch (e) {
       console.error("hostMatch() error!", e)
     }
