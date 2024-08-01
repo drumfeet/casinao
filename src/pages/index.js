@@ -180,34 +180,15 @@ export default function Home() {
         const userStakerInfo = _stakers[userAddress]
         setStakeAmount(userStakerInfo.amount)
       }
-    } catch (e) {
-      console.error("fetchUserBalance() error!", e)
-    }
-  }
 
-  const fetchStakeAmount = async () => {
-    try {
-      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
-    } catch (e) {
-      console.error("Wallet missing!", e)
       toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
+        description: `Updated user wallet`,
+        status: "success",
         duration: 5000,
         isClosable: true,
       })
-      return
-    }
-
-    try {
-      const userAddress = await window.arweaveWallet.getActiveAddress()
-      const _stakers = await getStakers()
-      if (_stakers.hasOwnProperty(userAddress)) {
-        const userStakerInfo = _stakers[userAddress]
-        setStakeAmount(userStakerInfo.amount)
-      }
     } catch (e) {
-      console.error("fetchStakeAmount() error!", e)
+      console.error("fetchUserBalance() error!", e)
     }
   }
 
@@ -283,7 +264,7 @@ export default function Home() {
             padding={4}
           >
             <Text>ID: {staker.id}</Text>
-            <Text>Amount: {staker.amount}</Text>
+            <Text>Staked: {staker.amount} $FLIP</Text>
             <Button
               variant="outline"
               onClick={() => flipMatch({ hostId: staker.id })}
@@ -295,10 +276,6 @@ export default function Home() {
       </Flex>
     )
   }
-
-  // useEffect(() => {
-  //   fetchUserBalance()
-  // }, [])
 
   return (
     <>
@@ -314,8 +291,8 @@ export default function Home() {
             padding={8}
             minWidth={550}
           >
-            <Text>Balance: {balance}</Text>
-            <Text>Stake: {stakeAmount}</Text>
+            <Text>Balance: {balance} $FLIP</Text>
+            <Text>Staked: {stakeAmount}</Text>
             <Text>Wallet: {wallet}</Text>
             <Button variant="outline" onClick={fetchUserBalance}>
               Get Wallet
@@ -346,7 +323,7 @@ export default function Home() {
                 step={1}
                 defaultValue={withdrawQty}
                 min={withdrawQty}
-                onChange={(valueString) => setWithdrawQty(valueString)}
+                onChange={(amount) => setWithdrawQty(amount)}
               >
                 <NumberInputField />
                 <NumberInputStepper>
@@ -361,7 +338,6 @@ export default function Home() {
             <Divider />
           </Flex>
 
-          {/* <Divider /> */}
           <Button variant="outline" onClick={loadStakers}>
             List Stakers
           </Button>
