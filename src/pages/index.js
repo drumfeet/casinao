@@ -96,13 +96,61 @@ export default function Home() {
     }
   }
 
-  const flipMatch = async () => {
+  const flipMatch = async ({ hostId }) => {
     toast({
       description: "FLIPING...",
       status: "success",
       duration: 5000,
       isClosable: true,
     })
+
+    try {
+      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
+    try {
+      let _tags = [
+        {
+          name: "Action",
+          value: "Flip",
+        },
+        // {
+        //   name: "Host",
+        //   value: hostId,
+        // },
+      ]
+      console.log("_tags", _tags)
+
+      // const messageId = await message({
+      //   process: FLIP_PID,
+      //   tags: _tags,
+      //   signer: createDataItemSigner(window.arweaveWallet),
+      // })
+      // console.log("messageId", messageId)
+
+      // const _result = await result({
+      //   message: messageId,
+      //   process: FLIP_PID,
+      // })
+      // console.log("_result", _result)
+      // toast({
+      //   description: `${_result.Output.data}`,
+      //   status: "success",
+      //   duration: 5000,
+      //   isClosable: true,
+      // })
+    } catch (e) {
+      console.error("hostMatch() error!", e)
+    }
   }
 
   const StakersComponent = ({ stakers }) => {
@@ -118,7 +166,12 @@ export default function Home() {
           >
             <Text>ID: {staker.id}</Text>
             <Text>Amount: {staker.amount}</Text>
-            <Button variant="outline" onClick={flipMatch}>Flip</Button>
+            <Button
+              variant="outline"
+              onClick={() => flipMatch({ hostId: staker.id })}
+            >
+              Flip
+            </Button>
           </Flex>
         ))}
       </Flex>
