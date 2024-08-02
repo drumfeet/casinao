@@ -320,7 +320,11 @@ export default function Home() {
                     stake added automatically.
                   </Text>
                   <Text>7. Withdraw(Unstake) if you want to stop playing.</Text>
-                  <Text>Note: As long as your token is staked, players can match it at any time.</Text>
+                  <Text>
+                    Note: As long as your token is staked, players can match it
+                    at any time. You risk losing your stake or you will gain
+                    more stake if you win the flip.
+                  </Text>
                 </Flex>
               </ModalBody>
 
