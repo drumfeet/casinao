@@ -41,6 +41,7 @@ Handlers.unstake = function(msg)
       amount = msg.Quantity,
       release_at = stakerInfo.unstake_at
   }
+  print("Successfully Unstaked " .. msg.Tags.Quantity)
   ao.send({Target = msg.From, Data = "Successfully unstaked " .. msg.Tags.Quantity})
 end
 
@@ -49,10 +50,13 @@ local finalizationHandler = function(msg)
   local currentHeight = tonumber(msg['Block-Height'])
   -- Process unstaking
   for address, unstakeInfo in pairs(Unstaking) do
+    print("finalizationHandler() address: " .. address)
       if currentHeight >= unstakeInfo.release_at then
           Balances[address] = utils.add(Balances[address] or "0", unstakeInfo.amount)
           Unstaking[address] = nil
+          print("Unstaking[address] = nil")
       end
+      print("finalizationHandler() exit")
   end
   
 end
