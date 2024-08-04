@@ -73,7 +73,7 @@ export default function OddEven() {
       if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
         toast({
           description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
-          status: "success",
+          status: "info",
           duration: 5000,
           isClosable: true,
         })
@@ -182,7 +182,7 @@ export default function OddEven() {
       if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
         toast({
           description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
-          status: "success",
+          status: "info",
           duration: 5000,
           isClosable: true,
         })
