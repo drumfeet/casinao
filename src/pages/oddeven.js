@@ -5,13 +5,24 @@ import {
   result,
   results,
 } from "@permaweb/aoconnect"
-import { Button, Flex, useToast } from "@chakra-ui/react"
+import { Button, Flex, Text, useToast } from "@chakra-ui/react"
+import {
+  getStakers,
+  getBalance,
+  getGameBalance,
+  getWalletBalance,
+} from "@/lib/utils"
+import { useEffect, useState } from "react"
 
 const WAR_PROCESS_ID = "_JZTfLS-ssyKKNn-qMb7PSifdo_1SZ14UlI_RRg-nfo" // xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10
 const GAME_PROCESS_ID = "Wu7s2PCoBt1-38dgtCwiGfCtK5V1DtxHpgK1KcYxQiQ"
 
 export default function OddEven() {
   const toast = useToast()
+  const [wallet, setWallet] = useState("")
+  const [gameBalance, setGameBalance] = useState(0)
+  const [walletBalance, setWalletBalance] = useState(0)
+
   const flipOdd = async () => {
     try {
       await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
@@ -115,6 +126,9 @@ export default function OddEven() {
       }
     } catch (e) {
       console.error("flipMatch() error!", e)
+    } finally {
+      await fetchGameBalance()
+      await fetchWalletBalance()
     }
   }
 
@@ -221,8 +235,83 @@ export default function OddEven() {
       }
     } catch (e) {
       console.error("flipMatch() error!", e)
+    } finally {
+      await fetchGameBalance()
+      await fetchWalletBalance()
     }
   }
+
+  const fetchGameBalance = async () => {
+    try {
+      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
+    try {
+      const userAddress = await window.arweaveWallet.getActiveAddress()
+      setWallet(userAddress)
+
+      const _balance = await getGameBalance({ recipient: userAddress })
+      setGameBalance(_balance)
+
+    //   toast({
+    //     description: `Updated user game balance`,
+    //     status: "success",
+    //     duration: 5000,
+    //     isClosable: true,
+    //   })
+    } catch (e) {
+      console.error("getGameBalance() error!", e)
+    }
+  }
+
+  const fetchWalletBalance = async () => {
+    try {
+      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
+    try {
+      const userAddress = await window.arweaveWallet.getActiveAddress()
+      setWallet(userAddress)
+
+      const _balance = await getWalletBalance({ recipient: userAddress })
+      setWalletBalance(_balance)
+
+    //   toast({
+    //     description: `Updated user wallet balance`,
+    //     status: "success",
+    //     duration: 5000,
+    //     isClosable: true,
+    //   })
+    } catch (e) {
+      console.error("fetchWalletBalance() error!", e)
+    }
+  }
+
+  useEffect(() => {
+    ;(async () => {
+      await fetchGameBalance()
+      await fetchWalletBalance()
+    })()
+  }, [])
+
   return (
     <>
       <Flex minH="100%" direction="column" padding={20}>
@@ -235,6 +324,8 @@ export default function OddEven() {
               EVEN
             </Button>
           </Flex>
+          {/* <Text>Game Token Balance : {gameBalance} $FLIP</Text> */}
+          <Text>Wallet Balance : {walletBalance} $FLIP</Text>
         </Flex>
       </Flex>
     </>
