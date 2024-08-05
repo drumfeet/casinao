@@ -45,6 +45,7 @@ export default function OddEven() {
 
   const flipOdd = async () => {
     try {
+      setResults("")
       await globalThis.arweaveWallet.connect([
         "ACCESS_ADDRESS",
         "SIGN_TRANSACTION",
@@ -61,95 +62,47 @@ export default function OddEven() {
     }
 
     try {
-      let _tags = [
-        {
-          name: "Action",
-          value: "Transfer",
-        },
-        {
-          name: "Recipient",
-          value: GAME_PROCESS_ID,
-        },
-        {
-          name: "Quantity",
-          value: "2",
-        },
-      ]
-      console.log("_tags", _tags)
-
       const messageId = await message({
-        process: WAR_PROCESS_ID,
-        tags: _tags,
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "FlipOdd",
+          },
+          {
+            name: "Quantity",
+            value: betAmount.toString(),
+          },
+        ],
         signer: createDataItemSigner(globalThis.arweaveWallet),
       })
       console.log("messageId", messageId)
 
-      const _result = await result({
+      const _resultFlip = await result({
         message: messageId,
-        process: WAR_PROCESS_ID,
+        process: GAME_PROCESS_ID,
       })
-      console.log("_result", _result)
+      console.log("_resultFlip", _resultFlip)
 
-      const amountDebit = _result.Messages[0].Tags[8].value
-      const amountCredit = _result.Messages[1].Tags[8].value
-
-      if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
+      if (_resultFlip.Messages[0].Tags[6].value === true) {
         toast({
-          description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
-          status: "info",
+          description: `${_resultFlip.Messages[0].Data}`,
+          status: "success",
           duration: 5000,
           isClosable: true,
         })
-
-        const messageId = await message({
-          process: GAME_PROCESS_ID,
-          tags: [
-            {
-              name: "Action",
-              value: "FlipOdd",
-            },
-            {
-              name: "Quantity",
-              value: amountCredit.toString(),
-            },
-          ],
-          signer: createDataItemSigner(globalThis.arweaveWallet),
-        })
-        console.log("messageId", messageId)
-
-        const _resultFlip = await result({
-          message: messageId,
-          process: GAME_PROCESS_ID,
-        })
-        console.log("_resultFlip", _resultFlip)
-
-        if (_resultFlip.Messages[0].Tags[6].value === true) {
-          toast({
-            description: `${_resultFlip.Messages[0].Data}`,
-            status: "success",
-            duration: 5000,
-            isClosable: true,
-          })
-          setResults(_resultFlip.Messages[0].Data)
-        } else {
-          setResults(_resultFlip.Messages[0].Data)
-          toast({
-            description: `${_resultFlip.Messages[0].Data}`,
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-          })
-        }
+        setResults(_resultFlip.Messages[0].Data)
       } else {
+        setResults(_resultFlip.Messages[0].Data)
         toast({
-          description: `0 tokens were sent`,
+          description: `${_resultFlip.Messages[0].Data}`,
           status: "error",
           duration: 5000,
           isClosable: true,
         })
       }
     } catch (e) {
-      console.error("flipMatch() error!", e)
+      console.error("flipOdd() error!", e)
     } finally {
       await fetchUserBalance()
     }
@@ -157,6 +110,7 @@ export default function OddEven() {
 
   const flipEven = async () => {
     try {
+      setResults("")
       await globalThis.arweaveWallet.connect([
         "ACCESS_ADDRESS",
         "SIGN_TRANSACTION",
@@ -173,95 +127,47 @@ export default function OddEven() {
     }
 
     try {
-      let _tags = [
-        {
-          name: "Action",
-          value: "Transfer",
-        },
-        {
-          name: "Recipient",
-          value: GAME_PROCESS_ID,
-        },
-        {
-          name: "Quantity",
-          value: "2",
-        },
-      ]
-      console.log("_tags", _tags)
-
       const messageId = await message({
-        process: WAR_PROCESS_ID,
-        tags: _tags,
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "FlipEven",
+          },
+          {
+            name: "Quantity",
+            value: betAmount.toString(),
+          },
+        ],
         signer: createDataItemSigner(globalThis.arweaveWallet),
       })
       console.log("messageId", messageId)
 
-      const _result = await result({
+      const _resultFlip = await result({
         message: messageId,
-        process: WAR_PROCESS_ID,
+        process: GAME_PROCESS_ID,
       })
-      console.log("_result", _result)
+      console.log("_resultFlip", _resultFlip)
 
-      const amountDebit = _result.Messages[0].Tags[8].value
-      const amountCredit = _result.Messages[1].Tags[8].value
-
-      if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
+      if (_resultFlip.Messages[0].Tags[6].value === true) {
         toast({
-          description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
-          status: "info",
+          description: `${_resultFlip.Messages[0].Data}`,
+          status: "success",
           duration: 5000,
           isClosable: true,
         })
-
-        const messageId = await message({
-          process: GAME_PROCESS_ID,
-          tags: [
-            {
-              name: "Action",
-              value: "FlipEven",
-            },
-            {
-              name: "Quantity",
-              value: amountCredit.toString(),
-            },
-          ],
-          signer: createDataItemSigner(globalThis.arweaveWallet),
-        })
-        console.log("messageId", messageId)
-
-        const _resultFlip = await result({
-          message: messageId,
-          process: GAME_PROCESS_ID,
-        })
-        console.log("_resultFlip", _resultFlip)
-
-        if (_resultFlip.Messages[0].Tags[6].value === true) {
-          toast({
-            description: `${_resultFlip.Messages[0].Data}`,
-            status: "success",
-            duration: 5000,
-            isClosable: true,
-          })
-          setResults(_resultFlip.Messages[0].Data)
-        } else {
-          setResults(_resultFlip.Messages[0].Data)
-          toast({
-            description: `${_resultFlip.Messages[0].Data}`,
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-          })
-        }
+        setResults(_resultFlip.Messages[0].Data)
       } else {
+        setResults(_resultFlip.Messages[0].Data)
         toast({
-          description: `0 tokens were sent`,
+          description: `${_resultFlip.Messages[0].Data}`,
           status: "error",
           duration: 5000,
           isClosable: true,
         })
       }
     } catch (e) {
-      console.error("flipMatch() error!", e)
+      console.error("flipEven() error!", e)
     } finally {
       await fetchUserBalance()
     }
@@ -451,7 +357,7 @@ export default function OddEven() {
                 {walletBalance >= 0 || gameBalance >= 0 ? (
                   <>
                     <Text>
-                      GaWalletme Balance :{" "}
+                      Wallet Balance :{" "}
                       {walletBalance >= 0
                         ? `${walletBalance} $FLIP`
                         : "loading...."}{" "}
@@ -479,7 +385,6 @@ export default function OddEven() {
                   step={1}
                   defaultValue={depositQty}
                   min={1}
-                  max={20}
                   onChange={(e) => setDepositQty(e)}
                 >
                   <NumberInputField />
@@ -497,7 +402,6 @@ export default function OddEven() {
                   step={1}
                   defaultValue={withdrawQty}
                   min={1}
-                  max={20}
                   onChange={(e) => setWithdrawQty(e)}
                 >
                   <NumberInputField />
@@ -513,15 +417,35 @@ export default function OddEven() {
             </Flex>
           </Flex>
 
-          <Flex gap={4}>
-            <Button variant="outline" onClick={flipOdd}>
-              ODD
-            </Button>
-            <Button variant="outline" onClick={flipEven}>
-              EVEN
-            </Button>
+          <Flex
+            flexDirection="column"
+            gap={4}
+            // border="1px solid black"
+            padding={8}
+            minWidth={550}
+          >
+            <Flex gap={4}>
+              <NumberInput
+                step={1}
+                defaultValue={depositQty}
+                min={1}
+                onChange={(e) => setBetAmount(e)}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <Button variant="outline" onClick={flipOdd}>
+                ODD
+              </Button>
+              <Button variant="outline" onClick={flipEven}>
+                EVEN
+              </Button>
+            </Flex>
+            <Flex>{results && <Text>{results}</Text>}</Flex>
           </Flex>
-          <Flex>{results && <Text>{results}</Text>}</Flex>
         </Flex>
       </Flex>
     </>

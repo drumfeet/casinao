@@ -75,16 +75,16 @@ Handlers.add('flip.odd', Handlers.utils.hasMatchingTag('Action', 'FlipOdd'), fun
         -- Flipper won
         print(msg.From .. " PLAYER WON")
         Flippers[ao.id] = utils.subtract(Flippers[ao.id], msg.Tags.Quantity)
-        Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Tags.Quantity)
+        Flippers[msg.From] = utils.add(Flippers[msg.From], msg.Tags.Quantity)
         ao.send({ Target = msg.From, Won = true, Data = "You Won!" })
 
-        local totalAmount = utils.add(msg.Tags.Quantity, msg.Tags.Quantity)
-        ao.send({
-            Target = WAR_PROCESS_ID,
-            Action = "Transfer",
-            Recipient = msg.From,
-            Quantity = totalAmount,
-        })
+        -- local totalAmount = utils.add(msg.Tags.Quantity, msg.Tags.Quantity)
+        -- ao.send({
+        --     Target = WAR_PROCESS_ID,
+        --     Action = "Transfer",
+        --     Recipient = msg.From,
+        --     Quantity = totalAmount,
+        -- })
     else
         -- Game Host won
         print(msg.From .. " PLAYER LOST")
@@ -123,16 +123,16 @@ Handlers.add('flip.even', Handlers.utils.hasMatchingTag('Action', 'FlipEven'), f
         -- Flipper won
         print(msg.From .. " PLAYER WON")
         Flippers[ao.id] = utils.subtract(Flippers[ao.id], msg.Tags.Quantity)
-        Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Tags.Quantity)
+        Flippers[msg.From] = utils.add(Flippers[msg.From], msg.Tags.Quantity)
         ao.send({ Target = msg.From, Won = true, Data = "You Won!" })
 
-        local totalAmount = utils.add(msg.Tags.Quantity, msg.Tags.Quantity)
-        ao.send({
-            Target = WAR_PROCESS_ID,
-            Action = "Transfer",
-            Recipient = msg.From,
-            Quantity = totalAmount,
-        })
+        -- local totalAmount = utils.add(msg.Tags.Quantity, msg.Tags.Quantity)
+        -- ao.send({
+        --     Target = WAR_PROCESS_ID,
+        --     Action = "Transfer",
+        --     Recipient = msg.From,
+        --     Quantity = totalAmount,
+        -- })
     end
 end)
 
