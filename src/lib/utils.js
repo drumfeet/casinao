@@ -52,7 +52,7 @@ const getWalletBalance = async ({ recipient }) => {
     process: "_JZTfLS-ssyKKNn-qMb7PSifdo_1SZ14UlI_RRg-nfo", // WAR_PROCESS_ID
     tags,
   })
-  console.log("getBalance result", result)
+  console.log("getWalletBalance result", result)
 
   return JSON.parse(result.Messages[0].Data)
 }
