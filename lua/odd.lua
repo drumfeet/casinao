@@ -52,6 +52,63 @@ Handlers.add('Credit-Notice', Handlers.utils.hasMatchingTag('Action', 'Credit-No
     -- validate wAR token process id and quantity
 end)
 
+Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), function(msg)
+    assert(type(msg.Tags.Quantity) == 'string', 'Quantity is required!')
+    assert(bint(0) < bint(msg.Tags.Quantity), 'Quantity must be greater than zero!')
+    assert(type(msg.Tags.WinChance) == 'string', 'WinChance is required!')
+    assert(bint(msg.Tags.WinChance >= bint(0) and bint(msg.Tags.WinChance) <= bint(100)),
+        'WinChance must be >= 0 and <= 100!')
+
+    local SLOPE = tonumber(-0.96)
+    local INTERCEPT = tonumber(98)
+    local sliderValue = tonumber(msg.Tags.WinChance)
+    local winChance = (SLOPE * sliderValue) + INTERCEPT
+
+    local blockHeight = tonumber(msg["Block-Height"])
+    local timestamp = tonumber(msg["Timestamp"])
+    -- Generate multiple random factors for added entropy
+    local randomFactor1 = math.random()
+    local randomFactor2 = math.random()
+    local randomFactor3 = math.random()
+    local randomFactor4 = math.random()
+    local randomFactor5 = math.random()
+    local randomFactor6 = math.random()
+    -- Calculate a mixing value using block height, timestamp, and random factors
+    local mixing = ((blockHeight * randomFactor1 + timestamp * randomFactor2 + randomFactor3) * randomFactor4 / (randomFactor5 + randomFactor6))
+    local seed = math.floor(mixing * 2 ^ 32) % 2 ^ 32
+    -- Seed the random number generator with the non-deterministic seed
+    math.randomseed(seed)
+
+    -- Discard the first few values to avoid issues with some RNGs' initial values
+    for i = 1, 5 do
+        math.random()
+    end
+
+    -- Generate a random number to determine win or loss
+    local randomValue = math.random() * 100
+    print("randomValue: " .. randomValue)
+
+    -- Check if the random value is less than the win chance
+    local playerWon = randomValue < winChance
+    print("randomValue: " .. tostring(randomValue) .. " < " .. "winChance: " .. tostring(winChance))
+    print("playerWon: " .. tostring(playerWon))
+
+    if playerWon then
+        -- Flippers[msg.From] = utils.add(Flippers[msg.From] or "0", msg.Tags.Quantity)
+
+        print(msg.From .. " PLAYER WON")
+        Flippers[ao.id] = utils.subtract(Flippers[ao.id], msg.Tags.Quantity)
+        Flippers[msg.From] = utils.add(Flippers[msg.From], msg.Tags.Quantity)
+        ao.send({ Target = msg.From, Won = true, Data = "You Won!" })
+    else
+        -- Game Host won
+        print(msg.From .. " PLAYER LOST")
+        Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Tags.Quantity)
+        Flippers[ao.id] = utils.add(Flippers[ao.id], msg.Tags.Quantity)
+        ao.send({ Target = msg.From, Won = false, Data = "You Lose!" })
+    end
+end)
+
 Handlers.add('flip.odd', Handlers.utils.hasMatchingTag('Action', 'FlipOdd'), function(msg)
     assert(type(msg.Tags.Quantity) == 'string', 'Quantity is required!')
     assert(bint(0) < bint(msg.Tags.Quantity), 'Quantity must be greater than zero!')

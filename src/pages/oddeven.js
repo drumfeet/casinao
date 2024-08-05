@@ -27,11 +27,11 @@ import {
   getWalletBalance,
 } from "@/lib/utils"
 import { useEffect, useState } from "react"
-import { ArrowDownIcon } from "@chakra-ui/icons"
-import { FLIGHT_PARAMETERS } from "next/dist/client/components/app-router-headers"
 
 const WAR_PROCESS_ID = "_JZTfLS-ssyKKNn-qMb7PSifdo_1SZ14UlI_RRg-nfo" // xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10
 const GAME_PROCESS_ID = "Wu7s2PCoBt1-38dgtCwiGfCtK5V1DtxHpgK1KcYxQiQ"
+const SLOPE = -0.96
+const INTERCEPT = 98
 
 export default function OddEven() {
   const toast = useToast()
@@ -42,6 +42,82 @@ export default function OddEven() {
   const [betAmount, setBetAmount] = useState(1)
   const [depositQty, setDepositQty] = useState(1)
   const [withdrawQty, setWithdrawQty] = useState(1)
+
+  const [sliderValue, setSliderValue] = useState(50)
+  const [winChance, setWinChance] = useState(50)
+  const handleChange = (v) => {
+    setSliderValue(v)
+    setWinChance(SLOPE * v + INTERCEPT)
+  }
+
+  const flipBet = async () => {
+    try {
+      setResults("")
+      await globalThis.arweaveWallet.connect([
+        "ACCESS_ADDRESS",
+        "SIGN_TRANSACTION",
+      ])
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
+    try {
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "FlipBet",
+          },
+          {
+            name: "Quantity",
+            value: betAmount.toString(),
+          },
+          {
+            name: "WinChance",
+            value: sliderValue.toString(),
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _resultFlip = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_resultFlip", _resultFlip)
+
+      if (_resultFlip.Messages[0].Tags[6].value === true) {
+        toast({
+          description: `${_resultFlip.Messages[0].Data}`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        })
+        setResults(_resultFlip.Messages[0].Data)
+      } else {
+        setResults(_resultFlip.Messages[0].Data)
+        toast({
+          description: `${_resultFlip.Messages[0].Data}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        })
+      }
+    } catch (e) {
+      console.error("flipBet() error!", e)
+    } finally {
+      await fetchUserBalance()
+    }
+  }
 
   const flipOdd = async () => {
     try {
@@ -424,6 +500,42 @@ export default function OddEven() {
             padding={8}
             minWidth={550}
           >
+            <Flex flexDirection={"column"}>
+              <Flex>
+                <NumberInput
+                  maxW="100px"
+                  mr="2rem"
+                  value={sliderValue}
+                  onChange={handleChange}
+                  display="none"
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <Slider
+                  flex="1"
+                  focusThumbOnChange={false}
+                  value={sliderValue}
+                  onChange={handleChange}
+                >
+                  <SliderTrack bg="green.500">
+                    <SliderFilledTrack bg="red.500" />
+                  </SliderTrack>
+                  <SliderThumb
+                    fontSize="sm"
+                    boxSize="32px"
+                    // children={value} />
+                  >
+                    {sliderValue}
+                  </SliderThumb>
+                </Slider>
+              </Flex>
+              <Text>Win Chance: {winChance}</Text>
+            </Flex>
+
             <Flex gap={4}>
               <NumberInput
                 step={1}
@@ -437,11 +549,14 @@ export default function OddEven() {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <Button variant="outline" onClick={flipOdd}>
+              {/* <Button variant="outline" onClick={flipOdd}>
                 ODD
               </Button>
               <Button variant="outline" onClick={flipEven}>
                 EVEN
+              </Button> */}
+              <Button variant="outline" paddingX={28} onClick={flipBet}>
+                Bet
               </Button>
             </Flex>
             <Flex>{results && <Text>{results}</Text>}</Flex>
