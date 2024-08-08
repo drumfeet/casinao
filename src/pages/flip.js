@@ -1,4 +1,5 @@
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
+import { HamburgerIcon, LinkIcon } from "@chakra-ui/icons"
 import {
   Box,
   Button,
@@ -20,8 +21,8 @@ import {
 import { useState } from "react"
 
 export default function Home() {
-  const TOKEN_PROCESS_ID = ""
-  const GAME_PROCESS_ID = ""
+  const TOKEN_PROCESS_ID = "0efiFdNJH-8ocj4PhzYT9CZ2eVZFr5U-rCc_liOjRnU"
+  const GAME_PROCESS_ID = "0efiFdNJH-8ocj4PhzYT9CZ2eVZFr5U-rCc_liOjRnU"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
@@ -31,7 +32,7 @@ export default function Home() {
 
   const [gameBalance, setGameBalance] = useState(-1)
   const [walletBalance, setWalletBalance] = useState(-1)
-  const [depositQty, setDepositQty] = useState(21)
+  const [depositQty, setDepositQty] = useState(1)
   const [withdrawQty, setWithdrawQty] = useState(1)
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
@@ -180,156 +181,101 @@ export default function Home() {
       await fetchUserBalance()
     }
   }
+
+  const shortcutItems = [
+    { text: "Shortcut 1", icon: <LinkIcon /> },
+    { text: "Shortcut 2", icon: <LinkIcon /> },
+    { text: "Shortcut 3", icon: <LinkIcon /> },
+    { text: "Shortcut 4", icon: <LinkIcon /> },
+    { text: "Shortcut 5", icon: <LinkIcon /> },
+  ]
+
+  const gameItems = [
+    { text: "Game 1", icon: <LinkIcon /> },
+    { text: "Game 2", icon: <LinkIcon /> },
+    { text: "Game 3", icon: <LinkIcon /> },
+    { text: "Game 4", icon: <LinkIcon /> },
+    { text: "Game 5", icon: <LinkIcon /> },
+  ]
+
+  const ShortcutMenu = ({ icon, text }) => (
+    <Flex alignItems="center" gap={2}>
+      {icon}
+      <Text>{text}</Text>
+    </Flex>
+  )
   return (
     <>
-      <Flex
-        minH="100vh"
-        backgroundColor="#0e2229"
-        // bgGradient={[
-        //   "linear(to-tr, teal.300, yellow.400)",
-        //   "linear(to-t, blue.200, teal.500)",
-        //   "linear(to-b, orange.100, purple.300)",
-        // ]}
-      >
+      <Flex minH="100vh" backgroundColor="#0e2229">
         <Flex w="100%">
           {/* Left */}
           <Flex
-            minW="300px"
-            // borderRight="1px solid #999"
+            minW="240px"
             flexDirection="column"
             display={{ base: "none", md: "flex" }}
+            boxShadow="0px 4px 4px rgba(0, 0, 0, 0.25)"
           >
             {/* Left Header */}
             <Flex
-              gap={4}
               padding={4}
+              gap={2}
               justifyContent="flex-end"
+              alignItems="center"
               w="100%"
-              //   backgroundColor="#21393e"
+              boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
             >
+              <Flex paddingX={3}>
+                <HamburgerIcon color="gray.200" fontSize={"2xl"} />
+              </Flex>
               <Button
-                bgGradient="linear(to-r, blue.200, blue.500)"
-                color="white"
-                ml={4}
-                _hover={{
-                  bgGradient: "linear(to-r, blue.200, blue.500)",
-                  cursor: "default",
-                }}
-              >
-                PLAY NOW
-              </Button>
-              <Button
-                bgGradient="linear(to-r, green.200, green.500)"
-                color="white"
+                bg="#1a2c38"
+                color="gray.200"
                 _hover={{
                   bgGradient: "linear(to-r, green.200, green.500)",
-                  cursor: "default",
                 }}
               >
                 CASINO
+              </Button>
+              <Button
+                bg="#1a2c38"
+                color="gray.200"
+                _hover={{
+                  bgGradient: "linear(to-r, blue.200, blue.500)",
+                }}
+              >
+                SPORTS
               </Button>
             </Flex>
 
             {/* Shortcuts */}
             <Flex padding={4} flexDirection="column">
               <Flex
-                backgroundColor="#21393e"
-                // borderRadius="md"
+                backgroundColor="#1a2c38"
+                borderRadius="md"
                 flexDirection="column"
-                gap={4}
+                gap={2}
                 padding={4}
                 color="gray.200"
               >
-                <Text>Favorites</Text>
-                <Text>Recent</Text>
-                <Text>Challenges</Text>
-                <Text>My Bets</Text>
+                {shortcutItems.map((item, index) => (
+                  <ShortcutMenu key={index} icon={item.icon} text={item.text} />
+                ))}
               </Flex>
             </Flex>
 
             {/* Games */}
             <Flex padding={4} flexDirection="column">
               <Flex
-                borderBottom="1px solid #999"
-                paddingBottom={4}
-                backgroundColor="#21393e"
-                color="gray.200"
-                padding={4}
-              >
-                <Text>Games</Text>
-              </Flex>
-              <Flex
-                backgroundColor="#21393e"
-                // borderRadius="md"
+                backgroundColor="#1a2c38"
+                borderRadius="md"
                 flexDirection="column"
-                gap={4}
+                gap={2}
                 padding={4}
                 color="gray.200"
               >
-                <Text>Flip</Text>
-                <Text>Points Swap</Text>
-                <Text>Dice</Text>
-                <Text>Mines</Text>
-                <Text>Odd Even</Text>
-                <Text>Rooster</Text>
-              </Flex>
-            </Flex>
-          </Flex>
-
-          {/* Right */}
-          <Flex
-            w="100%"
-            flexDirection="column"
-            // display={{ base: "none", md: "flex" }}
-          >
-            {/* Right Header */}
-            <Flex
-              color="gray.200"
-              padding={4}
-              backgroundColor="#21393e"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Flex alignItems="center">
-                <Button
-                  _hover={{ bg: "none", cursor: "default" }}
-                  variant="ghost"
-                  display={{ base: "none", md: "flex" }}
-                ></Button>
-                <Flex gap={4}>
-                  <Text
-                    bgGradient="linear(to-l, #7928CA, #FF0080)"
-                    bgClip="text"
-                    fontSize="2xl"
-                    fontWeight="extrabold"
-                  >
-                    F
-                  </Text>
-                  <Text
-                    bgGradient="linear(to-l, #7928CA, #FF0080)"
-                    bgClip="text"
-                    fontSize="2xl"
-                    fontWeight="extrabold"
-                  >
-                    L
-                  </Text>
-                  <Text
-                    bgGradient="linear(to-l, #7928CA, #FF0080)"
-                    bgClip="text"
-                    fontSize="2xl"
-                    fontWeight="extrabold"
-                  >
-                    I
-                  </Text>
-                  <Text
-                    bgGradient="linear(to-l, #7928CA, #FF0080)"
-                    bgClip="text"
-                    fontSize="2xl"
-                    fontWeight="extrabold"
-                  >
-                    P
-                  </Text>
-                </Flex>
+                {gameItems.map((item, index) => (
+                  <ShortcutMenu key={index} icon={item.icon} text={item.text} />
+                ))}
               </Flex>
             </Flex>
           </Flex>
