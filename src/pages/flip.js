@@ -90,29 +90,32 @@ export default function Home() {
     }
   }
 
-  const fetchUserBalance = async () => {
+  const login = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
     try {
-      const _wallet = await globalThis.arweaveWallet
-      _wallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"])
     } catch (e) {
-      console.error("Wallet missing!", e)
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      })
+      console.error("login() error!", e)
+    }
+  }
+
+  const fetchUserBalance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
       return
     }
 
     try {
       const userAddress = await globalThis.arweaveWallet.getActiveAddress()
 
-      const walletBalance = await getWalletBalance({ recipient: userAddress })
-      setWalletBalance(divideByPower(walletBalance))
-
       const gameBalance = await getGameBalance({ recipient: userAddress })
       setGameBalance(divideByPower(gameBalance))
+
+      const walletBalance = await getWalletBalance({ recipient: userAddress })
+      setWalletBalance(divideByPower(walletBalance))
     } catch (e) {
       console.error("fetchUserBalance() error!", e)
     }
@@ -228,6 +231,7 @@ export default function Home() {
                 <HamburgerIcon color="gray.200" fontSize={"2xl"} />
               </Flex>
               <Button
+                paddingX={8}
                 bg="#1a2c38"
                 color="gray.200"
                 _hover={{
@@ -242,6 +246,7 @@ export default function Home() {
                 _hover={{
                   bgGradient: "linear(to-r, blue.200, blue.500)",
                 }}
+                paddingX={8}
               >
                 SPORTS
               </Button>
@@ -276,6 +281,155 @@ export default function Home() {
                 {gameItems.map((item, index) => (
                   <ShortcutMenu key={index} icon={item.icon} text={item.text} />
                 ))}
+              </Flex>
+            </Flex>
+
+            {/* Socials */}
+            <Flex padding={4} alignItems="center" gap={2}>
+              <Flex paddingX={4}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon icon-tabler icon-tabler-brand-x"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="#E2E8F0"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                </svg>
+              </Flex>
+              <Flex>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon icon-tabler icon-tabler-brand-discord"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="#E2E8F0"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+                  <path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+                  <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
+                  <path d="M7 16.5c3.5 1 6.5 1 10 0" />
+                </svg>
+              </Flex>
+            </Flex>
+          </Flex>
+
+          {/* Right */}
+          <Flex w="100%" flexDirection="column">
+            {/* Right Header */}
+            <Flex
+              paddingY={4}
+              paddingX={{ base: 4, md: 20 }}
+              alignItems="center"
+              w="100%"
+              bg="#1a2c38"
+              boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
+              justifyContent="space-between"
+              color="gray.200"
+            >
+              <Flex display={{ base: "flex", md: "none" }}>
+                <HamburgerIcon color="gray.200" fontSize={"2xl"} />
+              </Flex>
+              <Flex paddingLeft={{ base: 0, md: 20 }}>
+                <Text
+                  color="white"
+                  fontSize={"2xl"}
+                  fontFamily={"Comic Sans MS, cursive, sans-serif"}
+                  fontWeight="bold"
+                  letterSpacing="wide"
+                >
+                  FLIP
+                </Text>
+              </Flex>
+
+              {walletBalance >= 0 || gameBalance >= 0 ? (
+                <>
+                  <Box
+                    bg="#0e212e"
+                    paddingY={2}
+                    paddingX={4}
+                    borderRadius="md"
+                    display={{ base: "none", md: "flex" }}
+                  >
+                    {gameBalance}
+                  </Box>
+                </>
+              ) : (
+                <>
+                  <Box
+                    bg="#0e212e"
+                    paddingY={2}
+                    paddingX={4}
+                    borderRadius="md"
+                    display={{ base: "none", md: "flex" }}
+                  >
+                    0.000000000000
+                  </Box>
+                </>
+              )}
+
+              {/* Wallet */}
+              <Flex alignItems="center" gap={2}>
+                {walletBalance >= 0 || gameBalance >= 0 ? (
+                  <>
+                    <Box
+                      bg="#0e212e"
+                      paddingY={2}
+                      paddingX={4}
+                      borderRadius="md"
+                      display={{ base: "flex", md: "none" }}
+                    >
+                      {gameBalance}
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    <Box
+                      bg="#0e212e"
+                      paddingY={2}
+                      paddingX={4}
+                      borderRadius="md"
+                      display={{ base: "flex", md: "none" }}
+                    >
+                      0.000000000000
+                    </Box>
+                  </>
+                )}
+                <Button
+                  variant={"outline"}
+                  _hover={{ bg: "none" }}
+                  onClick={fetchUserBalance}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-wallet"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="#E2E8F0"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
+                    <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
+                  </svg>
+                </Button>
               </Flex>
             </Flex>
           </Flex>
