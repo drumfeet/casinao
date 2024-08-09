@@ -1,5 +1,5 @@
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
-import { HamburgerIcon, LinkIcon } from "@chakra-ui/icons"
+import { HamburgerIcon, LinkIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
   Box,
   Button,
@@ -328,7 +328,7 @@ export default function Home() {
           </Flex>
 
           {/* Right */}
-          <Flex w="100%" flexDirection="column">
+          <Flex w="100%" flexDirection="column" gap={1} color="gray.200">
             {/* Right Header */}
             <Flex
               paddingY={4}
@@ -430,6 +430,149 @@ export default function Home() {
                     <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
                   </svg>
                 </Button>
+              </Flex>
+            </Flex>
+
+            {/* Right Body */}
+            <Flex bg="#1a2c38" padding={[2, 12]}>
+              <Flex
+                bg="#213743"
+                borderRadius="md"
+                w="100%"
+                flexDirection={["column", "row"]}
+              >
+                {/* Left */}
+                <Flex padding={4} flexDirection="column" gap={4}>
+                  <Flex
+                    bg="#0e212e"
+                    borderRadius="3xl"
+                    padding={2}
+                    gap={4}
+                    color="gray.200"
+                    alignItems="center"
+                    flexDirection={["column", "row"]}
+                  >
+                    <Button borderRadius="3xl" px={8}>
+                      Manual
+                    </Button>
+                    <Button borderRadius="3xl" px={8} variant="link">
+                      Auto
+                    </Button>
+                    <RepeatIcon />
+                  </Flex>
+                  <Flex flexDirection="column">
+                    <Text>Bet Amount</Text>
+                    <NumberInput
+                      step={1}
+                      defaultValue={betAmount}
+                      min={1}
+                      onChange={(e) => {
+                        setBetAmount(e)
+                      }}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper color="gray.200" />
+                        <NumberDecrementStepper color={"gray.200"} />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </Flex>
+
+                  <Flex flexDirection="column">
+                    <Text>Profit on Win</Text>
+                    <Box paddingY={2} paddingX={4} bg="#304553">
+                      {profitOnWin}
+                    </Box>
+                  </Flex>
+                  <Button bg="#00e700" paddingY={8} _hover={{}}>
+                    Bet
+                  </Button>
+                </Flex>
+
+                {/* Right */}
+                <Flex padding={4} w="100%" bg="#0e212e" marginBottom={1}>
+                  <Flex w="100%" flexDirection="column">
+                    {/* Top */}
+                    <Flex paddingY={[8, 250]} paddingX={[0, 12]}>
+                      <NumberInput
+                        maxW="100px"
+                        mr="2rem"
+                        value={sliderValue}
+                        onChange={handleChange}
+                        display="none"
+                      >
+                        <NumberInputField />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                      <Slider
+                        flex="1"
+                        focusThumbOnChange={false}
+                        value={sliderValue}
+                        onChange={handleChange}
+                      >
+                        <SliderTrack bg="green">
+                          <SliderFilledTrack bg="red" />
+                        </SliderTrack>
+                        <SliderThumb
+                          fontSize="sm"
+                          boxSize="32px"
+                          bg={sliderValue <= 50 ? "green" : "red"}
+                        >
+                          {sliderValue}
+                        </SliderThumb>
+                      </Slider>
+                    </Flex>
+
+                    {/* Bottom */}
+                    <Flex
+                      bg="#213743"
+                      padding={4}
+                      gap={4}
+                      w="100%"
+                      flexDirection={["column", "row"]}
+                      borderRadius="md"
+                    >
+                      <Flex flexDirection="column" w="100%">
+                        <Text>Multiplier</Text>
+                        <Flex
+                          bg="#0e212e"
+                          padding={2}
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          {multiplier} <Text>X</Text>
+                        </Flex>
+                      </Flex>
+                      <Flex flexDirection="column" w="100%">
+                        <Text>Roll Over</Text>
+
+                        <Flex
+                          bg="#0e212e"
+                          padding={2}
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          - <RepeatIcon />
+                        </Flex>
+                      </Flex>
+                      <Flex flexDirection="column" w="100%">
+                        <Text>Win Chance</Text>
+                        <Flex
+                          bg="#0e212e"
+                          padding={2}
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          {winChance}
+                          <Text>%</Text>
+                        </Flex>
+                      </Flex>
+                    </Flex>
+                  </Flex>
+                </Flex>
               </Flex>
             </Flex>
           </Flex>
