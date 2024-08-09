@@ -1,3 +1,10 @@
+import {
+  dryrun,
+  message,
+  createDataItemSigner,
+  result,
+  results,
+} from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
 import { HamburgerIcon, LinkIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
@@ -6,6 +13,13 @@ import {
   Divider,
   Flex,
   Heading,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -17,13 +31,14 @@ import {
   SliderTrack,
   Spacer,
   Text,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "0efiFdNJH-8ocj4PhzYT9CZ2eVZFr5U-rCc_liOjRnU"
-  const GAME_PROCESS_ID = "0efiFdNJH-8ocj4PhzYT9CZ2eVZFr5U-rCc_liOjRnU"
+  const GAME_PROCESS_ID = "Wu7s2PCoBt1-38dgtCwiGfCtK5V1DtxHpgK1KcYxQiQ"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
@@ -33,8 +48,6 @@ export default function Home() {
 
   const [gameBalance, setGameBalance] = useState(-1)
   const [walletBalance, setWalletBalance] = useState(-1)
-  const [depositQty, setDepositQty] = useState(1)
-  const [withdrawQty, setWithdrawQty] = useState(1)
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
   const [winChance, setWinChance] = useState(50)
@@ -43,6 +56,214 @@ export default function Home() {
   const [results, setResults] = useState("You win!")
 
   const toast = useToast()
+
+  const BalanceModal = () => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [txQuantity, setTxQuantity] = useState(1)
+
+    const depositTokens = async () => {
+      const _connected = await connectWallet()
+      if (_connected.success === false) {
+        return
+      }
+
+      try {
+        const _txQuantity = multiplyByPower(txQuantity)
+        console.log("_txQuantity", _txQuantity)
+
+        let _tags = [
+          {
+            name: "Action",
+            value: "Transfer",
+          },
+          {
+            name: "Recipient",
+            value: GAME_PROCESS_ID,
+          },
+          {
+            name: "Quantity",
+            value: _txQuantity.toString(),
+          },
+        ]
+        console.log("_tags", _tags)
+
+        const messageId = await message({
+          process: TOKEN_PROCESS_ID,
+          tags: _tags,
+          signer: createDataItemSigner(globalThis.arweaveWallet),
+        })
+        console.log("messageId", messageId)
+
+        const _result = await result({
+          message: messageId,
+          process: TOKEN_PROCESS_ID,
+        })
+        console.log("_result", _result)
+
+        const error = _result.Messages[0].Tags[7].value
+        const amountDebit = _result.Messages[0].Tags[8].value
+        const amountCredit = _result.Messages[1].Tags[8].value
+
+        if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
+          toast({
+            description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
+            status: "info",
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+        } else {
+          toast({
+            description: `0 tokens were sent`,
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+        }
+      } catch (e) {
+        console.error("depositTokens() error!", e)
+      } finally {
+        // await fetchUserBalance()
+      }
+    }
+
+    const withdrawTokens = async () => {
+      const _connected = await connectWallet()
+      if (_connected.success === false) {
+        return
+      }
+    }
+
+    return (
+      <>
+        {walletBalance >= 0 || gameBalance >= 0 ? (
+          <>
+            <Flex
+              _hover={{ cursor: "pointer" }}
+              bg="#0e212e"
+              paddingY={2}
+              paddingX={4}
+              borderRadius="md"
+              onClick={onOpen}
+            >
+              {gameBalance}
+            </Flex>
+          </>
+        ) : (
+          <>
+            <Flex
+              _hover={{ cursor: "pointer" }}
+              bg="#0e212e"
+              paddingY={2}
+              paddingX={4}
+              borderRadius="md"
+              onClick={async () => {
+                toast({
+                  title: (
+                    <>
+                      <Flex alignItems="center" gap={2}>
+                        Connect wallet first
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="icon icon-tabler icon-tabler-wallet"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="#E2E8F0"
+                          fill="none"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
+                          <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
+                        </svg>
+                      </Flex>
+                    </>
+                  ),
+                  status: "error",
+                  duration: 5000,
+                  isClosable: true,
+                  position: "top",
+                })
+              }}
+            >
+              0.000000000000
+            </Flex>
+          </>
+        )}
+
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>User Balances</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Flex flexDirection="column" gap={4}>
+                {walletBalance >= 0 || gameBalance >= 0 ? (
+                  <>
+                    <Text>
+                      Wallet Balance :{" "}
+                      {walletBalance >= 0
+                        ? `${walletBalance} $${TICKER}`
+                        : "loading...."}{" "}
+                    </Text>
+                    <Text>
+                      Game Balance :{" "}
+                      {gameBalance >= 0
+                        ? `${gameBalance} $${TICKER}`
+                        : "loading...."}{" "}
+                    </Text>
+                    <Text>Token Process ID: {TOKEN_PROCESS_ID}</Text>
+                    <Text>Game Process ID: {GAME_PROCESS_ID}</Text>
+                  </>
+                ) : (
+                  <></>
+                )}
+
+                <Flex
+                  paddingTop={20}
+                  w="100%"
+                  justifyContent="flex-end"
+                  alignItems="center"
+                  gap={4}
+                >
+                  <Text>Quantity</Text>
+                  <NumberInput
+                    step={1}
+                    defaultValue={txQuantity}
+                    min={1}
+                    onChange={(e) => {
+                      setTxQuantity(e)
+                    }}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </Flex>
+              </Flex>
+            </ModalBody>
+
+            <ModalFooter>
+              <Flex gap={4}>
+                <Button colorScheme="blue" onClick={depositTokens}>
+                  Deposit
+                </Button>
+                <Button variant="ghost" onAuxClick={withdrawTokens}>
+                  Withdraw
+                </Button>
+              </Flex>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </>
+    )
+  }
 
   const handleChange = (v) => {
     setSliderValue(v)
@@ -123,10 +344,6 @@ export default function Home() {
       console.error("fetchUserBalance() error!", e)
     }
   }
-
-  const depositTokens = async () => {}
-
-  const withdrawTokens = async () => {}
 
   const flipBet = async () => {
     setResults("")
@@ -410,59 +627,15 @@ export default function Home() {
                 </Text>
               </Flex>
 
-              {walletBalance >= 0 || gameBalance >= 0 ? (
-                <>
-                  <Box
-                    bg="#0e212e"
-                    paddingY={2}
-                    paddingX={4}
-                    borderRadius="md"
-                    display={{ base: "none", md: "flex" }}
-                  >
-                    {gameBalance}
-                  </Box>
-                </>
-              ) : (
-                <>
-                  <Box
-                    bg="#0e212e"
-                    paddingY={2}
-                    paddingX={4}
-                    borderRadius="md"
-                    display={{ base: "none", md: "flex" }}
-                  >
-                    0.000000000000
-                  </Box>
-                </>
-              )}
+              <Flex display={{ base: "none", md: "flex" }}>
+                <BalanceModal />
+              </Flex>
 
               {/* Wallet */}
               <Flex alignItems="center" gap={2}>
-                {walletBalance >= 0 || gameBalance >= 0 ? (
-                  <>
-                    <Box
-                      bg="#0e212e"
-                      paddingY={2}
-                      paddingX={4}
-                      borderRadius="md"
-                      display={{ base: "flex", md: "none" }}
-                    >
-                      {gameBalance}
-                    </Box>
-                  </>
-                ) : (
-                  <>
-                    <Box
-                      bg="#0e212e"
-                      paddingY={2}
-                      paddingX={4}
-                      borderRadius="md"
-                      display={{ base: "flex", md: "none" }}
-                    >
-                      0.000000000000
-                    </Box>
-                  </>
-                )}
+                <Flex display={{ base: "flex", md: "none" }}>
+                  <BalanceModal />
+                </Flex>
                 <Button
                   variant={"outline"}
                   _hover={{ bg: "none" }}
