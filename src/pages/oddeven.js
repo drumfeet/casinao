@@ -45,9 +45,15 @@ export default function OddEven() {
 
   const [sliderValue, setSliderValue] = useState(50)
   const [winChance, setWinChance] = useState(50)
+  const [multiplier, setMultiplier] = useState(2)
+  const [winnings, setWinnings] = useState(betAmount * (multiplier - 1))
   const handleChange = (v) => {
     setSliderValue(v)
-    setWinChance(SLOPE * v + INTERCEPT)
+    const _winChance = (SLOPE * v )+ INTERCEPT
+    setWinChance(_winChance)
+    const _multiplier = 1 / (_winChance / 100)
+    setMultiplier(_multiplier)
+    setWinnings(betAmount * (_multiplier - 1))
   }
 
   const flipBet = async () => {
@@ -533,7 +539,9 @@ export default function OddEven() {
                   </SliderThumb>
                 </Slider>
               </Flex>
-              <Text>Win Chance: {winChance}</Text>
+              <Text>Win Chance: {winChance}%</Text>
+              <Text>Multiplier: {multiplier}</Text>
+              <Text>Payout: {winnings} $FLIP</Text>
             </Flex>
 
             <Flex gap={4}>
