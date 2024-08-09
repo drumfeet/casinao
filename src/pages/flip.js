@@ -17,6 +17,7 @@ import {
   SliderTrack,
   Spacer,
   Text,
+  useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
 
@@ -40,6 +41,8 @@ export default function Home() {
   const [multiplier, setMultiplier] = useState(2)
   const [profitOnWin, setProfitOnWin] = useState(1)
   const [results, setResults] = useState("You win!")
+
+  const toast = useToast()
 
   const handleChange = (v) => {
     setSliderValue(v)
@@ -227,9 +230,20 @@ export default function Home() {
               w="100%"
               boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
             >
-              <Flex paddingX={3}>
-                <HamburgerIcon color="gray.200" fontSize={"2xl"} />
-              </Flex>
+              <Button paddingX={3} variant="ghost" _hover={{}}>
+                <HamburgerIcon
+                  color="gray.200"
+                  fontSize={"2xl"}
+                  onClick={() => {
+                    toast({
+                      title: "Cannot close menu on desktop mode",
+                      duration: 1000,
+                      isClosable: true,
+                      position: "top",
+                    })
+                  }}
+                />
+              </Button>
               <Button
                 paddingX={8}
                 bg="#1a2c38"
@@ -285,8 +299,24 @@ export default function Home() {
             </Flex>
 
             {/* Socials */}
-            <Flex padding={4} alignItems="center" gap={2}>
-              <Flex paddingX={4}>
+            <Flex
+              padding={4}
+              alignItems="center"
+              // gap={1}
+            >
+              <Button
+                variant="ghost"
+                _hover={{}}
+                // paddingX={4}
+                onClick={() => {
+                  toast({
+                    title: "This feature is not available yet",
+                    duration: 1000,
+                    isClosable: true,
+                    position: "top",
+                  })
+                }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="icon icon-tabler icon-tabler-brand-x"
@@ -303,8 +333,19 @@ export default function Home() {
                   <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
                   <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
                 </svg>
-              </Flex>
-              <Flex>
+              </Button>
+              <Button
+                variant="ghost"
+                _hover={{}}
+                onClick={() => {
+                  toast({
+                    title: "This feature is not available yet",
+                    duration: 1000,
+                    isClosable: true,
+                    position: "top",
+                  })
+                }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="icon icon-tabler icon-tabler-brand-discord"
@@ -323,7 +364,7 @@ export default function Home() {
                   <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
                   <path d="M7 16.5c3.5 1 6.5 1 10 0" />
                 </svg>
-              </Flex>
+              </Button>
             </Flex>
           </Flex>
 
@@ -340,7 +381,17 @@ export default function Home() {
               justifyContent="space-between"
               color="gray.200"
             >
-              <Flex display={{ base: "flex", md: "none" }}>
+              <Flex
+                display={{ base: "flex", md: "none" }}
+                onClick={() => {
+                  toast({
+                    title: "This feature is not available yet",
+                    duration: 1000,
+                    isClosable: true,
+                    position: "top",
+                  })
+                }}
+              >
                 <HamburgerIcon color="gray.200" fontSize={"2xl"} />
               </Flex>
               <Flex paddingLeft={{ base: 0, md: 20 }}>
@@ -452,13 +503,50 @@ export default function Home() {
                     alignItems="center"
                     flexDirection={["column", "row"]}
                   >
-                    <Button borderRadius="3xl" px={8}>
+                    <Button
+                      borderRadius="3xl"
+                      px={8}
+                      onClick={() => {
+                        toast({
+                          title: "This feature is not available yet",
+                          duration: 1000,
+                          isClosable: true,
+                          position: "top",
+                        })
+                      }}
+                    >
                       Manual
                     </Button>
-                    <Button borderRadius="3xl" px={8} variant="link">
+                    <Button
+                      borderRadius="3xl"
+                      px={8}
+                      variant="link"
+                      onClick={() => {
+                        toast({
+                          title: "This feature is not available yet",
+                          duration: 1000,
+                          isClosable: true,
+                          position: "top",
+                        })
+                      }}
+                    >
                       Auto
                     </Button>
-                    <RepeatIcon />
+                    <Button
+                      variant="ghost"
+                      _hover={{}}
+                      paddingX={4}
+                      onClick={() => {
+                        toast({
+                          title: "This feature is not available yet",
+                          duration: 1000,
+                          isClosable: true,
+                          position: "top",
+                        })
+                      }}
+                    >
+                      <RepeatIcon color="gray.500" />
+                    </Button>
                   </Flex>
                   <Flex flexDirection="column">
                     <Text>Bet Amount</Text>
