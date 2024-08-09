@@ -299,72 +299,76 @@ export default function Home() {
             </Flex>
 
             {/* Socials */}
-            <Flex
-              padding={4}
-              alignItems="center"
-              // gap={1}
-            >
-              <Button
-                variant="ghost"
-                _hover={{}}
-                // paddingX={4}
-                onClick={() => {
-                  toast({
-                    title: "This feature is not available yet",
-                    duration: 1000,
-                    isClosable: true,
-                    position: "top",
-                  })
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="icon icon-tabler icon-tabler-brand-x"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="#E2E8F0"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+            <Flex padding={4} alignItems="center">
+              <Flex w="100%" backgroundColor="#1a2c38" borderRadius="md">
+                <Button
+                  variant="ghost"
+                  _hover={{}}
+                  // paddingX={4}
+                  onClick={() => {
+                    toast({
+                      title: "This feature is not available yet",
+                      duration: 1000,
+                      isClosable: true,
+                      position: "top",
+                    })
+                  }}
                 >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-                </svg>
-              </Button>
-              <Button
-                variant="ghost"
-                _hover={{}}
-                onClick={() => {
-                  toast({
-                    title: "This feature is not available yet",
-                    duration: 1000,
-                    isClosable: true,
-                    position: "top",
-                  })
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="icon icon-tabler icon-tabler-brand-discord"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="#E2E8F0"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-brand-x"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="#E2E8F0"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+                    <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                  </svg>
+                </Button>
+                <Button
+                  variant="ghost"
+                  _hover={{}}
+                  onClick={() => {
+                    toast({
+                      title: "This feature is not available yet",
+                      duration: 1000,
+                      isClosable: true,
+                      position: "top",
+                    })
+                  }}
                 >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                  <path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                  <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
-                  <path d="M7 16.5c3.5 1 6.5 1 10 0" />
-                </svg>
-              </Button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-brand-discord"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="#E2E8F0"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+                    <path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+                    <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
+                    <path d="M7 16.5c3.5 1 6.5 1 10 0" />
+                  </svg>
+                </Button>
+              </Flex>
+            </Flex>
+
+            <Flex paddingX={8} alignItems="center">
+              <Text color="gray.200" fontSize="2xs">
+                Flip it till you make it
+              </Text>
             </Flex>
           </Flex>
 
@@ -558,21 +562,44 @@ export default function Home() {
                         setBetAmount(e)
                       }}
                     >
-                      <NumberInputField />
+                      <NumberInputField bg="#0e212e" borderColor="#0e212e" />
                       <NumberInputStepper>
-                        <NumberIncrementStepper color="gray.200" />
-                        <NumberDecrementStepper color={"gray.200"} />
+                        <NumberIncrementStepper
+                          borderColor="#0e212e"
+                          color="gray.200"
+                        />
+                        <NumberDecrementStepper
+                          borderColor="#0e212e"
+                          color="gray.200"
+                        />
                       </NumberInputStepper>
                     </NumberInput>
                   </Flex>
 
                   <Flex flexDirection="column">
                     <Text>Profit on Win</Text>
-                    <Box paddingY={2} paddingX={4} bg="#304553">
+                    <Flex
+                      borderRadius="md"
+                      paddingY={2}
+                      paddingX={4}
+                      bg="#304553"
+                    >
                       {profitOnWin}
-                    </Box>
+                    </Flex>
                   </Flex>
-                  <Button bg="#00e700" paddingY={8} _hover={{}}>
+                  <Button
+                    bg="#00e700"
+                    paddingY={8}
+                    _hover={{}}
+                    onClick={() => {
+                      toast({
+                        title: "This feature is not available yet",
+                        duration: 1000,
+                        isClosable: true,
+                        position: "top",
+                      })
+                    }}
+                  >
                     Bet
                   </Button>
                 </Flex>
@@ -582,36 +609,25 @@ export default function Home() {
                   <Flex w="100%" flexDirection="column">
                     {/* Top */}
                     <Flex paddingY={[8, 250]} paddingX={[0, 12]}>
-                      <NumberInput
-                        maxW="100px"
-                        mr="2rem"
-                        value={sliderValue}
-                        onChange={handleChange}
-                        display="none"
-                      >
-                        <NumberInputField />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <Slider
-                        flex="1"
-                        focusThumbOnChange={false}
-                        value={sliderValue}
-                        onChange={handleChange}
-                      >
-                        <SliderTrack bg="green">
-                          <SliderFilledTrack bg="red" />
-                        </SliderTrack>
-                        <SliderThumb
-                          fontSize="sm"
-                          boxSize="32px"
-                          bg={sliderValue <= 50 ? "green" : "red"}
+                      <Flex padding={4} flexDirection="column" w="100%">
+                        <Slider
+                          flex="1"
+                          focusThumbOnChange={false}
+                          value={sliderValue}
+                          onChange={handleChange}
                         >
-                          {sliderValue}
-                        </SliderThumb>
-                      </Slider>
+                          <SliderTrack bg="green">
+                            <SliderFilledTrack bg="red" />
+                          </SliderTrack>
+                          <SliderThumb
+                            fontSize="sm"
+                            boxSize="32px"
+                            bg={sliderValue <= 50 ? "green" : "red"}
+                          >
+                            {sliderValue}
+                          </SliderThumb>
+                        </Slider>
+                      </Flex>
                     </Flex>
 
                     {/* Bottom */}
