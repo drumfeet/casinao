@@ -20,7 +20,7 @@ local utils = {
     end
 }
 
-TOKEN_PROCESS_ID = "ki0uYcueccVW5AjpfdcJqS5yHVtiVTXz855dbnzwWBI"
+TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
 BASE_UNIT = BASE_UNIT or 10
 Denomination = Denomination or 12
 Flippers = Flippers or {}

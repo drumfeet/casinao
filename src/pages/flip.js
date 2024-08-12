@@ -37,8 +37,8 @@ import {
 import { useState } from "react"
 
 export default function Home() {
-  const TOKEN_PROCESS_ID = "ki0uYcueccVW5AjpfdcJqS5yHVtiVTXz855dbnzwWBI"
-  const GAME_PROCESS_ID = "dc0ncZEnnsiUXCy1MukZBeld1Qbb_emqgwxgTTWFFsM"
+  const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
+  const GAME_PROCESS_ID = "VcBNAf6TWi7_B5WnQa5EXEVMy214jh0ADlEGiyA2-cg"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
