@@ -37,8 +37,8 @@ import {
 import { useState } from "react"
 
 export default function Home() {
-  const TOKEN_PROCESS_ID = "0efiFdNJH-8ocj4PhzYT9CZ2eVZFr5U-rCc_liOjRnU"
-  const GAME_PROCESS_ID = "Wu7s2PCoBt1-38dgtCwiGfCtK5V1DtxHpgK1KcYxQiQ"
+  const TOKEN_PROCESS_ID = "ki0uYcueccVW5AjpfdcJqS5yHVtiVTXz855dbnzwWBI"
+  const GAME_PROCESS_ID = "dc0ncZEnnsiUXCy1MukZBeld1Qbb_emqgwxgTTWFFsM"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
@@ -100,22 +100,86 @@ export default function Home() {
         })
         console.log("_result", _result)
 
-        const error = _result.Messages[0].Tags[7].value
-        const amountDebit = _result.Messages[0].Tags[8].value
-        const amountCredit = _result.Messages[1].Tags[8].value
-
-        if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
+        const error = _result.Messages[0].Tags[6].value
+        if (error === "Transfer-Error") {
           toast({
-            description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
-            status: "info",
+            title: "Deposit Failed",
+            description: `${_result.Messages[0].Tags[7].value}`,
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+        } else {
+          const amountDebit = _result.Messages[0].Tags[8].value
+          const amountCredit = _result.Messages[1].Tags[8].value
+
+          if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
+            toast({
+              description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
+              status: "info",
+              duration: 2000,
+              isClosable: true,
+              position: "top",
+            })
+          }
+        }
+      } catch (e) {
+        console.error("depositTokens() error!", e)
+      } finally {
+        await fetchUserBalance()
+      }
+    }
+
+    const withdrawTokens = async () => {
+      const _connected = await connectWallet()
+      if (_connected.success === false) {
+        return
+      }
+
+      try {
+        const _txQuantity = multiplyByPower(txQuantity)
+        console.log("_txQuantity", _txQuantity)
+
+        let _tags = [
+          {
+            name: "Action",
+            value: "Withdraw",
+          },
+          {
+            name: "Quantity",
+            value: _txQuantity.toString(),
+          },
+        ]
+        console.log("_tags", _tags)
+
+        const messageId = await message({
+          process: GAME_PROCESS_ID,
+          tags: _tags,
+          signer: createDataItemSigner(globalThis.arweaveWallet),
+        })
+        console.log("messageId", messageId)
+
+        const _result = await result({
+          message: messageId,
+          process: GAME_PROCESS_ID,
+        })
+        console.log("_result", _result)
+
+        const error = _result.Messages[0].Tags[6].value
+        if (error === "Transfer-Error") {
+          toast({
+            title: "Withdraw Failed",
+            description: `${_result.Messages[0].Tags[7].value}`,
+            status: "error",
             duration: 2000,
             isClosable: true,
             position: "top",
           })
         } else {
           toast({
-            description: `0 tokens were sent`,
-            status: "error",
+            description: `TODO: check result and display toast`,
+            status: "info",
             duration: 2000,
             isClosable: true,
             position: "top",
@@ -124,14 +188,7 @@ export default function Home() {
       } catch (e) {
         console.error("depositTokens() error!", e)
       } finally {
-        // await fetchUserBalance()
-      }
-    }
-
-    const withdrawTokens = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
+        await fetchUserBalance()
       }
     }
 
@@ -184,7 +241,7 @@ export default function Home() {
                     </>
                   ),
                   status: "error",
-                  duration: 5000,
+                  duration: 2000,
                   isClosable: true,
                   position: "top",
                 })
@@ -254,7 +311,7 @@ export default function Home() {
                 <Button colorScheme="blue" onClick={depositTokens}>
                   Deposit
                 </Button>
-                <Button variant="ghost" onAuxClick={withdrawTokens}>
+                <Button variant="ghost" onClick={withdrawTokens}>
                   Withdraw
                 </Button>
               </Flex>
@@ -307,7 +364,7 @@ export default function Home() {
       toast({
         description: "Install arconnect.io wallet",
         status: "error",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
       })
       return { success: false, error: e }
@@ -323,6 +380,51 @@ export default function Home() {
     try {
     } catch (e) {
       console.error("login() error!", e)
+    }
+  }
+
+  const requestAirdrop = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Airdrop",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _resultFlip = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_resultFlip", _resultFlip)
+
+      _resultFlip.Messages[0].Tags.find((tag) => {
+        if (tag.name === "Valid") {
+          const toastStatus = tag.value ? "success" : "error"
+          toast({
+            description: `${_resultFlip.Messages[0].Data}`,
+            status: toastStatus,
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+          return true // Exit the find loop after finding the Valid tag
+        }
+      })
+    } catch (e) {
+      console.error("requestAirdrop() error!", e)
+    } finally {
+      await fetchUserBalance()
     }
   }
 
@@ -385,7 +487,7 @@ export default function Home() {
         toast({
           description: `${_resultFlip.Messages[0].Data}`,
           status: "success",
-          duration: 5000,
+          duration: 2000,
           isClosable: true,
         })
         setResults(_resultFlip.Messages[0].Data)
@@ -394,7 +496,7 @@ export default function Home() {
         toast({
           description: `${_resultFlip.Messages[0].Data}`,
           status: "error",
-          duration: 5000,
+          duration: 2000,
           isClosable: true,
         })
       }
@@ -577,6 +679,27 @@ export default function Home() {
                     <path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
                     <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
                     <path d="M7 16.5c3.5 1 6.5 1 10 0" />
+                  </svg>
+                </Button>
+                <Button variant="ghost" _hover={{}} onClick={requestAirdrop}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-coins"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="#E2E8F0"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 14c0 1.657 2.686 3 6 3s6 -1.343 6 -3s-2.686 -3 -6 -3s-6 1.343 -6 3z" />
+                    <path d="M9 14v4c0 1.656 2.686 3 6 3s6 -1.344 6 -3v-4" />
+                    <path d="M3 6c0 1.072 1.144 2.062 3 2.598s4.144 .536 6 0c1.856 -.536 3 -1.526 3 -2.598c0 -1.072 -1.144 -2.062 -3 -2.598s-4.144 -.536 -6 0c-1.856 .536 -3 1.526 -3 2.598z" />
+                    <path d="M3 6v10c0 .888 .772 1.45 2 2" />
+                    <path d="M3 11c0 .888 .772 1.45 2 2" />
                   </svg>
                 </Button>
               </Flex>

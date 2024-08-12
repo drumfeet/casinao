@@ -56,11 +56,10 @@ local utils = {
 Variant = "0.0.3"
 
 -- token should be idempotent and not change previous state updates
-Denomination = Denomination or 0
-Balances = Balances or { [ao.id] = utils.toBalanceValue(10000 * 10 ^ Denomination) }
-TotalSupply = TotalSupply or utils.toBalanceValue(10000 * 10 ^ Denomination)
+Denomination = Denomination or 12
+Balances = Balances or { [ao.id] = utils.toBalanceValue(1000000 * 10 ^ Denomination) }
+TotalSupply = TotalSupply or utils.toBalanceValue(1000000 * 10 ^ Denomination)
 if Name ~= 'FLIP Coin' then Name = 'FLIP Coin' end
-
 Ticker = Ticker or 'FLIP'
 Logo = Logo or 'dLbFWaJ1DpLpsyxdFX38AkzuMwSA6A598uRFBlHMvJo'
 
@@ -106,7 +105,7 @@ Handlers.add('balance', Handlers.utils.hasMatchingTag('Action', 'Balance'), func
         Balance = bal,
         Ticker = Ticker,
         Account = msg.Tags.Recipient or msg.From,
-        Data = tostring(bal) -- Convert the balance to a string; otherwise, ao.send() will not function correctly.
+        Data = bal
     })
 end)
 
