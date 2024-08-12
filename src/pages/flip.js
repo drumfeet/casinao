@@ -116,7 +116,7 @@ export default function Home() {
 
           if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
             toast({
-              description: `${amountCredit} tokens were sent to the game ${GAME_PROCESS_ID}`,
+              description: "Deposit Successful",
               status: "info",
               duration: 2000,
               isClosable: true,
@@ -259,7 +259,7 @@ export default function Home() {
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>User Balances</ModalHeader>
+            <ModalHeader>Account</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <Flex flexDirection="column" gap={4}>
@@ -277,8 +277,8 @@ export default function Home() {
                         ? `${gameBalance} $${TICKER}`
                         : "loading...."}{" "}
                     </Text>
-                    <Text>Token Process ID: {TOKEN_PROCESS_ID}</Text>
-                    <Text>Game Process ID: {GAME_PROCESS_ID}</Text>
+                    {/* <Text>Token Process ID: {TOKEN_PROCESS_ID}</Text>
+                    <Text>Game Process ID: {GAME_PROCESS_ID}</Text> */}
                   </>
                 ) : (
                   <></>
