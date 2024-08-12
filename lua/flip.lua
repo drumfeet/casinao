@@ -28,6 +28,10 @@ local multiplyByPower = function(v)
     return v * (BASE_UNIT ^ Denomination)
 end
 
+local sendErrorMessage = function(msg, err)
+    ao.send({ Target = msg.From, Error = true, Data = err })
+end
+
 Handlers.add('airdrop', Handlers.utils.hasMatchingTag('Action', 'Airdrop'), function(msg)
     --  If account is not on the Flippers list, then send an airdrop
     if not Flippers[msg.From] then
@@ -37,7 +41,7 @@ Handlers.add('airdrop', Handlers.utils.hasMatchingTag('Action', 'Airdrop'), func
         print(msg.From .. " " .. "Your Game Balance is now " .. Flippers[msg.From] .. " " .. Ticker)
         ao.send({
             Target = msg.From,
-            Valid = true,
+            Error = false,
             Amount = utils.toBalanceValue(multiplyByPower(AMOUNT)),
             Ticker = Ticker,
             Account = msg.From,
@@ -45,7 +49,7 @@ Handlers.add('airdrop', Handlers.utils.hasMatchingTag('Action', 'Airdrop'), func
         })
     else
         print(msg.From .. " " .. "Airdrop Request Invalid")
-        ao.send({ Target = msg.From, Valid = false, Data = "Airdrop Request Invalid" })
+        ao.send({ Target = msg.From, Error = true, Data = "Airdrop Request Invalid" })
     end
 end)
 
@@ -113,4 +117,34 @@ Handlers.add('Credit-Notice', Handlers.utils.hasMatchingTag('Action', 'Credit-No
             Data = "Invalid token received",
         })
     end
+end)
+
+Handlers.add('withdraw', Handlers.utils.hasMatchingTag('Action', 'Withdraw'), function(msg)
+    if type(msg.Quantity) ~= 'string' then
+        sendErrorMessage(msg, 'Quantity is required and must be a string')
+        return
+    end
+
+    if bint(msg.Quantity) <= 0 then
+        sendErrorMessage(msg, 'Quantity must be greater than 0')
+        return
+    end
+
+    if not Flippers[msg.From] then
+        sendErrorMessage(msg, 'Account does not exist')
+        return
+    end
+
+    if bint(Flippers[msg.From]) < bint(msg.Quantity) then
+        sendErrorMessage(msg, 'Insufficient funds')
+        return
+    end
+
+    ao.send({
+        Target = TOKEN_PROCESS_ID,
+        Action = "Transfer",
+        Recipient = msg.From,
+        Quantity = msg.Quantity,
+    })
+    Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Tags.Quantity)
 end)

@@ -166,27 +166,31 @@ export default function Home() {
         })
         console.log("_result", _result)
 
-        const error = _result.Messages[0].Tags[6].value
-        if (error === "Transfer-Error") {
+        const errorTag = _result.Messages[0].Tags.find(
+          (tag) => tag.name === "Error"
+        )
+        console.log("errorTag", errorTag)
+        if (errorTag) {
+          const errorStatus = errorTag.value ? "error" : "success"
           toast({
-            title: "Withdraw Failed",
-            description: `${_result.Messages[0].Tags[7].value}`,
-            status: "error",
+            description: `${_result.Messages[0].Data}`,
+            status: errorStatus,
             duration: 2000,
             isClosable: true,
             position: "top",
           })
         } else {
+          // Error tag is not found
           toast({
-            description: `TODO: check result and display toast`,
-            status: "info",
+            description: "Withdrawal successful",
+            status: "success",
             duration: 2000,
             isClosable: true,
             position: "top",
           })
         }
       } catch (e) {
-        console.error("depositTokens() error!", e)
+        console.error("withdrawTokens() error!", e)
       } finally {
         await fetchUserBalance()
       }
@@ -402,18 +406,18 @@ export default function Home() {
       })
       console.log("messageId", messageId)
 
-      const _resultFlip = await result({
+      const _result = await result({
         message: messageId,
         process: GAME_PROCESS_ID,
       })
-      console.log("_resultFlip", _resultFlip)
+      console.log("_result", _result)
 
-      _resultFlip.Messages[0].Tags.find((tag) => {
-        if (tag.name === "Valid") {
-          const toastStatus = tag.value ? "success" : "error"
+      _result.Messages[0].Tags.find((tag) => {
+        if (tag.name === "Error") {
+          const errorStatus = tag.value ? "error" : "success"
           toast({
-            description: `${_resultFlip.Messages[0].Data}`,
-            status: toastStatus,
+            description: `${_result.Messages[0].Data}`,
+            status: errorStatus,
             duration: 2000,
             isClosable: true,
             position: "top",
@@ -477,24 +481,24 @@ export default function Home() {
       })
       console.log("messageId", messageId)
 
-      const _resultFlip = await result({
+      const _result = await result({
         message: messageId,
         process: GAME_PROCESS_ID,
       })
-      console.log("_resultFlip", _resultFlip)
+      console.log("_result", _result)
 
-      if (_resultFlip.Messages[0].Tags[6].value === true) {
+      if (_result.Messages[0].Tags[6].value === true) {
         toast({
-          description: `${_resultFlip.Messages[0].Data}`,
+          description: `${_result.Messages[0].Data}`,
           status: "success",
           duration: 2000,
           isClosable: true,
         })
-        setResults(_resultFlip.Messages[0].Data)
+        setResults(_result.Messages[0].Data)
       } else {
-        setResults(_resultFlip.Messages[0].Data)
+        setResults(_result.Messages[0].Data)
         toast({
-          description: `${_resultFlip.Messages[0].Data}`,
+          description: `${_result.Messages[0].Data}`,
           status: "error",
           duration: 2000,
           isClosable: true,
