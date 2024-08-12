@@ -759,7 +759,15 @@ export default function Home() {
                 <Button
                   variant={"outline"}
                   _hover={{ bg: "none" }}
-                  onClick={fetchUserBalance}
+                  onClick={async () => {
+                    await fetchUserBalance()
+                    toast({
+                      description: "Account balance updated",
+                      duration: 2000,
+                      isClosable: true,
+                      position: "top",
+                    })
+                  }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
