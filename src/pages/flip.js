@@ -461,6 +461,8 @@ export default function Home() {
 
     try {
       const _betAmount = multiplyByPower(betAmount)
+      console.log("_betAmount", _betAmount)
+      console.log("sliderValue", sliderValue)
       const messageId = await message({
         process: GAME_PROCESS_ID,
         tags: [
@@ -473,7 +475,7 @@ export default function Home() {
             value: _betAmount.toString(),
           },
           {
-            name: "WinChance",
+            name: "Slider",
             value: sliderValue.toString(),
           },
         ],
@@ -487,23 +489,14 @@ export default function Home() {
       })
       console.log("_result", _result)
 
-      if (_result.Messages[0].Tags[6].value === true) {
-        toast({
-          description: `${_result.Messages[0].Data}`,
-          status: "success",
-          duration: 2000,
-          isClosable: true,
-        })
-        setResults(_result.Messages[0].Data)
-      } else {
-        setResults(_result.Messages[0].Data)
-        toast({
-          description: `${_result.Messages[0].Data}`,
-          status: "error",
-          duration: 2000,
-          isClosable: true,
-        })
-      }
+      const winStatus = _result.Messages[0].Tags[6].value ? "success" : "error"
+      toast({
+        description: `${_result.Messages[0].Data}`,
+        status: winStatus,
+        duration: 2000,
+        isClosable: true,
+        position: "top",
+      })
     } catch (e) {
       console.error("flipBet() error!", e)
     } finally {
@@ -891,14 +884,7 @@ export default function Home() {
                     bg="#00e700"
                     paddingY={8}
                     _hover={{}}
-                    onClick={() => {
-                      toast({
-                        title: "This feature is not available yet",
-                        duration: 1000,
-                        isClosable: true,
-                        position: "top",
-                      })
-                    }}
+                    onClick={flipBet}
                   >
                     Bet
                   </Button>
