@@ -760,6 +760,12 @@ export default function Home() {
                   variant={"outline"}
                   _hover={{ bg: "none" }}
                   onClick={async () => {
+                    toast({
+                      description: "Fetching account info",
+                      duration: 1000,
+                      isClosable: true,
+                      position: "top",
+                    })
                     await fetchUserBalance()
                     toast({
                       description: "Account balance updated",
