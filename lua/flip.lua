@@ -215,7 +215,11 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         math.random()
     end
     -- Generate a random number to determine win or loss
-    local randomValue = math.random() * 100
+    local _randomValue = math.random() * 100
+    print("_randomValue: " .. tostring(_randomValue))
+    -- Convert the number to a string and find the decimal point
+    local truncatedStr = string.match(string.format("%.12f", _randomValue), "%d+%.%d%d")
+    local randomValue = tonumber(truncatedStr)
 
     local SLOPE = tonumber(-0.96)
     local INTERCEPT = tonumber(98)
@@ -256,7 +260,9 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         OldRandomSeed = OldRandomSeed,
         RandomValue = randomValue,
         DiscardNum = discardNum,
-        Slider = msg.Tags.Slider
+        Slider = msg.Tags.Slider,
+        ProfitOnWin = _profitOnWin,
+        PlayerWon = playerWon,
     }
     print(_data)
 
@@ -264,11 +270,11 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         print(msg.From .. " PLAYER WON")
         Flippers[ao.id] = utils.subtract(Flippers[ao.id], _profitOnWinFinal)
         Flippers[msg.From] = utils.add(Flippers[msg.From], _profitOnWinFinal)
-        ao.send({ Target = msg.From, Won = true, Data = "You Win!" })
+        ao.send({ Target = msg.From, Won = true, Data = json.encode(_data) })
     else
         print(msg.From .. " PLAYER LOST")
         Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Quantity)
         Flippers[ao.id] = utils.add(Flippers[ao.id], msg.Quantity)
-        ao.send({ Target = msg.From, Won = false, Data = "You Lose!" })
+        ao.send({ Target = msg.From, Won = false, Data = json.encode(_data) })
     end
 end)

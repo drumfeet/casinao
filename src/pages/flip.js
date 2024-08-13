@@ -56,7 +56,7 @@ export default function Home() {
   const [rollOver, setRollOver] = useState(100 - winChance)
   const [multiplier, setMultiplier] = useState(2)
   const [profitOnWin, setProfitOnWin] = useState(1)
-  const [results, setResults] = useState("You win!")
+  const [gameResults, setGameResults] = useState([])
 
   const toast = useToast()
 
@@ -456,8 +456,6 @@ export default function Home() {
   }
 
   const flipBet = async () => {
-    setResults("")
-
     const _connected = await connectWallet()
     if (_connected.success === false) {
       return
@@ -494,12 +492,17 @@ export default function Home() {
       console.log("_result", _result)
 
       const winStatus = _result.Messages[0].Tags[6].value ? "success" : "error"
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+      setGameResults((prevResults) => [...prevResults, jsonObj])
+
       toast({
-        description: `${_result.Messages[0].Data}`,
+        description: `${jsonObj.PlayerWon ? "You won!" : "You lost!"}`,
+        title: `Random Value is ${jsonObj.RandomValue}`,
         status: winStatus,
         duration: 2000,
         isClosable: true,
-        position: "top",
+        position: "top-right",
       })
     } catch (e) {
       console.error("flipBet() error!", e)
@@ -910,8 +913,35 @@ export default function Home() {
                 </Flex>
 
                 {/* Right */}
-                <Flex padding={4} w="100%" bg="#0e212e" marginBottom={1}>
+                <Flex
+                  padding={4}
+                  w="100%"
+                  bg="#0e212e"
+                  marginBottom={1}
+                  flexDirection="column"
+                >
                   <Flex w="100%" flexDirection="column">
+                    <Flex
+                      gap={4}
+                      //  overflowX="auto"
+                    >
+                      {gameResults.map((item, index) => (
+                        <>
+                          <Flex>
+                            <Text
+                              key={index}
+                              borderRadius={"3xl"}
+                              paddingX={2}
+                              paddingY={1}
+                              bg={item.PlayerWon ? "green" : "red.500"}
+                            >
+                              {item.RandomValue}
+                            </Text>
+                          </Flex>
+                        </>
+                      ))}
+                    </Flex>
+
                     {/* Top */}
                     <Flex paddingY={[8, 250]} paddingX={[0, 12]}>
                       <Flex padding={4} flexDirection="column" w="100%">
