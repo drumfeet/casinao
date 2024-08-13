@@ -854,21 +854,6 @@ export default function Home() {
                     >
                       Auto
                     </Button>
-                    <Button
-                      variant="ghost"
-                      _hover={{}}
-                      paddingX={4}
-                      onClick={() => {
-                        toast({
-                          title: "This feature is not available yet",
-                          duration: 1000,
-                          isClosable: true,
-                          position: "top",
-                        })
-                      }}
-                    >
-                      <RepeatIcon color="gray.500" />
-                    </Button>
                   </Flex>
                   <Flex flexDirection="column">
                     <Text>Bet Amount</Text>
@@ -959,18 +944,6 @@ export default function Home() {
                           justifyContent="space-between"
                         >
                           {multiplier} <Text>X</Text>
-                        </Flex>
-                      </Flex>
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Roll Over</Text>
-
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          - <RepeatIcon />
                         </Flex>
                       </Flex>
                       <Flex flexDirection="column" w="100%">
