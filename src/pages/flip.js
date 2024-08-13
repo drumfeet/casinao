@@ -28,6 +28,7 @@ import {
   NumberInputStepper,
   Slider,
   SliderFilledTrack,
+  SliderMark,
   SliderThumb,
   SliderTrack,
   Spacer,
@@ -548,6 +549,12 @@ export default function Home() {
       </Button>
     </Flex>
   )
+
+  const labelStyles = {
+    mt: "2",
+    ml: "-2.5",
+    fontSize: "sm",
+  }
   return (
     <>
       <Flex minH="100vh" backgroundColor="#0e2229">
@@ -911,16 +918,47 @@ export default function Home() {
                           focusThumbOnChange={false}
                           value={sliderValue}
                           onChange={handleChange}
+                          min={0}
+                          max={100}
+                          step={1}
                         >
+                          <SliderMark value={0} {...labelStyles}>
+                            0
+                          </SliderMark>
+                          <SliderMark value={25} {...labelStyles}>
+                            25
+                          </SliderMark>
+                          <SliderMark value={50} {...labelStyles}>
+                            50
+                          </SliderMark>
+                          <SliderMark value={75} {...labelStyles}>
+                            75
+                          </SliderMark>
+                          <SliderMark value={100} {...labelStyles}>
+                            100
+                          </SliderMark>
+                          {/* <SliderMark
+                            value={sliderValue}
+                            textAlign="center"
+                            bg="blue.500"
+                            color="white"
+                            mt="-10"
+                            ml="-5"
+                            w="12"
+                          >
+                            {sliderValue}%
+                          </SliderMark> */}
+
                           <SliderTrack bg="green">
                             <SliderFilledTrack bg="red" />
                           </SliderTrack>
                           <SliderThumb
-                            fontSize="sm"
-                            boxSize="32px"
-                            bg={sliderValue <= 50 ? "green" : "red"}
+                            // fontSize="sm"
+                            boxSize="20px"
+                            bg="blue.200"
+                            // bg={sliderValue <= 50 ? "green" : "red"}
                           >
-                            {sliderValue}
+                            {/* {sliderValue} */}
                           </SliderThumb>
                         </Slider>
                       </Flex>
