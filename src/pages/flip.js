@@ -13,6 +13,7 @@ import {
   Divider,
   Flex,
   Heading,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -504,26 +505,47 @@ export default function Home() {
     }
   }
 
-  const shortcutItems = [
-    { text: "Shortcut 1", icon: <LinkIcon /> },
-    { text: "Shortcut 2", icon: <LinkIcon /> },
-    { text: "Shortcut 3", icon: <LinkIcon /> },
-    { text: "Shortcut 4", icon: <LinkIcon /> },
-    { text: "Shortcut 5", icon: <LinkIcon /> },
+  const casinoItems = [
+    { text: "Dice", icon: <LinkIcon />, link: "/" },
+    { text: "Roulette", icon: <LinkIcon />, link: "" },
   ]
 
-  const gameItems = [
-    { text: "Game 1", icon: <LinkIcon /> },
-    { text: "Game 2", icon: <LinkIcon /> },
-    { text: "Game 3", icon: <LinkIcon /> },
-    { text: "Game 4", icon: <LinkIcon /> },
-    { text: "Game 5", icon: <LinkIcon /> },
+  const cryptoItems = [
+    { text: "Points Swap", icon: <LinkIcon /> },
+    { text: "Prediction Game", icon: <LinkIcon />, link: "" },
+    { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
   ]
 
-  const ShortcutMenu = ({ icon, text }) => (
-    <Flex alignItems="center" gap={2}>
-      {icon}
-      <Text>{text}</Text>
+  const GameMenuItem = ({ icon, text, link }) => (
+    <Flex alignItems="center">
+      <Button
+        leftIcon={icon}
+        variant="ghost"
+        _hover={{}}
+        color="gray.200"
+        fontWeight="normal"
+        onClick={
+          link
+            ? () => {}
+            : () =>
+                toast({
+                  title: "This feature is not available yet",
+                  duration: 1000,
+                  isClosable: true,
+                  position: "top",
+                })
+        }
+      >
+        {link ? (
+          <>
+            <Link href={link}>{text}</Link>
+          </>
+        ) : (
+          <>
+            <Link>{text}</Link>
+          </>
+        )}
+      </Button>
     </Flex>
   )
   return (
@@ -546,43 +568,39 @@ export default function Home() {
               w="100%"
               boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
             >
-              <Button paddingX={3} variant="ghost" _hover={{}}>
-                <HamburgerIcon
-                  color="gray.200"
-                  fontSize={"2xl"}
-                  onClick={() => {
-                    toast({
-                      title: "Cannot close menu on desktop mode",
-                      duration: 1000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                  }}
-                />
-              </Button>
               <Button
+                w={"100%"}
                 paddingX={8}
                 bg="#1a2c38"
                 color="gray.200"
-                _hover={{
-                  bgGradient: "linear(to-r, green.200, green.500)",
-                }}
+                _hover={{}}
+                onClick={requestAirdrop}
               >
-                CASINO
-              </Button>
-              <Button
-                bg="#1a2c38"
-                color="gray.200"
-                _hover={{
-                  bgGradient: "linear(to-r, blue.200, blue.500)",
-                }}
-                paddingX={8}
-              >
-                SPORTS
+                <Flex gap={4}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-parachute"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="#E2E8F0"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M22 12a10 10 0 1 0 -20 0" />
+                    <path d="M22 12c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3c0 -1.66 -1.57 -3 -3.5 -3s-3.5 1.34 -3.5 3c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3" />
+                    <path d="M2 12l10 10l-3.5 -10" />
+                    <path d="M15.5 12l-3.5 10l10 -10" />
+                  </svg>
+                  <Text>Airdrop</Text>
+                </Flex>
               </Button>
             </Flex>
 
-            {/* Shortcuts */}
+            {/* Casino Games */}
             <Flex padding={4} flexDirection="column">
               <Flex
                 backgroundColor="#1a2c38"
@@ -592,13 +610,20 @@ export default function Home() {
                 padding={4}
                 color="gray.200"
               >
-                {shortcutItems.map((item, index) => (
-                  <ShortcutMenu key={index} icon={item.icon} text={item.text} />
+                <Text fontWeight="bold">Casino</Text>
+                <Divider />
+                {casinoItems.map((item, index) => (
+                  <GameMenuItem
+                    key={index}
+                    icon={item.icon}
+                    text={item.text}
+                    link={item.link}
+                  />
                 ))}
               </Flex>
             </Flex>
 
-            {/* Games */}
+            {/* Crypto Games */}
             <Flex padding={4} flexDirection="column">
               <Flex
                 backgroundColor="#1a2c38"
@@ -608,8 +633,15 @@ export default function Home() {
                 padding={4}
                 color="gray.200"
               >
-                {gameItems.map((item, index) => (
-                  <ShortcutMenu key={index} icon={item.icon} text={item.text} />
+                <Text fontWeight="bold">Crypto</Text>
+                <Divider />
+                {cryptoItems.map((item, index) => (
+                  <GameMenuItem
+                    key={index}
+                    icon={item.icon}
+                    text={item.text}
+                    link={item.link}
+                  />
                 ))}
               </Flex>
             </Flex>
@@ -678,32 +710,11 @@ export default function Home() {
                     <path d="M7 16.5c3.5 1 6.5 1 10 0" />
                   </svg>
                 </Button>
-                <Button variant="ghost" _hover={{}} onClick={requestAirdrop}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-coins"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M9 14c0 1.657 2.686 3 6 3s6 -1.343 6 -3s-2.686 -3 -6 -3s-6 1.343 -6 3z" />
-                    <path d="M9 14v4c0 1.656 2.686 3 6 3s6 -1.344 6 -3v-4" />
-                    <path d="M3 6c0 1.072 1.144 2.062 3 2.598s4.144 .536 6 0c1.856 -.536 3 -1.526 3 -2.598c0 -1.072 -1.144 -2.062 -3 -2.598s-4.144 -.536 -6 0c-1.856 .536 -3 1.526 -3 2.598z" />
-                    <path d="M3 6v10c0 .888 .772 1.45 2 2" />
-                    <path d="M3 11c0 .888 .772 1.45 2 2" />
-                  </svg>
-                </Button>
               </Flex>
             </Flex>
 
             <Flex paddingX={8} alignItems="center">
-              <Text color="gray.200" fontSize="2xs">
+              <Text color="gray.200" fontSize="xs">
                 Flip it till you make it
               </Text>
             </Flex>
