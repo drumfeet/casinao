@@ -53,6 +53,7 @@ export default function Home() {
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
   const [winChance, setWinChance] = useState(50)
+  const [rollOver, setRollOver] = useState(100 - winChance)
   const [multiplier, setMultiplier] = useState(2)
   const [profitOnWin, setProfitOnWin] = useState(1)
   const [results, setResults] = useState("You win!")
@@ -332,6 +333,7 @@ export default function Home() {
     setSliderValue(v)
     const _winChance = getWinChance(v)
     setWinChance(_winChance)
+    setRollOver((100 - _winChance).toFixed(2))
     const _multiplier = getMultiplier(_winChance)
     setMultiplier(_multiplier)
     const _profitOnWin = getProfitOnWin(_multiplier)
@@ -561,7 +563,7 @@ export default function Home() {
         <Flex w="100%">
           {/* Left */}
           <Flex
-            minW="240px"
+            minW="288px"
             flexDirection="column"
             display={{ base: "none", md: "flex" }}
             boxShadow="0px 4px 4px rgba(0, 0, 0, 0.25)"
@@ -982,6 +984,18 @@ export default function Home() {
                           justifyContent="space-between"
                         >
                           {multiplier} <Text>X</Text>
+                        </Flex>
+                      </Flex>
+                      <Flex flexDirection="column" w="100%">
+                        <Text>Roll Over</Text>
+
+                        <Flex
+                          bg="#0e212e"
+                          padding={2}
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          {rollOver} <RepeatIcon />
                         </Flex>
                       </Flex>
                       <Flex flexDirection="column" w="100%">
