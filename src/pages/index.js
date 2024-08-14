@@ -544,7 +544,7 @@ export default function Home() {
   )
 
   const labelStyles = {
-    mt: "2",
+    mt: "8",
     ml: "-2.5",
     fontSize: "sm",
   }
@@ -972,7 +972,7 @@ export default function Home() {
                           </SliderTrack>
                           <SliderThumb
                             // fontSize="sm"
-                            boxSize="20px"
+                            boxSize="28px"
                             bg="blue.200"
                             // bg={sliderValue <= 50 ? "green" : "red"}
                           >
