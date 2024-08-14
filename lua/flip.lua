@@ -225,11 +225,11 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
     local INTERCEPT = tonumber(98)
 
     local getWinChance = function() return (SLOPE * sliderNum) + INTERCEPT end
-    local _winChance = getWinChance()
+    local _winChance = 99 - getWinChance()
     print("_winChance: " .. tostring(_winChance))
 
-    -- Check if the random value is less than the win chance
-    local playerWon = randomValue < _winChance
+    -- Check if the random value is greater than the win chance
+    local playerWon = randomValue > _winChance
     print("playerWon: " .. tostring(playerWon))
 
     local getMultiplier = function() return 1 / (_winChance / 100) end
