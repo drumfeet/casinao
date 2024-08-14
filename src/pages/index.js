@@ -1,18 +1,20 @@
 import {
-  dryrun,
   message,
   createDataItemSigner,
   result,
-  results,
 } from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
-import { HamburgerIcon, LinkIcon, RepeatIcon } from "@chakra-ui/icons"
+import {
+  DragHandleIcon,
+  HamburgerIcon,
+  LinkIcon,
+  RepeatIcon,
+} from "@chakra-ui/icons"
 import {
   Box,
   Button,
   Divider,
   Flex,
-  Heading,
   Link,
   Modal,
   ModalBody,
@@ -31,7 +33,6 @@ import {
   SliderMark,
   SliderThumb,
   SliderTrack,
-  Spacer,
   Text,
   useDisclosure,
   useToast,
@@ -57,6 +58,7 @@ export default function Home() {
   const [multiplier, setMultiplier] = useState(2)
   const [profitOnWin, setProfitOnWin] = useState(1)
   const [gameResults, setGameResults] = useState([])
+  const [randomValue, setRandomValue] = useState(-1)
 
   const toast = useToast()
 
@@ -492,6 +494,7 @@ export default function Home() {
         isClosable: true,
         position: "top-right",
       })
+      setRandomValue(jsonObj.RandomValue)
     } catch (e) {
       console.error("flipBet() error!", e)
     } finally {
@@ -967,15 +970,44 @@ export default function Home() {
                             {sliderValue}%
                           </SliderMark> */}
 
+                          {randomValue >= 0 && randomValue <= 100 && (
+                            <SliderMark value={randomValue} marginTop="-58px">
+                              <Flex flexDirection="column" alignItems="center">
+                                {randomValue}
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  class="icon icon-tabler icon-tabler-arrow-big-down"
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="1.5"
+                                  stroke="#E2E8F0"
+                                  fill="none"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                >
+                                  <path
+                                    stroke="none"
+                                    d="M0 0h24v24H0z"
+                                    fill="none"
+                                  />
+                                  <path d="M15 4v8h3.586a1 1 0 0 1 .707 1.707l-6.586 6.586a1 1 0 0 1 -1.414 0l-6.586 -6.586a1 1 0 0 1 .707 -1.707h3.586v-8a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1z" />
+                                </svg>
+                              </Flex>
+                            </SliderMark>
+                          )}
+
                           <SliderTrack bg="green">
                             <SliderFilledTrack bg="red" />
                           </SliderTrack>
                           <SliderThumb
                             // fontSize="sm"
                             boxSize="28px"
-                            bg="blue.200"
+                            bg="blue.400"
+                            borderRadius="none"
                             // bg={sliderValue <= 50 ? "green" : "red"}
                           >
+                            <Box as={DragHandleIcon} color="gray.200" />
                             {/* {sliderValue} */}
                           </SliderThumb>
                         </Slider>
