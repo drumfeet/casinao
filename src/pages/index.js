@@ -379,18 +379,6 @@ export default function Home() {
     }
   }
 
-  const login = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-    } catch (e) {
-      console.error("login() error!", e)
-    }
-  }
-
   const requestAirdrop = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
@@ -917,14 +905,12 @@ export default function Home() {
                   padding={4}
                   w="100%"
                   bg="#0e212e"
-                  marginBottom={1}
+                  marginBottom={[0, 1]}
                   flexDirection="column"
                 >
                   <Flex w="100%" flexDirection="column">
-                    <Flex
-                      gap={4}
-                      //  overflowX="auto"
-                    >
+                    {/* Game Results Row */}
+                    <Flex gap={4} flexWrap="wrap">
                       {gameResults.map((item, index) => (
                         <>
                           <Flex>
