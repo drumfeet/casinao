@@ -1,8 +1,4 @@
-import {
-  message,
-  createDataItemSigner,
-  result,
-} from "@permaweb/aoconnect"
+import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
 import {
   DragHandleIcon,
@@ -62,6 +58,134 @@ export default function Home() {
 
   const toast = useToast()
 
+  const LoginModal = () => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+
+    const login = async () => {
+      const _connected = await connectWallet()
+      if (_connected.success === false) {
+        return
+      }
+
+      toast({
+        description: "Fetching account info",
+        duration: 1000,
+        isClosable: true,
+        position: "top",
+      })
+      await fetchUserBalance()
+      toast({
+        description: "Account balance updated",
+        duration: 2000,
+        isClosable: true,
+        position: "top",
+      })
+      onClose()
+    }
+
+    const logout = async () => {
+      const _connected = await disconnectWallet()
+      if (_connected.success === false) {
+        return
+      }
+
+      setWalletBalance(-1)
+      setGameBalance(-1)
+      toast({
+        description: "Account disconnected",
+        duration: 2000,
+        isClosable: true,
+        position: "top",
+      })
+      onClose()
+    }
+
+    return (
+      <>
+        <Flex
+          _hover={{ cursor: "pointer" }}
+          // bg="#0e212e"
+          // paddingY={2}
+          // paddingX={4}
+          // borderRadius="md"
+          onClick={onOpen}
+        >
+          {walletBalance >= 0 || gameBalance >= 0 ? (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-tabler icon-tabler-user-square-rounded"
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="#E2E8F0"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M12 13a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" />
+                <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
+                <path d="M6 20.05v-.05a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v.05" />
+              </svg>
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-tabler icon-tabler-wallet"
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="#E2E8F0"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
+                <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
+              </svg>
+            </>
+          )}
+        </Flex>
+
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Wallet Setup</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Flex flexDirection="column" gap={4}>
+                <Flex w="100%" gap={4} flexDirection="column">
+                  <Text>
+                    To enable wallet auto sign, first disconnect your account.
+                  </Text>
+                  <Text>
+                    Then, sign in with ArConnect and select &apos;Always
+                    allow&apos;
+                  </Text>
+                </Flex>
+              </Flex>
+            </ModalBody>
+
+            <ModalFooter>
+              <Flex gap={4}>
+                <Button colorScheme="blue" onClick={login}>
+                  Connect
+                </Button>
+                <Button variant="ghost" onClick={logout}>
+                  Disconnect
+                </Button>
+              </Flex>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </>
+    )
+  }
   const BalanceModal = () => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [txQuantity, setTxQuantity] = useState(1)
@@ -368,6 +492,22 @@ export default function Home() {
         "ACCESS_ADDRESS",
         "SIGN_TRANSACTION",
       ])
+      return { success: true }
+    } catch (e) {
+      console.error("Wallet missing!", e)
+      toast({
+        description: "Install arconnect.io wallet",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      })
+      return { success: false, error: e }
+    }
+  }
+
+  const disconnectWallet = async () => {
+    try {
+      await window.arweaveWallet.disconnect()
       return { success: true }
     } catch (e) {
       console.error("Wallet missing!", e)
@@ -770,42 +910,7 @@ export default function Home() {
                 <Flex display={{ base: "flex", md: "none" }}>
                   <BalanceModal />
                 </Flex>
-                <Button
-                  variant={"outline"}
-                  _hover={{ bg: "none" }}
-                  onClick={async () => {
-                    toast({
-                      description: "Fetching account info",
-                      duration: 1000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                    await fetchUserBalance()
-                    toast({
-                      description: "Account balance updated",
-                      duration: 2000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-wallet"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
-                    <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
-                  </svg>
-                </Button>
+                <LoginModal />
               </Flex>
             </Flex>
 
