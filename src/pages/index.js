@@ -102,14 +102,7 @@ export default function Home() {
 
     return (
       <>
-        <Flex
-          _hover={{ cursor: "pointer" }}
-          // bg="#0e212e"
-          // paddingY={2}
-          // paddingX={4}
-          // borderRadius="md"
-          onClick={onOpen}
-        >
+        <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
           {walletBalance >= 0 || gameBalance >= 0 ? (
             <>
               <svg
@@ -455,6 +448,13 @@ export default function Home() {
     )
   }
 
+  const playWinSound = () => {
+    const audio = new Audio("/win.mp3")
+    audio.play().catch((error) => {
+      console.error("Error playing the sound:", error)
+    })
+  }
+
   const handleChange = (v) => {
     setSliderValue(v)
     const _winChance = getWinChance(v)
@@ -634,6 +634,8 @@ export default function Home() {
         isClosable: true,
         position: "top-right",
       })
+
+      if (jsonObj.PlayerWon) playWinSound()
       setRandomValue(jsonObj.RandomValue)
     } catch (e) {
       console.error("flipBet() error!", e)
