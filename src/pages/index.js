@@ -70,14 +70,16 @@ export default function Home() {
   }
   const [multiplier, setMultiplier] = useState(getMultiplier(winChance))
 
-  const getProfitOnWin = (_multiplier) => {
-    const _profitOnWin = (betAmount * (_multiplier - 1)).toFixed(3)
+  const getProfitOnWin = (_multiplier, _betAmount) => {
+    const _profitOnWin = (_betAmount * (_multiplier - 1)).toFixed(3)
     console.log("_profitOnWin", _profitOnWin)
     const _profitOnWinFixed = parseFloat(_profitOnWin.slice(0, -1))
     console.log("_profitOnWinFixed", _profitOnWinFixed)
     return _profitOnWinFixed
   }
-  const [profitOnWin, setProfitOnWin] = useState(getProfitOnWin(multiplier))
+  const [profitOnWin, setProfitOnWin] = useState(
+    getProfitOnWin(multiplier, betAmount)
+  )
 
   const [rollOver, setRollOver] = useState(100 - winChance)
   const [gameResults, setGameResults] = useState([])
@@ -492,7 +494,7 @@ export default function Home() {
     const _multiplier = getMultiplier(_winChance)
     setMultiplier(_multiplier)
 
-    setProfitOnWin(getProfitOnWin(_multiplier))
+    setProfitOnWin(getProfitOnWin(_multiplier, betAmount))
   }
 
   const multiplyByPower = (v) => {
@@ -990,6 +992,7 @@ export default function Home() {
                       min={1}
                       onChange={(e) => {
                         setBetAmount(e)
+                        setProfitOnWin(getProfitOnWin(multiplier, e))
                       }}
                     >
                       <NumberInputField bg="#0e212e" borderColor="#0e212e" />
