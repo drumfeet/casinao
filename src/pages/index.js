@@ -49,10 +49,37 @@ export default function Home() {
   const [walletBalance, setWalletBalance] = useState(-1)
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
-  const [winChance, setWinChance] = useState(50)
+
+  const getWinChance = (_sliderValue) => {
+    return Math.floor(SLOPE * Number(_sliderValue) + INTERCEPT)
+  }
+  const [winChance, setWinChance] = useState(getWinChance(sliderValue))
+
+  const getMultiplier = (_winChance) => {
+    console.log("sliderValue", sliderValue)
+
+    // const houseEdge = (100 - sliderValue) / 10000 // 0.0099 or 0.99%
+    const houseEdge = 0
+    console.log("houseEdge", houseEdge)
+
+    const _multiplier = (1 / (Number(_winChance) / 100 + houseEdge)).toFixed(3)
+    console.log("_multiplier", _multiplier)
+    const _multiplierFixed = parseFloat(_multiplier.slice(0, -1))
+    console.log("_multiplierFixed", _multiplierFixed)
+    return _multiplierFixed
+  }
+  const [multiplier, setMultiplier] = useState(getMultiplier(winChance))
+
+  const getProfitOnWin = (_multiplier) => {
+    const _profitOnWin = (betAmount * (_multiplier - 1)).toFixed(3)
+    console.log("_profitOnWin", _profitOnWin)
+    const _profitOnWinFixed = parseFloat(_profitOnWin.slice(0, -1))
+    console.log("_profitOnWinFixed", _profitOnWinFixed)
+    return _profitOnWinFixed
+  }
+  const [profitOnWin, setProfitOnWin] = useState(getProfitOnWin(multiplier))
+
   const [rollOver, setRollOver] = useState(100 - winChance)
-  const [multiplier, setMultiplier] = useState(2)
-  const [profitOnWin, setProfitOnWin] = useState(1)
   const [gameResults, setGameResults] = useState([])
   const [randomValue, setRandomValue] = useState(-1)
 
@@ -455,27 +482,17 @@ export default function Home() {
     })
   }
 
-  const handleChange = (v) => {
-    setSliderValue(v)
-    const _winChance = getWinChance(v)
+  const sliderChanged = (_sliderValue) => {
+    console.log("_sliderValue", _sliderValue)
+    setSliderValue(_sliderValue)
+    const _winChance = getWinChance(_sliderValue)
     setWinChance(_winChance)
-    setRollOver((100 - _winChance).toFixed(2))
+    setRollOver(100 - _winChance)
+
     const _multiplier = getMultiplier(_winChance)
     setMultiplier(_multiplier)
-    const _profitOnWin = getProfitOnWin(_multiplier)
-    setProfitOnWin(_profitOnWin)
-  }
 
-  const getWinChance = (v) => {
-    return (SLOPE * v + INTERCEPT).toFixed(2)
-  }
-
-  const getMultiplier = (_winChance) => {
-    return (1 / (_winChance / 100)).toFixed(2)
-  }
-
-  const getProfitOnWin = (_multiplier) => {
-    return (betAmount * (_multiplier - 1)).toFixed(2)
+    setProfitOnWin(getProfitOnWin(_multiplier))
   }
 
   const multiplyByPower = (v) => {
@@ -938,14 +955,14 @@ export default function Home() {
                     <Button
                       borderRadius="3xl"
                       px={8}
-                      onClick={() => {
-                        toast({
-                          title: "This feature is not available yet",
-                          duration: 1000,
-                          isClosable: true,
-                          position: "top",
-                        })
-                      }}
+                      // onClick={() => {
+                      //   toast({
+                      //     title: "This feature is not available yet",
+                      //     duration: 1000,
+                      //     isClosable: true,
+                      //     position: "top",
+                      //   })
+                      // }}
                     >
                       Manual
                     </Button>
@@ -1045,7 +1062,9 @@ export default function Home() {
                           flex="1"
                           focusThumbOnChange={false}
                           value={sliderValue}
-                          onChange={handleChange}
+                          onChange={(val) => {
+                            sliderChanged(val)
+                          }}
                           min={0}
                           max={100}
                           step={1}

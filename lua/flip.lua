@@ -14,9 +14,6 @@ local utils = {
     end,
     toNumber = function(a)
         return bint.tonumber(a)
-    end,
-    toFixed = function(num)
-        return string.format("%.0f", num)
     end
 }
 
@@ -223,31 +220,39 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
 
     local SLOPE = tonumber(-0.96)
     local INTERCEPT = tonumber(98)
-
-    local getWinChance = function() return (SLOPE * sliderNum) + INTERCEPT end
-    local _winChance = 99 - getWinChance()
-    print("_winChance: " .. tostring(_winChance))
+    local _winChance = math.floor(SLOPE * sliderNum + INTERCEPT)
+    print("_winChance: " .. _winChance)
+    local _rollOver = 100 - _winChance
+    print("_rollOver: " .. _rollOver)
 
     -- Check if the random value is greater than the win chance
-    local playerWon = randomValue > _winChance
+    local playerWon = randomValue > _rollOver
+    print("Evaluate: " .. randomValue .. " > " .. _rollOver)
     print("playerWon: " .. tostring(playerWon))
 
-    local getMultiplier = function() return 1 / (_winChance / 100) end
-    local _multiplier = getMultiplier()
-    print("_multiplier: " .. tostring(_multiplier))
-    local getProfitOnWin = function()
-        return utils.toNumber(msg.Tags.Quantity) * (_multiplier - 1)
-    end
-    local _profitOnWin = getProfitOnWin()
-    print("_profitOnWin: " .. tostring(_profitOnWin))
+    print("sliderNum: " .. sliderNum)
+    -- local houseEdge = (100 - sliderNum) / 10000 -- 0.0099 or 0.99%
+    local houseEdge = 0
+    print("houseEdge: " .. houseEdge)
+    local _multiplier = 1 / ((_winChance / 100) + houseEdge)
+    print("_multiplier: " .. _multiplier)
+    local _multiplierFormatted = string.format("%.3f", _multiplier)
+    print("_multiplierFormatted: " .. _multiplierFormatted)
+    local _multiplierSliced = _multiplierFormatted:sub(1, -2)
+    local _multiplierFixed = utils.toNumber(_multiplierSliced)
+    print("_multiplierFixed: " .. _multiplierFixed)
 
+    local _profitOnWin = utils.toNumber(msg.Tags.Quantity) * (_multiplierFixed - 1)
+    print("_profitOnWin: " .. _profitOnWin)
+    local _profitOnWinFormatted = string.format("%.0f", _profitOnWin)
+    print("_profitOnWinFormatted: " .. _profitOnWinFormatted)
     -- Calculate the scaling factor
     local scale = 1e10
-    -- Calculate the rounded value
-    local _w = utils.toFixed(_profitOnWin / scale)
-    local _profitOnWinFinal = math.floor(utils.toNumber(_w) * scale)
+    local _profitOnWinScaled = math.floor(_profitOnWinFormatted / scale)
+    print("_profitOnWinScaled: " .. _profitOnWinScaled)
+    local _profitOnWinFinal = string.format("%.0f", (_profitOnWinScaled * scale))
     print("_profitOnWinFinal: " .. _profitOnWinFinal)
-    print("_profitOnWinFinal: " .. divideByPower(_profitOnWinFinal))
+    print("divideByPower(_profitOnWinFinal): " .. divideByPower(_profitOnWinFinal))
 
     local _data = {
         Action = "FlipBet",
@@ -256,13 +261,15 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         BlockHeight = msg["Block-Height"],
         Timestamp = msg["Timestamp"],
         WinChance = _winChance,
-        Multiplier = _multiplier,
+        RollOver = _rollOver,
+        Multiplier = _multiplierFixed,
         OldRandomSeed = OldRandomSeed,
         RandomValue = randomValue,
         DiscardNum = discardNum,
         Slider = msg.Tags.Slider,
-        ProfitOnWin = _profitOnWin,
-        PlayerWon = playerWon,
+        ProfitOnWin = _profitOnWinFinal,
+        ProfitOnWinPower = divideByPower(_profitOnWinFinal),
+        PlayerWon = playerWon
     }
     print(_data)
 
@@ -277,4 +284,5 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         Flippers[ao.id] = utils.add(Flippers[ao.id], msg.Quantity)
         ao.send({ Target = msg.From, Won = false, Data = json.encode(_data) })
     end
+    print("--------------- End FlipBet ---------------")
 end)
