@@ -987,7 +987,8 @@ export default function Home() {
                   <Flex flexDirection="column">
                     <Text>Bet Amount</Text>
                     <NumberInput
-                      step={1}
+                      // step={1}
+                      precision={2}
                       defaultValue={betAmount}
                       min={1}
                       onChange={(e) => {
