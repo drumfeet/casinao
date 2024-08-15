@@ -56,25 +56,25 @@ export default function Home() {
   const [winChance, setWinChance] = useState(getWinChance(sliderValue))
 
   const getMultiplier = (_winChance) => {
-    console.log("sliderValue", sliderValue)
+    // console.log("sliderValue", sliderValue)
 
     // const houseEdge = (100 - sliderValue) / 10000 // 0.0099 or 0.99%
     const houseEdge = 0
-    console.log("houseEdge", houseEdge)
+    // console.log("houseEdge", houseEdge)
 
     const _multiplier = (1 / (Number(_winChance) / 100 + houseEdge)).toFixed(3)
-    console.log("_multiplier", _multiplier)
+    // console.log("_multiplier", _multiplier)
     const _multiplierFixed = parseFloat(_multiplier.slice(0, -1))
-    console.log("_multiplierFixed", _multiplierFixed)
+    // console.log("_multiplierFixed", _multiplierFixed)
     return _multiplierFixed
   }
   const [multiplier, setMultiplier] = useState(getMultiplier(winChance))
 
   const getProfitOnWin = (_multiplier, _betAmount) => {
     const _profitOnWin = (_betAmount * (_multiplier - 1)).toFixed(3)
-    console.log("_profitOnWin", _profitOnWin)
+    // console.log("_profitOnWin", _profitOnWin)
     const _profitOnWinFixed = parseFloat(_profitOnWin.slice(0, -1))
-    console.log("_profitOnWinFixed", _profitOnWinFixed)
+    // console.log("_profitOnWinFixed", _profitOnWinFixed)
     return _profitOnWinFixed
   }
   const [profitOnWin, setProfitOnWin] = useState(
@@ -485,7 +485,7 @@ export default function Home() {
   }
 
   const sliderChanged = (_sliderValue) => {
-    console.log("_sliderValue", _sliderValue)
+    // console.log("_sliderValue", _sliderValue)
     setSliderValue(_sliderValue)
     const _winChance = getWinChance(_sliderValue)
     setWinChance(_winChance)
@@ -1100,7 +1100,11 @@ export default function Home() {
                           </SliderMark> */}
 
                           {randomValue >= 0 && randomValue <= 100 && (
-                            <SliderMark value={randomValue} marginTop="-58px">
+                            <SliderMark
+                              value={randomValue}
+                              marginTop="-58px"
+                              ml={-5}
+                            >
                               <Flex flexDirection="column" alignItems="center">
                                 {randomValue}
                                 <svg
