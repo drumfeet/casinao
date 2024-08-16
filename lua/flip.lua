@@ -254,35 +254,61 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
     print("_profitOnWinFinal: " .. _profitOnWinFinal)
     print("divideByPower(_profitOnWinFinal): " .. divideByPower(_profitOnWinFinal))
 
-    local _data = {
-        Action = "FlipBet",
-        Quantity = msg.Quantity,
-        From = msg.From,
-        BlockHeight = msg["Block-Height"],
-        Timestamp = msg["Timestamp"],
-        WinChance = _winChance,
-        RollOver = _rollOver,
-        Multiplier = _multiplierFixed,
-        OldRandomSeed = OldRandomSeed,
-        RandomValue = randomValue,
-        DiscardNum = discardNum,
-        Slider = msg.Tags.Slider,
-        ProfitOnWin = _profitOnWinFinal,
-        ProfitOnWinPower = divideByPower(_profitOnWinFinal),
-        PlayerWon = playerWon
-    }
-    print(_data)
-
     if playerWon then
         print(msg.From .. " PLAYER WON")
         Flippers[ao.id] = utils.subtract(Flippers[ao.id], _profitOnWinFinal)
         Flippers[msg.From] = utils.add(Flippers[msg.From], _profitOnWinFinal)
+
+        local _data = {
+            Action = msg.Action,
+            Quantity = msg.Quantity,
+            From = msg.From,
+            BlockHeight = msg["Block-Height"],
+            Timestamp = msg["Timestamp"],
+            WinChance = _winChance,
+            RollOver = _rollOver,
+            Multiplier = _multiplierFixed,
+            OldRandomSeed = OldRandomSeed,
+            RandomValue = randomValue,
+            DiscardNum = discardNum,
+            Slider = msg.Tags.Slider,
+            ProfitOnWin = _profitOnWinFinal,
+            ProfitOnWinPower = divideByPower(_profitOnWinFinal),
+            PlayerWon = playerWon,
+            UserBalance = Flippers[msg.From],
+            GameBalance = Flippers[ao.id],
+        }
+        print(_data)
+
         ao.send({ Target = msg.From, Won = true, Data = json.encode(_data) })
     else
         print(msg.From .. " PLAYER LOST")
         Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Quantity)
         Flippers[ao.id] = utils.add(Flippers[ao.id], msg.Quantity)
+
+        local _data = {
+            Action = msg.Action,
+            Quantity = msg.Quantity,
+            From = msg.From,
+            BlockHeight = msg["Block-Height"],
+            Timestamp = msg["Timestamp"],
+            WinChance = _winChance,
+            RollOver = _rollOver,
+            Multiplier = _multiplierFixed,
+            OldRandomSeed = OldRandomSeed,
+            RandomValue = randomValue,
+            DiscardNum = discardNum,
+            Slider = msg.Tags.Slider,
+            ProfitOnWin = _profitOnWinFinal,
+            ProfitOnWinPower = divideByPower(_profitOnWinFinal),
+            PlayerWon = playerWon,
+            UserBalance = Flippers[msg.From],
+            GameBalance = Flippers[ao.id],
+        }
+        print(_data)
+
         ao.send({ Target = msg.From, Won = false, Data = json.encode(_data) })
     end
+
     print("--------------- End FlipBet ---------------")
 end)
