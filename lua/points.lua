@@ -19,6 +19,17 @@ local utils = {
 
 TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
 Balances = Balances or {}
+BASE_UNIT = BASE_UNIT or 10
+Denomination = Denomination or 12
+Ticker = Ticker or 'FLIP'
+
+local multiplyByPower = function(v)
+    return v * (BASE_UNIT ^ Denomination)
+end
+
+local divideByPower = function(v)
+    return v / (BASE_UNIT ^ Denomination)
+end
 
 local sendErrorMessage = function(msg, err, target)
     if not target then
@@ -27,6 +38,27 @@ local sendErrorMessage = function(msg, err, target)
         ao.send({ Target = target, Error = true, Data = err })
     end
 end
+
+Handlers.add('airdrop', Handlers.utils.hasMatchingTag('Action', 'Airdrop'), function(msg)
+    --  If account is not on the Balances list, then send an airdrop
+    if not Balances[msg.From] then
+        local airdropAmount = utils.toBalanceValue(multiplyByPower(1000))
+        Balances[ao.id] = utils.subtract(Balances[ao.id], airdropAmount)
+        Balances[msg.From] = airdropAmount
+        print(msg.From .. " " .. "Your Game Balance is now " .. Balances[msg.From] .. " " .. Ticker)
+        ao.send({
+            Target = msg.From,
+            Error = false,
+            Amount = airdropAmount,
+            Ticker = Ticker,
+            Account = msg.From,
+            Data = "You received an airdrop"
+        })
+    else
+        print(msg.From .. " " .. "Airdrop Request Invalid")
+        sendErrorMessage(msg, "Airdrop Request Invalid")
+    end
+end)
 
 Handlers.add('balance', Handlers.utils.hasMatchingTag('Action', 'Balance'), function(msg)
     local bal = '0'
@@ -87,10 +119,6 @@ Handlers.add('Credit-Notice', Handlers.utils.hasMatchingTag('Action', 'Credit-No
             Recipient = msg.Tags.Sender,
             Quantity = msg.Tags.Quantity,
         })
-        -- ao.send({
-        --     Target = msg.Tags.Sender,
-        --     Data = "Invalid token received",
-        -- })
         sendErrorMessage(msg, 'Invalid token received', msg.Tags.Sender)
     end
 end)

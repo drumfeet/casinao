@@ -1,3 +1,4 @@
+import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { getPerpBalance, getWalletBalance } from "@/lib/points-utils"
 import {
   Button,
@@ -8,6 +9,7 @@ import {
   NumberInputField,
   NumberInputStepper,
   Text,
+  useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
 
@@ -24,6 +26,8 @@ export default function PointsSwap() {
   const [walletBalance, setWalletBalance] = useState(0)
   const [txQuantity, setTxQuantity] = useState(1)
   const [tradeQuantity, setTradeQuantity] = useState(1)
+
+  const toast = useToast()
 
   const multiplyByPower = (v) => {
     return v * Math.pow(BASE_UNIT, DENOMINATION)
@@ -62,12 +66,57 @@ export default function PointsSwap() {
       const userAddress = await globalThis.arweaveWallet.getActiveAddress()
 
       const _perpBalance = await getPerpBalance({ recipient: userAddress })
-      setPerpBalance(_perpBalance)
+      setPerpBalance(divideByPower(_perpBalance))
 
       const _walletBalance = await getWalletBalance({ recipient: userAddress })
-      setWalletBalance(_walletBalance)
+      setWalletBalance(divideByPower(_walletBalance))
     } catch (e) {
       console.error("fetchUserBalance() error!", e)
+    }
+  }
+
+  const requestAirdrop = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const messageId = await message({
+        process: PERP_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Airdrop",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: PERP_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      _result.Messages[0].Tags.find((tag) => {
+        if (tag.name === "Error") {
+          const errorStatus = tag.value ? "error" : "success"
+          toast({
+            description: `${_result.Messages[0].Data}`,
+            status: errorStatus,
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+          return true // Exit the find loop after finding the Valid tag
+        }
+      })
+    } catch (e) {
+      console.error("requestAirdrop() error!", e)
+    } finally {
+      await fetchUserBalance()
     }
   }
 
@@ -79,6 +128,8 @@ export default function PointsSwap() {
       >
         <Flex w="100%" justifyContent="center">
           <Flex flexDirection="column" gap={4} padding={4}>
+            <Button onClick={requestAirdrop}>Airdrop</Button>
+
             <Button variant="outline" onClick={fetchUserBalance}>
               Connect
             </Button>
