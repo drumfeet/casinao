@@ -32,28 +32,32 @@ local divideByPower = function(v)
     return v / (BASE_UNIT ^ Denomination)
 end
 
-local sendErrorMessage = function(msg, err)
-    ao.send({ Target = msg.From, Error = true, Data = err })
+local sendErrorMessage = function(msg, err, target)
+    if not target then
+        ao.send({ Target = msg.From, Error = true, Data = err })
+    else
+        ao.send({ Target = target, Error = true, Data = err })
+    end
 end
 
 Handlers.add('airdrop', Handlers.utils.hasMatchingTag('Action', 'Airdrop'), function(msg)
-    --  If account is not on the Flippers list, then send an airdrop
-    if not Flippers[msg.From] then
-        local AMOUNT = 1000
-        Flippers[ao.id] = utils.subtract(Flippers[ao.id], utils.toBalanceValue(multiplyByPower(AMOUNT)))
-        Flippers[msg.From] = utils.toBalanceValue(multiplyByPower(AMOUNT))
-        print(msg.From .. " " .. "Your Game Balance is now " .. Flippers[msg.From] .. " " .. Ticker)
+    --  If account is not on the Balances list, then send an airdrop
+    if not Balances[msg.From] then
+        local airdropAmount = utils.toBalanceValue(multiplyByPower(1000))
+        Balances[ao.id] = utils.subtract(Balances[ao.id], airdropAmount)
+        Balances[msg.From] = airdropAmount
+        print(msg.From .. " " .. "Your Game Balance is now " .. Balances[msg.From] .. " " .. Ticker)
         ao.send({
             Target = msg.From,
             Error = false,
-            Amount = utils.toBalanceValue(multiplyByPower(AMOUNT)),
+            Amount = airdropAmount,
             Ticker = Ticker,
             Account = msg.From,
             Data = "You received an airdrop"
         })
     else
         print(msg.From .. " " .. "Airdrop Request Invalid")
-        ao.send({ Target = msg.From, Error = true, Data = "Airdrop Request Invalid" })
+        sendErrorMessage(msg, "Airdrop Request Invalid")
     end
 end)
 
@@ -116,10 +120,7 @@ Handlers.add('Credit-Notice', Handlers.utils.hasMatchingTag('Action', 'Credit-No
             Recipient = msg.Tags.Sender,
             Quantity = msg.Tags.Quantity,
         })
-        ao.send({
-            Target = msg.Tags.Sender,
-            Data = "Invalid token received",
-        })
+        sendErrorMessage(msg, 'Invalid token received', msg.Tags.Sender)
     end
 end)
 
