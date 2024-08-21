@@ -175,6 +175,76 @@ export default function PointsSwap() {
     }
   }
 
+  const depositTokens = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _txQuantity = multiplyByPower(txQuantity)
+      console.log("_txQuantity", _txQuantity)
+
+      let _tags = [
+        {
+          name: "Action",
+          value: "Transfer",
+        },
+        {
+          name: "Recipient",
+          value: PERP_PROCESS_ID,
+        },
+        {
+          name: "Quantity",
+          value: _txQuantity.toString(),
+        },
+      ]
+      console.log("_tags", _tags)
+
+      const messageId = await message({
+        process: TOKEN_PROCESS_ID,
+        tags: _tags,
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: TOKEN_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      const error = _result.Messages[0].Tags[6].value
+      if (error === "Transfer-Error") {
+        toast({
+          title: "Deposit Failed",
+          description: `${_result.Messages[0].Tags[7].value}`,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else {
+        const amountDebit = _result.Messages[0].Tags[8].value
+        const amountCredit = _result.Messages[1].Tags[8].value
+
+        if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
+          toast({
+            description: "Deposit Successful",
+            status: "info",
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+        }
+      }
+    } catch (e) {
+      console.error("depositTokens() error!", e)
+    } finally {
+      await fetchUserBalance()
+    }
+  }
+
   return (
     <>
       <Flex
@@ -209,7 +279,9 @@ export default function PointsSwap() {
                 </NumberInputStepper>
               </NumberInput>
             </Flex>
-            <Button variant="outline">Deposit</Button>
+            <Button variant="outline" onClick={depositTokens}>
+              Deposit
+            </Button>
             <Button variant="outline" onClick={withdrawTokens}>
               Withdraw
             </Button>
