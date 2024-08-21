@@ -317,29 +317,18 @@ export default function Home() {
         })
         console.log("_result", _result)
 
-        const errorTag = _result.Messages[0].Tags.find(
-          (tag) => tag.name === "Error"
-        )
-        console.log("errorTag", errorTag)
-        if (errorTag) {
-          const errorStatus = errorTag.value ? "error" : "success"
-          toast({
-            description: `${_result.Messages[0].Data}`,
-            status: errorStatus,
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-          return
-        }
-
-        // Error tag is not found
-        toast({
-          description: "Withdrawal successful",
-          status: "success",
-          duration: 2000,
-          isClosable: true,
-          position: "top",
+        _result.Messages[0].Tags.find((tag) => {
+          if (tag.name === "Error") {
+            const errorStatus = tag.value ? "error" : "success"
+            toast({
+              description: `${_result.Messages[0].Data}`,
+              status: errorStatus,
+              duration: 2000,
+              isClosable: true,
+              position: "top",
+            })
+            return true
+          }
         })
       } catch (e) {
         console.error("withdrawTokens() error!", e)

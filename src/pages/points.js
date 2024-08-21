@@ -110,11 +110,66 @@ export default function PointsSwap() {
             isClosable: true,
             position: "top",
           })
-          return true // Exit the find loop after finding the Valid tag
+          return true
         }
       })
     } catch (e) {
       console.error("requestAirdrop() error!", e)
+    } finally {
+      await fetchUserBalance()
+    }
+  }
+
+  const withdrawTokens = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _txQuantity = multiplyByPower(txQuantity)
+      console.log("_txQuantity", _txQuantity)
+
+      let _tags = [
+        {
+          name: "Action",
+          value: "Withdraw",
+        },
+        {
+          name: "Quantity",
+          value: _txQuantity.toString(),
+        },
+      ]
+      console.log("_tags", _tags)
+
+      const messageId = await message({
+        process: PERP_PROCESS_ID,
+        tags: _tags,
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: PERP_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      _result.Messages[0].Tags.find((tag) => {
+        if (tag.name === "Error") {
+          const errorStatus = tag.value ? "error" : "success"
+          toast({
+            description: `${_result.Messages[0].Data}`,
+            status: errorStatus,
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+          return true
+        }
+      })
+    } catch (e) {
+      console.error("withdrawTokens() error!", e)
     } finally {
       await fetchUserBalance()
     }
@@ -155,7 +210,9 @@ export default function PointsSwap() {
               </NumberInput>
             </Flex>
             <Button variant="outline">Deposit</Button>
-            <Button variant="outline">Withdraw</Button>
+            <Button variant="outline" onClick={withdrawTokens}>
+              Withdraw
+            </Button>
 
             <Flex alignItems="center" paddingTop={12}>
               <Text>Quantity</Text>
