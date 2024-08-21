@@ -19,9 +19,10 @@ local utils = {
 
 TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
 Balances = Balances or {}
+PointsAO = PointsAO or {}
 BASE_UNIT = BASE_UNIT or 10
 Denomination = Denomination or 12
-Ticker = Ticker or 'FLIP'
+Ticker = Ticker or 'USD'
 
 local multiplyByPower = function(v)
     return v * (BASE_UNIT ^ Denomination)
@@ -153,10 +154,145 @@ Handlers.add('withdraw', Handlers.utils.hasMatchingTag('Action', 'Withdraw'), fu
     Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
 end)
 
-Handlers.add('buy.long', Handlers.utils.hasMatchingTag('Action', 'BuyLong'), function(msg)
-    print("buy.long: " .. msg.Tags.Quantity)
+InitialPrice = "100"
+FundingRate = 0.05
+Leverage = 1
+MarkPrices = MarkPrices or { InitialPrice }
+LongOrders = LongOrders or {}
+ShortOrders = ShortOrders or {}
+
+Handlers.add('long.order', Handlers.utils.hasMatchingTag('Action', 'LongOrder'), function(msg)
+    local bal = '0'
+
+    -- If not Recipient is provided, then return the Senders balance
+    if (msg.Tags.Recipient) then
+        if (LongOrders[msg.Tags.Recipient]) then
+            bal = LongOrders[msg.Tags.Recipient]
+        end
+    elseif msg.Tags.Target and LongOrders[msg.Tags.Target] then
+        bal = LongOrders[msg.Tags.Target]
+    elseif LongOrders[msg.From] then
+        bal = LongOrders[msg.From]
+    end
+
+    ao.send({
+        Target = msg.From,
+        Balance = bal,
+        Ticker = Ticker,
+        Account = msg.Tags.Recipient or msg.From,
+        Data = bal
+    })
 end)
 
-Handlers.add('sell.short', Handlers.utils.hasMatchingTag('Action', 'SellShort'), function(msg)
-    print("sell.short: " .. msg.Tags.Quantity)
+Handlers.add('short.order', Handlers.utils.hasMatchingTag('Action', 'ShortOrder'), function(msg)
+    local bal = '0'
+
+    -- If not Recipient is provided, then return the Senders balance
+    if (msg.Tags.Recipient) then
+        if (ShortOrders[msg.Tags.Recipient]) then
+            bal = ShortOrders[msg.Tags.Recipient]
+        end
+    elseif msg.Tags.Target and ShortOrders[msg.Tags.Target] then
+        bal = ShortOrders[msg.Tags.Target]
+    elseif ShortOrders[msg.From] then
+        bal = ShortOrders[msg.From]
+    end
+
+    ao.send({
+        Target = msg.From,
+        Balance = bal,
+        Ticker = Ticker,
+        Account = msg.Tags.Recipient or msg.From,
+        Data = bal
+    })
+end)
+
+Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'), function(msg)
+    if type(msg.Tags.Quantity) ~= 'string' then
+        sendErrorMessage(msg, 'Quantity is required and must be a string')
+        return
+    end
+
+    if utils.toNumber(msg.Tags.Quantity) <= 0 then
+        sendErrorMessage(msg, 'Quantity must be greater than 0')
+        return
+    end
+
+    if not Balances[msg.From] then
+        sendErrorMessage(msg, 'Account does not exist')
+        return
+    end
+
+    if utils.toNumber(Balances[msg.From]) < utils.toNumber(msg.Tags.Quantity) then
+        sendErrorMessage(msg, 'Insufficient funds')
+        return
+    end
+
+    local shortOrder = ShortOrders[msg.From] or "0"
+    local shortOrderNum = utils.toNumber(shortOrder)
+    local newOrderNum = utils.toNumber(msg.Tags.Quantity)
+
+    if shortOrderNum > 0 then
+        if shortOrderNum >= newOrderNum then
+            ShortOrders[msg.From] = utils.subtract(shortOrder, msg.Tags.Quantity)
+            Balances[msg.From] = utils.add(Balances[msg.From], msg.Tags.Quantity) -- Refund the full amount
+            if utils.toNumber(ShortOrders[msg.From]) == 0 then
+                ShortOrders[msg.From] = nil                                       -- Clear the short order if it's fully reduced
+            end
+        else
+            Balances[msg.From] = utils.add(Balances[msg.From], shortOrder) -- Refund the amount equal to the short order
+            ShortOrders[msg.From] = nil                                    -- Clear the short order
+            -- No remaining long order to place, so no further action needed
+        end
+        return -- Do not place a new long order since the opposite order was handled
+    end
+
+    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
+    local currentValue = LongOrders[msg.From] or "0"
+    LongOrders[msg.From] = utils.add(currentValue, msg.Tags.Quantity)
+end)
+
+Handlers.add('place.short', Handlers.utils.hasMatchingTag('Action', 'PlaceShort'), function(msg)
+    if type(msg.Tags.Quantity) ~= 'string' then
+        sendErrorMessage(msg, 'Quantity is required and must be a string')
+        return
+    end
+
+    if utils.toNumber(msg.Tags.Quantity) <= 0 then
+        sendErrorMessage(msg, 'Quantity must be greater than 0')
+        return
+    end
+
+    if not Balances[msg.From] then
+        sendErrorMessage(msg, 'Account does not exist')
+        return
+    end
+
+    if utils.toNumber(Balances[msg.From]) < utils.toNumber(msg.Tags.Quantity) then
+        sendErrorMessage(msg, 'Insufficient funds')
+        return
+    end
+
+    local longOrder = LongOrders[msg.From] or "0"
+    local longOrderNum = utils.toNumber(longOrder)
+    local newOrderNum = utils.toNumber(msg.Tags.Quantity)
+
+    if longOrderNum > 0 then
+        if longOrderNum >= newOrderNum then
+            LongOrders[msg.From] = utils.subtract(longOrder, msg.Tags.Quantity)
+            Balances[msg.From] = utils.add(Balances[msg.From], msg.Tags.Quantity) -- Refund the full amount
+            if utils.toNumber(LongOrders[msg.From]) == 0 then
+                LongOrders[msg.From] = nil                                        -- Clear the long order if it's fully reduced
+            end
+        else
+            Balances[msg.From] = utils.add(Balances[msg.From], longOrder) -- Refund the amount equal to the long order
+            LongOrders[msg.From] = nil                                    -- Clear the long order
+            -- No remaining short order to place, so no further action needed
+        end
+        return -- Do not place a new short order since the opposite order was handled
+    end
+
+    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
+    local currentValue = ShortOrders[msg.From] or "0"
+    ShortOrders[msg.From] = utils.add(currentValue, msg.Tags.Quantity)
 end)

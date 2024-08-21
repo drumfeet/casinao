@@ -1,5 +1,10 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { getPerpBalance, getWalletBalance } from "@/lib/points-utils"
+import {
+  getLongOrder,
+  getPerpBalance,
+  getShortOrder,
+  getWalletBalance,
+} from "@/lib/points-utils"
 import {
   Button,
   Flex,
@@ -18,7 +23,7 @@ export default function PointsSwap() {
   const PERP_PROCESS_ID = "FeIvV_BwLcm3qM31Rc4E_S4Q-e6F3bTz01dYqHoq5HQ"
   const BASE_UNIT = 10
   const DENOMINATION = 12
-  const TICKER = "AR"
+  const TICKER = "USD"
   const SLOPE = -0.96
   const INTERCEPT = 98
 
@@ -26,6 +31,8 @@ export default function PointsSwap() {
   const [walletBalance, setWalletBalance] = useState(0)
   const [txQuantity, setTxQuantity] = useState(1)
   const [tradeQuantity, setTradeQuantity] = useState(1)
+  const [shortPos, setShortPos] = useState(0)
+  const [longPos, setLongPos] = useState(0)
 
   const toast = useToast()
 
@@ -245,6 +252,108 @@ export default function PointsSwap() {
     }
   }
 
+  const fetchOrderBalance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const userAddress = await globalThis.arweaveWallet.getActiveAddress()
+
+      const _longOrder = await getLongOrder({ recipient: userAddress })
+      setLongPos(divideByPower(_longOrder))
+
+      const _shortOrder = await getShortOrder({ recipient: userAddress })
+      setShortPos(divideByPower(_shortOrder))
+    } catch (e) {
+      console.error("fetchOrderBalance() error!", e)
+    }
+  }
+  const placeLong = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _tradeQuantity = multiplyByPower(tradeQuantity)
+      console.log("_tradeQuantity", _tradeQuantity)
+
+      let _tags = [
+        {
+          name: "Action",
+          value: "PlaceLong",
+        },
+        {
+          name: "Quantity",
+          value: _tradeQuantity.toString(),
+        },
+      ]
+      console.log("_tags", _tags)
+
+      const messageId = await message({
+        process: PERP_PROCESS_ID,
+        tags: _tags,
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: PERP_PROCESS_ID,
+      })
+      console.log("_result", _result)
+    } catch (e) {
+      console.error("orderLong() error!", e)
+    } finally {
+      await fetchOrderBalance()
+      await fetchUserBalance()
+    }
+  }
+
+  const placeShort = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _tradeQuantity = multiplyByPower(tradeQuantity)
+      console.log("_tradeQuantity", _tradeQuantity)
+
+      let _tags = [
+        {
+          name: "Action",
+          value: "PlaceShort",
+        },
+        {
+          name: "Quantity",
+          value: _tradeQuantity.toString(),
+        },
+      ]
+      console.log("_tags", _tags)
+
+      const messageId = await message({
+        process: PERP_PROCESS_ID,
+        tags: _tags,
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: PERP_PROCESS_ID,
+      })
+      console.log("_result", _result)
+    } catch (e) {
+      console.error("orderShort() error!", e)
+    } finally {
+      await fetchOrderBalance()
+      await fetchUserBalance()
+    }
+  }
+
   return (
     <>
       <Flex
@@ -258,8 +367,8 @@ export default function PointsSwap() {
             <Button variant="outline" onClick={fetchUserBalance}>
               Connect
             </Button>
-            <Text>Wallet Balance: {walletBalance} $AR</Text>
-            <Text>Perp Balance: {perpBalance} $AR</Text>
+            <Text>Wallet Balance: {walletBalance} ${TICKER}</Text>
+            <Text>Perp Balance: {perpBalance} ${TICKER}</Text>
 
             <Flex alignItems="center" paddingTop={12}>
               <Text>Quantity</Text>
@@ -304,8 +413,20 @@ export default function PointsSwap() {
                 </NumberInputStepper>
               </NumberInput>
             </Flex>
-            <Button variant="outline">Buy/Long</Button>
-            <Button variant="outline">Sell/Short</Button>
+            <Button variant="outline" onClick={placeLong}>
+              Buy / Long
+            </Button>
+            <Button variant="outline" onClick={placeShort}>
+              Sell / Short
+            </Button>
+
+            <Flex paddingY={12} flexDirection="column" gap={4}>
+              <Text>Long: {longPos} ${TICKER}</Text>
+              <Text>Short: {shortPos} ${TICKER}</Text>
+              <Button variant="outline" onClick={fetchOrderBalance}>
+                Fetch Order Balance
+              </Button>
+            </Flex>
           </Flex>
         </Flex>
       </Flex>
