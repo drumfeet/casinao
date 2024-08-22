@@ -161,6 +161,16 @@ MarkPrices = MarkPrices or { InitialPrice }
 LongOrders = LongOrders or {}
 ShortOrders = ShortOrders or {}
 
+Handlers.add('long.orders', Handlers.utils.hasMatchingTag('Action', 'LongOrders'),
+    function(msg)
+        ao.send({ Target = msg.From, Data = json.encode(LongOrders) })
+    end)
+
+Handlers.add('short.orders', Handlers.utils.hasMatchingTag('Action', 'ShortOrders'),
+    function(msg)
+        ao.send({ Target = msg.From, Data = json.encode(ShortOrders) })
+    end)
+
 Handlers.add('long.order', Handlers.utils.hasMatchingTag('Action', 'LongOrder'), function(msg)
     local bal = '0'
 
