@@ -136,7 +136,7 @@ Handlers.add('withdraw', Handlers.utils.hasMatchingTag('Action', 'Withdraw'), fu
     end
 
     if not Balances[msg.From] then
-        sendErrorMessage(msg, 'Account does not exist')
+        sendErrorMessage(msg, 'Account has no balance')
         return
     end
 
@@ -154,12 +154,13 @@ Handlers.add('withdraw', Handlers.utils.hasMatchingTag('Action', 'Withdraw'), fu
     Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
 end)
 
-InitialPrice = "100"
+InitialPrice = utils.toBalanceValue(multiplyByPower(1))
 FundingRate = 0.05
 Leverage = 1
 MarkPrices = MarkPrices or { InitialPrice }
 LongOrders = LongOrders or {}
 ShortOrders = ShortOrders or {}
+TotalLongPosition = TotalLongPosition or "0"
 
 Handlers.add('long.orders', Handlers.utils.hasMatchingTag('Action', 'LongOrders'),
     function(msg)
@@ -217,6 +218,14 @@ Handlers.add('short.order', Handlers.utils.hasMatchingTag('Action', 'ShortOrder'
     })
 end)
 
+local printData = function(k, v)
+    local _data = {
+        Key = k,
+        Value = v
+    }
+    print(_data)
+end
+
 Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'), function(msg)
     if type(msg.Tags.Quantity) ~= 'string' then
         sendErrorMessage(msg, 'Quantity is required and must be a string')
@@ -229,7 +238,7 @@ Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'),
     end
 
     if not Balances[msg.From] then
-        sendErrorMessage(msg, 'Account does not exist')
+        sendErrorMessage(msg, 'Account has no balance')
         return
     end
 
@@ -238,71 +247,82 @@ Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'),
         return
     end
 
+    -- Ensure that MarkPrices has at least one price
+    if #MarkPrices == 0 then
+        sendErrorMessage(msg, 'No market price available')
+        return
+    end
+
+    -- Get the most recent market price
+    local currentMarketPrice = utils.toNumber(MarkPrices[#MarkPrices])
+    printData("currentMarketPrice", currentMarketPrice)
+    local newOrderNum = utils.toNumber(msg.Tags.Quantity)
+    printData("newOrderNum", newOrderNum)
+
+    -- Handle opposite short orders if any
     local shortOrder = ShortOrders[msg.From] or "0"
     local shortOrderNum = utils.toNumber(shortOrder)
-    local newOrderNum = utils.toNumber(msg.Tags.Quantity)
 
     if shortOrderNum > 0 then
+        -- Fetch the most recent market price after handling the opposite order
+        currentMarketPrice = utils.toNumber(MarkPrices[#MarkPrices])
+        printData("currentMarketPrice", currentMarketPrice)
+
+        -- Calculate the price adjustment due to the opposite order being closed
+        local priceImpactFactor = 0.01 -- Adjust this factor based on your desired sensitivity
+        local adjustedMarketPrice = currentMarketPrice *
+            (1 - (priceImpactFactor * shortOrderNum / (utils.toNumber(LongOrders[msg.From] or "1"))))
+
+        -- Update the market price before executing the remaining order
+        table.insert(MarkPrices, tostring(adjustedMarketPrice))
+        if #MarkPrices > 1440 then -- Maintain a fixed size of MarkPrices history, if desired
+            table.remove(MarkPrices, 1)
+        end
+
+        -- Apply the adjusted market price
+        currentMarketPrice = adjustedMarketPrice
+
         if shortOrderNum >= newOrderNum then
             ShortOrders[msg.From] = utils.subtract(shortOrder, msg.Tags.Quantity)
-            Balances[msg.From] = utils.add(Balances[msg.From], msg.Tags.Quantity) -- Refund the full amount
+            Balances[msg.From] = utils.add(Balances[msg.From], tostring(newOrderNum * currentMarketPrice))   -- Refund the full amount based on the market price
             if utils.toNumber(ShortOrders[msg.From]) == 0 then
-                ShortOrders[msg.From] = nil                                       -- Clear the short order if it's fully reduced
+                ShortOrders[msg.From] = nil                                                                  -- Clear the short order if it's fully reduced
             end
+            return                                                                                           -- Exit since the opposite order has been handled
         else
-            Balances[msg.From] = utils.add(Balances[msg.From], shortOrder) -- Refund the amount equal to the short order
-            ShortOrders[msg.From] = nil                                    -- Clear the short order
-            -- No remaining long order to place, so no further action needed
+            Balances[msg.From] = utils.add(Balances[msg.From], tostring(shortOrderNum * currentMarketPrice)) -- Refund the amount equal to the short order based on market price
+            ShortOrders[msg.From] = nil                                                                      -- Clear the short order
+            newOrderNum = newOrderNum -
+                shortOrderNum                                                                                -- Continue with the remaining long order amount
         end
-        return -- Do not place a new long order since the opposite order was handled
     end
 
-    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
-    local currentValue = LongOrders[msg.From] or "0"
-    LongOrders[msg.From] = utils.add(currentValue, msg.Tags.Quantity)
-end)
+    -- Fetch the most recent market price again after handling the opposite order
+    currentMarketPrice = utils.toNumber(MarkPrices[#MarkPrices])
+    printData("currentMarketPrice", currentMarketPrice)
 
-Handlers.add('place.short', Handlers.utils.hasMatchingTag('Action', 'PlaceShort'), function(msg)
-    if type(msg.Tags.Quantity) ~= 'string' then
-        sendErrorMessage(msg, 'Quantity is required and must be a string')
-        return
+    -- Execute the market order at the latest price
+    local currentHolding = LongOrders[msg.From] or "0"
+    printData("currentHolding", currentHolding)
+
+    local newOrderSizeNum = newOrderNum * currentMarketPrice
+    -- Convert the number to a string and find the decimal point
+    local newOrderSize = string.format("%.0f", newOrderSizeNum)
+    printData("newOrderSize", newOrderSize)
+
+    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity) -- Subtract the USD amount from the account balances
+    LongOrders[msg.From] = utils.add(currentHolding, newOrderSize)             -- Add to the user's long position
+    printData("LongOrders[msg.From]", LongOrders[msg.From])
+
+    -- Adjust the market price based on the remaining order size
+    local priceImpactFactor = 0.01 -- Adjust this factor based on your desired sensitivity
+    local newMarketPrice = currentMarketPrice *
+        (1 + (priceImpactFactor * newOrderNum / utils.toNumber(LongOrders[msg.From])))
+    printData("newMarketPrice", newMarketPrice)
+
+    -- Update the MarkPrices table with the new market price
+    table.insert(MarkPrices, tostring(newMarketPrice))
+    if #MarkPrices > 1440 then -- Maintain a fixed size of MarkPrices history, if desired
+        table.remove(MarkPrices, 1)
     end
-
-    if utils.toNumber(msg.Tags.Quantity) <= 0 then
-        sendErrorMessage(msg, 'Quantity must be greater than 0')
-        return
-    end
-
-    if not Balances[msg.From] then
-        sendErrorMessage(msg, 'Account does not exist')
-        return
-    end
-
-    if utils.toNumber(Balances[msg.From]) < utils.toNumber(msg.Tags.Quantity) then
-        sendErrorMessage(msg, 'Insufficient funds')
-        return
-    end
-
-    local longOrder = LongOrders[msg.From] or "0"
-    local longOrderNum = utils.toNumber(longOrder)
-    local newOrderNum = utils.toNumber(msg.Tags.Quantity)
-
-    if longOrderNum > 0 then
-        if longOrderNum >= newOrderNum then
-            LongOrders[msg.From] = utils.subtract(longOrder, msg.Tags.Quantity)
-            Balances[msg.From] = utils.add(Balances[msg.From], msg.Tags.Quantity) -- Refund the full amount
-            if utils.toNumber(LongOrders[msg.From]) == 0 then
-                LongOrders[msg.From] = nil                                        -- Clear the long order if it's fully reduced
-            end
-        else
-            Balances[msg.From] = utils.add(Balances[msg.From], longOrder) -- Refund the amount equal to the long order
-            LongOrders[msg.From] = nil                                    -- Clear the long order
-            -- No remaining short order to place, so no further action needed
-        end
-        return -- Do not place a new short order since the opposite order was handled
-    end
-
-    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
-    local currentValue = ShortOrders[msg.From] or "0"
-    ShortOrders[msg.From] = utils.add(currentValue, msg.Tags.Quantity)
 end)
