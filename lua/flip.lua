@@ -136,7 +136,7 @@ Handlers.add('withdraw', Handlers.utils.hasMatchingTag('Action', 'Withdraw'), fu
     end
 
     if not Flippers[msg.From] then
-        sendErrorMessage(msg, 'Account does not exist')
+        sendErrorMessage(msg, 'Account has no balance')
         return
     end
 
@@ -166,7 +166,7 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
     end
 
     if not Flippers[msg.From] then
-        sendErrorMessage(msg, 'Account does not exist')
+        sendErrorMessage(msg, 'Account has no balance')
         return
     end
 
