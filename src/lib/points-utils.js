@@ -63,4 +63,48 @@ const getShortOrder = async ({ recipient }) => {
   return JSON.parse(result.Messages[0].Data)
 }
 
-export { getPerpBalance, getWalletBalance, getLongOrder, getShortOrder }
+const getMarketPrice = async () => {
+  let tags = [{ name: "Action", value: "MarketPrice" }]
+
+  const result = await dryrun({
+    process: PERP_PROCESS_ID,
+    tags,
+  })
+  console.log("getMarketPrice() result", result)
+
+  return JSON.parse(result.Messages[0].Data)
+}
+
+const getTotalLongPosition = async () => {
+  let tags = [{ name: "Action", value: "TotalLongPosition" }]
+
+  const result = await dryrun({
+    process: PERP_PROCESS_ID,
+    tags,
+  })
+  console.log("getTotalLongPosition() result", result)
+
+  return JSON.parse(result.Messages[0].Data)
+}
+
+const getTotalShortPosition = async () => {
+  let tags = [{ name: "Action", value: "TotalShortPosition" }]
+
+  const result = await dryrun({
+    process: PERP_PROCESS_ID,
+    tags,
+  })
+  console.log("getTotalShortPosition() result", result)
+
+  return JSON.parse(result.Messages[0].Data)
+}
+
+export {
+  getPerpBalance,
+  getWalletBalance,
+  getLongOrder,
+  getShortOrder,
+  getMarketPrice,
+  getTotalLongPosition,
+  getTotalShortPosition,
+}

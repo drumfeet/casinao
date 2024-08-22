@@ -24,12 +24,26 @@ BASE_UNIT = BASE_UNIT or 10
 Denomination = Denomination or 12
 Ticker = Ticker or 'USD'
 
+local printData = function(k, v)
+    local _data = {
+        Key = k,
+        Value = v
+    }
+    print(_data)
+end
+
 local multiplyByPower = function(v)
-    return v * (BASE_UNIT ^ Denomination)
+    local value = v * (BASE_UNIT ^ Denomination)
+    local strValue = string.format("%.0f", value)
+    local result = utils.toNumber(strValue)
+    return result
 end
 
 local divideByPower = function(v)
-    return v / (BASE_UNIT ^ Denomination)
+    local value = v / (BASE_UNIT ^ Denomination)
+    local strValue = string.format("%.0f", value)
+    local result = utils.toNumber(strValue)
+    return result
 end
 
 local sendErrorMessage = function(msg, err, target)
@@ -161,6 +175,7 @@ MarkPrices = MarkPrices or { InitialPrice }
 LongOrders = LongOrders or {}
 ShortOrders = ShortOrders or {}
 TotalLongPosition = TotalLongPosition or "0"
+TotalShortPosition = TotalShortPosition or "0"
 
 Handlers.add('long.orders', Handlers.utils.hasMatchingTag('Action', 'LongOrders'),
     function(msg)
@@ -218,13 +233,27 @@ Handlers.add('short.order', Handlers.utils.hasMatchingTag('Action', 'ShortOrder'
     })
 end)
 
-local printData = function(k, v)
-    local _data = {
-        Key = k,
-        Value = v
-    }
-    print(_data)
-end
+Handlers.add('market.price', Handlers.utils.hasMatchingTag('Action', 'MarketPrice'), function(msg)
+    local currentMarketPrice = MarkPrices[#MarkPrices]
+    ao.send({
+        Target = msg.From,
+        Data = currentMarketPrice
+    })
+end)
+
+Handlers.add('total.long.position', Handlers.utils.hasMatchingTag('Action', 'TotalLongPosition'), function(msg)
+    ao.send({
+        Target = msg.From,
+        Data = TotalLongPosition
+    })
+end)
+
+Handlers.add('total.short.position', Handlers.utils.hasMatchingTag('Action', 'TotalShortPosition'), function(msg)
+    ao.send({
+        Target = msg.From,
+        Data = TotalShortPosition
+    })
+end)
 
 Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'), function(msg)
     if type(msg.Tags.Quantity) ~= 'string' then
@@ -262,16 +291,16 @@ Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'),
     -- Handle opposite short orders if any
     local shortOrder = ShortOrders[msg.From] or "0"
     local shortOrderNum = utils.toNumber(shortOrder)
+    printData("shortOrderNum", shortOrderNum)
 
     if shortOrderNum > 0 then
         -- Fetch the most recent market price after handling the opposite order
         currentMarketPrice = utils.toNumber(MarkPrices[#MarkPrices])
-        printData("currentMarketPrice", currentMarketPrice)
 
         -- Calculate the price adjustment due to the opposite order being closed
         local priceImpactFactor = 0.01 -- Adjust this factor based on your desired sensitivity
         local adjustedMarketPrice = currentMarketPrice *
-            (1 - (priceImpactFactor * shortOrderNum / (utils.toNumber(LongOrders[msg.From] or "1"))))
+            (1 - (priceImpactFactor * shortOrderNum / (utils.toNumber(TotalLongPosition) or 1)))
 
         -- Update the market price before executing the remaining order
         table.insert(MarkPrices, tostring(adjustedMarketPrice))
@@ -304,24 +333,26 @@ Handlers.add('place.long', Handlers.utils.hasMatchingTag('Action', 'PlaceLong'),
     -- Execute the market order at the latest price
     local currentHolding = LongOrders[msg.From] or "0"
     printData("currentHolding", currentHolding)
-
-    local newOrderSizeNum = newOrderNum * currentMarketPrice
-    -- Convert the number to a string and find the decimal point
-    local newOrderSize = string.format("%.0f", newOrderSizeNum)
-    printData("newOrderSize", newOrderSize)
+    local newOrderSizeNum = newOrderNum * divideByPower(currentMarketPrice)
+    printData("newOrderSizeNum", newOrderSizeNum)
 
     Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity) -- Subtract the USD amount from the account balances
-    LongOrders[msg.From] = utils.add(currentHolding, newOrderSize)             -- Add to the user's long position
+    LongOrders[msg.From] = utils.add(currentHolding, newOrderSizeNum)          -- Add to the user's long position
     printData("LongOrders[msg.From]", LongOrders[msg.From])
 
-    -- Adjust the market price based on the remaining order size
+    -- Update the total long position
+    TotalLongPosition = utils.add(TotalLongPosition, newOrderSizeNum)
+
+    -- Adjust the market price based on the total position size
     local priceImpactFactor = 0.01 -- Adjust this factor based on your desired sensitivity
     local newMarketPrice = currentMarketPrice *
-        (1 + (priceImpactFactor * newOrderNum / utils.toNumber(LongOrders[msg.From])))
+        (1 + (priceImpactFactor * newOrderNum / utils.toNumber(TotalLongPosition)))
     printData("newMarketPrice", newMarketPrice)
+    local newMarketPriceStr = string.format("%.0f", newMarketPrice)
+    printData("newMarketPriceStr", newMarketPriceStr)
 
     -- Update the MarkPrices table with the new market price
-    table.insert(MarkPrices, tostring(newMarketPrice))
+    table.insert(MarkPrices, newMarketPriceStr)
     if #MarkPrices > 1440 then -- Maintain a fixed size of MarkPrices history, if desired
         table.remove(MarkPrices, 1)
     end
