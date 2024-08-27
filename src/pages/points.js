@@ -1,8 +1,11 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import {
   getLongOrder,
+  getMarketPrice,
   getPerpBalance,
   getShortOrder,
+  getTotalLongPosition,
+  getTotalShortPosition,
   getWalletBalance,
 } from "@/lib/points-utils"
 import {
@@ -33,6 +36,9 @@ export default function PointsSwap() {
   const [tradeQuantity, setTradeQuantity] = useState(1)
   const [shortPos, setShortPos] = useState(0)
   const [longPos, setLongPos] = useState(0)
+  const [price, setPrice] = useState(0)
+  const [totalLongPos, setTotalLongPos] = useState(0)
+  const [totalShortPos, setTotalShortPos] = useState(0)
 
   const toast = useToast()
 
@@ -252,7 +258,7 @@ export default function PointsSwap() {
     }
   }
 
-  const fetchOrderBalance = async () => {
+  const fetchUserHoldings = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
       return
@@ -267,9 +273,26 @@ export default function PointsSwap() {
       const _shortOrder = await getShortOrder({ recipient: userAddress })
       setShortPos(divideByPower(_shortOrder))
     } catch (e) {
-      console.error("fetchOrderBalance() error!", e)
+      console.error("fetchUserHoldings() error!", e)
     }
   }
+
+  const fetchMarketInfo = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _marketPrice = await getMarketPrice()
+      setPrice(divideByPower(_marketPrice))
+      setTotalLongPos(await getTotalLongPosition())
+      setTotalShortPos(await getTotalShortPosition())
+    } catch (e) {
+      console.error("fetchMarketInfo() error!", e)
+    }
+  }
+
   const placeLong = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
@@ -307,7 +330,8 @@ export default function PointsSwap() {
     } catch (e) {
       console.error("orderLong() error!", e)
     } finally {
-      await fetchOrderBalance()
+      await fetchUserHoldings()
+      await fetchMarketInfo()
       await fetchUserBalance()
     }
   }
@@ -349,7 +373,8 @@ export default function PointsSwap() {
     } catch (e) {
       console.error("orderShort() error!", e)
     } finally {
-      await fetchOrderBalance()
+      await fetchUserHoldings()
+      await fetchMarketInfo()
       await fetchUserBalance()
     }
   }
@@ -367,8 +392,12 @@ export default function PointsSwap() {
             <Button variant="outline" onClick={fetchUserBalance}>
               Connect
             </Button>
-            <Text>Wallet Balance: {walletBalance} ${TICKER}</Text>
-            <Text>Perp Balance: {perpBalance} ${TICKER}</Text>
+            <Text>
+              Wallet Balance: {walletBalance} ${TICKER}
+            </Text>
+            <Text>
+              Perp Balance: {perpBalance} ${TICKER}
+            </Text>
 
             <Flex alignItems="center" paddingTop={12}>
               <Text>Quantity</Text>
@@ -419,12 +448,21 @@ export default function PointsSwap() {
             <Button variant="outline" onClick={placeShort}>
               Sell / Short
             </Button>
+            <Text>Long Pos: {longPos}</Text>
+            <Text>Short Pos: {shortPos}</Text>
 
             <Flex paddingY={12} flexDirection="column" gap={4}>
-              <Text>Long: {longPos} ${TICKER}</Text>
-              <Text>Short: {shortPos} ${TICKER}</Text>
-              <Button variant="outline" onClick={fetchOrderBalance}>
-                Fetch Order Balance
+              <Text>
+                Price: {price} ${TICKER}
+              </Text>
+              <Text>Total Long: {totalLongPos}</Text>
+              <Text>Total Short: {totalShortPos}</Text>
+
+              <Button variant="outline" onClick={() => {
+                fetchMarketInfo()
+                fetchUserHoldings()
+              }}>
+                Fetch Market
               </Button>
             </Flex>
           </Flex>
