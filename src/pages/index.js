@@ -965,6 +965,7 @@ export default function Home() {
                       px={8}
                       bg="#304553"
                       color="gray.200"
+                      _hover={{}}
                     >
                       Manual
                     </Button>
@@ -986,33 +987,75 @@ export default function Home() {
                     </Button>
                   </Flex>
                   <Flex flexDirection="column">
-                    <Text>Bet Amount</Text>
-                    <NumberInput
-                      // step={1}
-                      precision={2}
-                      defaultValue={betAmount}
-                      min={1}
-                      onChange={(e) => {
-                        setBetAmount(e)
-                        setProfitOnWin(getProfitOnWin(multiplier, e))
-                      }}
-                    >
-                      <NumberInputField bg="#0e212e" borderColor="#0e212e" />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper
+                    <Text color="#b1bad3">Bet Amount</Text>
+                    <Flex padding={1} bg="#304553" borderRadius="md" gap={2}>
+                      <NumberInput
+                        precision={2}
+                        value={betAmount}
+                        min={1}
+                        onChange={(e) => {
+                          setBetAmount(e)
+                          setProfitOnWin(getProfitOnWin(multiplier, e))
+                        }}
+                      >
+                        <NumberInputField
+                          bg="#0e212e"
                           borderColor="#0e212e"
-                          color="gray.200"
+                          borderRadius="none"
                         />
-                        <NumberDecrementStepper
-                          borderColor="#0e212e"
-                          color="gray.200"
-                        />
-                      </NumberInputStepper>
-                    </NumberInput>
+                        <NumberInputStepper>
+                          <NumberIncrementStepper
+                            borderColor="#0e212e"
+                            color="gray.200"
+                          />
+                          <NumberDecrementStepper
+                            borderColor="#0e212e"
+                            color="gray.200"
+                          />
+                        </NumberInputStepper>
+                      </NumberInput>
+                      <Button
+                        w={12}
+                        bg="#304553"
+                        color="gray.200"
+                        fontSize={12}
+                        _hover={{ bg: "#4A6B72" }}
+                        onClick={() => {
+                          setBetAmount((prev) => {
+                            let v = prev / 2
+                            if (v < 1) v = 1
+                            setProfitOnWin(getProfitOnWin(multiplier, v))
+                            return v
+                          })
+                        }}
+                      >
+                        1/2
+                      </Button>
+                      <Divider
+                        orientation="vertical"
+                        borderColor="#1a2c38"
+                        borderWidth={1}
+                      />
+                      <Button
+                        w={12}
+                        bg="#304553"
+                        color="gray.200"
+                        _hover={{ bg: "#4A6B72" }}
+                        onClick={() => {
+                          setBetAmount((prev) => {
+                            const v = prev * 2
+                            setProfitOnWin(getProfitOnWin(multiplier, v))
+                            return v
+                          })
+                        }}
+                      >
+                        2x
+                      </Button>
+                    </Flex>
                   </Flex>
 
                   <Flex flexDirection="column">
-                    <Text>Profit on Win</Text>
+                    <Text color="#b1bad3">Profit on Win</Text>
                     <Flex
                       borderRadius="md"
                       paddingY={2}
