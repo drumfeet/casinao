@@ -23,7 +23,7 @@ import {
   useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
-import ChipSvg from "@/components/ChipSvg"
+import ChipIcon from "@/components/icons/ChipIcon"
 import RouletteBoard from "@/components/RouletteBoard"
 import UserIcon from "@/components/icons/UserIcon"
 import WalletIcon from "@/components/icons/WalletIcon"
@@ -46,7 +46,7 @@ export default function Home() {
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
 
-  const [selectedChip, setSelectedChip] = useState(null)
+  const [selectedChip, setSelectedChip] = useState(0)
   const handleChipClick = (value) => {
     setSelectedChip(value)
   }
@@ -809,7 +809,7 @@ export default function Home() {
 
                     <Flex gap={2}>
                       {[1, 10, 100, 1000].map((value) => (
-                        <ChipSvg
+                        <ChipIcon
                           key={value}
                           text={value}
                           isSelected={selectedChip === value}
