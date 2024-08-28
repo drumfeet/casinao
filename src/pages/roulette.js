@@ -34,6 +34,7 @@ import {
   useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
+import ChipSvg from "@/components/ChipSvg"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
@@ -987,82 +988,72 @@ export default function Home() {
                     </Button>
                   </Flex>
                   <Flex flexDirection="column">
-                    <Text color="#b1bad3">Chips</Text>
-                    <Flex padding={1} bg="#304553" borderRadius="md" gap={2}>
-                      <NumberInput
-                        precision={2}
-                        value={betAmount}
-                        min={1}
-                        onChange={(e) => {
-                          setBetAmount(e)
-                          setProfitOnWin(getProfitOnWin(multiplier, e))
-                        }}
-                      >
-                        <NumberInputField
-                          bg="#0e212e"
-                          borderColor="#0e212e"
-                          borderRadius="none"
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper
-                            borderColor="#0e212e"
-                            color="gray.200"
-                          />
-                          <NumberDecrementStepper
-                            borderColor="#0e212e"
-                            color="gray.200"
-                          />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <Button
-                        w={12}
-                        bg="#304553"
-                        color="gray.200"
-                        fontSize={12}
-                        _hover={{ bg: "#4A6B72" }}
-                        onClick={() => {
-                          setBetAmount((prev) => {
-                            let v = prev / 2
-                            if (v < 1) v = 1
-                            setProfitOnWin(getProfitOnWin(multiplier, v))
-                            return v
-                          })
-                        }}
-                      >
-                        1/2
-                      </Button>
-                      <Divider
-                        orientation="vertical"
-                        borderColor="#1a2c38"
-                        borderWidth={1}
-                      />
-                      <Button
-                        w={12}
-                        bg="#304553"
-                        color="gray.200"
-                        _hover={{ bg: "#4A6B72" }}
-                        onClick={() => {
-                          setBetAmount((prev) => {
-                            const v = prev * 2
-                            setProfitOnWin(getProfitOnWin(multiplier, v))
-                            return v
-                          })
-                        }}
-                      >
-                        2x
-                      </Button>
-                    </Flex>
-                  </Flex>
+                    <Text color="#b1bad3">Chip Value : 1 $FLIP</Text>
 
-                  <Flex flexDirection="column">
-                    <Text color="#b1bad3">Profit on Win</Text>
+                    <Flex gap={2}>
+                      <ChipSvg text={1} />
+                      <ChipSvg text={10} />
+                      <ChipSvg text={100} />
+                      <ChipSvg text={"1K"} />
+                    </Flex>
+
+                    <Flex justifyContent="space-between" paddingY={2}>
+                      <Text color="#b1bad3">Total Bet</Text>
+                      <Text color="#b1bad3">{betAmount} $FLIP</Text>
+                    </Flex>
+
                     <Flex
-                      borderRadius="md"
-                      paddingY={2}
-                      paddingX={4}
+                      padding={1}
                       bg="#304553"
+                      borderRadius="md"
+                      alignItems="center"
+                      justifyContent="space-between"
                     >
-                      {profitOnWin}
+                      <Text color="white" paddingLeft={3}>
+                        {betAmount}
+                      </Text>
+                      <Flex>
+                        <Flex gap={1}>
+                          <Button
+                            w={12}
+                            bg="#283e4b"
+                            color="gray.200"
+                            fontSize={10}
+                            _hover={{ bg: "#4A6B72" }}
+                            onClick={() => {
+                              setBetAmount((prev) => {
+                                let v = prev / 2
+                                if (v < 1) v = 1
+                                setProfitOnWin(getProfitOnWin(multiplier, v))
+                                return v
+                              })
+                            }}
+                          >
+                            1/2
+                          </Button>
+                          <Divider
+                            orientation="vertical"
+                            borderColor="#1a2c38"
+                            borderWidth={1}
+                          />
+                          <Button
+                            w={12}
+                            bg="#283e4b"
+                            color="gray.200"
+                            fontSize={12}
+                            _hover={{ bg: "#4A6B72" }}
+                            onClick={() => {
+                              setBetAmount((prev) => {
+                                const v = prev * 2
+                                setProfitOnWin(getProfitOnWin(multiplier, v))
+                                return v
+                              })
+                            }}
+                          >
+                            2x
+                          </Button>
+                        </Flex>
+                      </Flex>
                     </Flex>
                   </Flex>
                   <Button
