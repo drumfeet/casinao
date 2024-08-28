@@ -1,13 +1,7 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
+import { HamburgerIcon, LinkIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
-  DragHandleIcon,
-  HamburgerIcon,
-  LinkIcon,
-  RepeatIcon,
-} from "@chakra-ui/icons"
-import {
-  Box,
   Button,
   Divider,
   Flex,
@@ -24,11 +18,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Slider,
-  SliderFilledTrack,
-  SliderMark,
-  SliderThumb,
-  SliderTrack,
   Text,
   useDisclosure,
   useToast,
@@ -36,6 +25,11 @@ import {
 import { useState } from "react"
 import ChipSvg from "@/components/ChipSvg"
 import RouletteBoard from "@/components/RouletteBoard"
+import UserIcon from "@/components/icons/UserIcon"
+import WalletIcon from "@/components/icons/WalletIcon"
+import AirdropIcon from "@/components/icons/AirdropIcon"
+import TwitterIcon from "@/components/icons/TwitterIcon"
+import DiscordIcon from "@/components/icons/DiscordIcon"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
@@ -141,42 +135,11 @@ export default function Home() {
         <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
           {walletBalance >= 0 || gameBalance >= 0 ? (
             <>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-user-square-rounded"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="#E2E8F0"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M12 13a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" />
-                <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
-                <path d="M6 20.05v-.05a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v.05" />
-              </svg>
+              <UserIcon />
             </>
           ) : (
             <>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-wallet"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="#E2E8F0"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
-                <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
-              </svg>
+              <WalletIcon />
             </>
           )}
         </Flex>
@@ -373,22 +336,7 @@ export default function Home() {
                     <>
                       <Flex alignItems="center" gap={2}>
                         Connect wallet first
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="icon icon-tabler icon-tabler-wallet"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="#E2E8F0"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
-                          <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
-                        </svg>
+                        <WalletIcon />
                       </Flex>
                     </>
                   ),
@@ -479,19 +427,6 @@ export default function Home() {
     audio.play().catch((error) => {
       console.error("Error playing the sound:", error)
     })
-  }
-
-  const sliderChanged = (_sliderValue) => {
-    // console.log("_sliderValue", _sliderValue)
-    setSliderValue(_sliderValue)
-    const _winChance = getWinChance(_sliderValue)
-    setWinChance(_winChance)
-    setRollOver(100 - _winChance)
-
-    const _multiplier = getMultiplier(_winChance)
-    setMultiplier(_multiplier)
-
-    setProfitOnWin(getProfitOnWin(_multiplier, betAmount))
   }
 
   const multiplyByPower = (v) => {
@@ -601,81 +536,6 @@ export default function Home() {
     }
   }
 
-  const flipBet = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const _betAmount = multiplyByPower(betAmount)
-      console.log("_betAmount", _betAmount)
-      console.log("sliderValue", sliderValue)
-      const messageId = await message({
-        process: GAME_PROCESS_ID,
-        tags: [
-          {
-            name: "Action",
-            value: "FlipBet",
-          },
-          {
-            name: "Quantity",
-            value: _betAmount.toString(),
-          },
-          {
-            name: "Slider",
-            value: sliderValue.toString(),
-          },
-        ],
-        signer: createDataItemSigner(globalThis.arweaveWallet),
-      })
-      console.log("messageId", messageId)
-
-      const _result = await result({
-        message: messageId,
-        process: GAME_PROCESS_ID,
-      })
-      console.log("_result", _result)
-
-      const errorTag = _result.Messages[0].Tags.find(
-        (tag) => tag.name === "Error"
-      )
-      console.log("errorTag", errorTag)
-      if (errorTag) {
-        const errorStatus = errorTag.value ? "error" : "success"
-        toast({
-          description: `${_result.Messages[0].Data}`,
-          status: errorStatus,
-          duration: 2000,
-          isClosable: true,
-          position: "top",
-        })
-        return
-      }
-
-      const winStatus = _result.Messages[0].Tags[6].value ? "success" : "error"
-      const jsonObj = JSON.parse(_result.Messages[0].Data)
-      console.log("jsonObj", jsonObj)
-      setGameResults((prevResults) => [...prevResults, jsonObj])
-
-      toast({
-        description: `${jsonObj.PlayerWon ? "You won!" : "You lost!"}`,
-        title: `Random Value is ${jsonObj.RandomValue}`,
-        status: winStatus,
-        duration: 2000,
-        isClosable: true,
-        position: "top-right",
-      })
-
-      if (jsonObj.PlayerWon) playWinSound()
-      setRandomValue(jsonObj.RandomValue)
-    } catch (e) {
-      console.error("flipBet() error!", e)
-    } finally {
-      await fetchUserBalance()
-    }
-  }
-
   const casinoItems = [
     { text: "Dice", icon: <LinkIcon />, link: "/" },
     { text: "Roulette", icon: <LinkIcon />, link: "/roulette" },
@@ -754,24 +614,7 @@ export default function Home() {
                 onClick={requestAirdrop}
               >
                 <Flex gap={4}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-parachute"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M22 12a10 10 0 1 0 -20 0" />
-                    <path d="M22 12c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3c0 -1.66 -1.57 -3 -3.5 -3s-3.5 1.34 -3.5 3c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3" />
-                    <path d="M2 12l10 10l-3.5 -10" />
-                    <path d="M15.5 12l-3.5 10l10 -10" />
-                  </svg>
+                  <AirdropIcon />
                   <Text>Airdrop</Text>
                 </Flex>
               </Button>
@@ -839,22 +682,7 @@ export default function Home() {
                     })
                   }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-brand-x"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-                    <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-                  </svg>
+                  <TwitterIcon />
                 </Button>
                 <Button
                   variant="ghost"
@@ -868,24 +696,7 @@ export default function Home() {
                     })
                   }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-brand-discord"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                    <path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                    <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
-                    <path d="M7 16.5c3.5 1 6.5 1 10 0" />
-                  </svg>
+                  <DiscordIcon />
                 </Button>
               </Flex>
             </Flex>
@@ -1068,12 +879,7 @@ export default function Home() {
                       </Flex>
                     </Flex>
                   </Flex>
-                  <Button
-                    bg="#00e700"
-                    paddingY={8}
-                    _hover={{}}
-                    onClick={flipBet}
-                  >
+                  <Button bg="#00e700" paddingY={8} _hover={{}}>
                     Bet
                   </Button>
                 </Flex>
@@ -1109,89 +915,7 @@ export default function Home() {
                     {/* Top */}
                     <Flex paddingY={[8, 250]} paddingX={[0, 12]}>
                       <Flex padding={4} flexDirection="column" w="100%">
-                        <Slider
-                          flex="1"
-                          focusThumbOnChange={false}
-                          value={sliderValue}
-                          onChange={(val) => {
-                            sliderChanged(val)
-                          }}
-                          min={0}
-                          max={100}
-                          step={1}
-                        >
-                          <SliderMark value={0} {...labelStyles}>
-                            0
-                          </SliderMark>
-                          <SliderMark value={25} {...labelStyles}>
-                            25
-                          </SliderMark>
-                          <SliderMark value={50} {...labelStyles}>
-                            50
-                          </SliderMark>
-                          <SliderMark value={75} {...labelStyles}>
-                            75
-                          </SliderMark>
-                          <SliderMark value={100} {...labelStyles}>
-                            100
-                          </SliderMark>
-                          {/* <SliderMark
-                            value={sliderValue}
-                            textAlign="center"
-                            bg="blue.500"
-                            color="white"
-                            mt="-10"
-                            ml="-5"
-                            w="12"
-                          >
-                            {sliderValue}%
-                          </SliderMark> */}
-
-                          {randomValue >= 0 && randomValue <= 100 && (
-                            <SliderMark
-                              value={randomValue}
-                              marginTop="-58px"
-                              ml={-5}
-                            >
-                              <Flex flexDirection="column" alignItems="center">
-                                {randomValue}
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  class="icon icon-tabler icon-tabler-arrow-big-down"
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="1.5"
-                                  stroke="#E2E8F0"
-                                  fill="none"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                >
-                                  <path
-                                    stroke="none"
-                                    d="M0 0h24v24H0z"
-                                    fill="none"
-                                  />
-                                  <path d="M15 4v8h3.586a1 1 0 0 1 .707 1.707l-6.586 6.586a1 1 0 0 1 -1.414 0l-6.586 -6.586a1 1 0 0 1 .707 -1.707h3.586v-8a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1z" />
-                                </svg>
-                              </Flex>
-                            </SliderMark>
-                          )}
-
-                          <SliderTrack bg="green">
-                            <SliderFilledTrack bg="red" />
-                          </SliderTrack>
-                          <SliderThumb
-                            // fontSize="sm"
-                            boxSize="28px"
-                            bg="blue.400"
-                            borderRadius="none"
-                            // bg={sliderValue <= 50 ? "green" : "red"}
-                          >
-                            <Box as={DragHandleIcon} color="gray.200" />
-                            {/* {sliderValue} */}
-                          </SliderThumb>
-                        </Slider>
+                        <Text>Slider was here</Text>
                       </Flex>
                     </Flex>
 

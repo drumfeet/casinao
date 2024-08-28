@@ -1,5 +1,3 @@
-import React from "react"
-
 const ChipSvg = ({ text, isSelected, onClick }) => {
   return (
     <svg
