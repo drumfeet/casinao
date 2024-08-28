@@ -35,6 +35,7 @@ import {
 } from "@chakra-ui/react"
 import { useState } from "react"
 import ChipSvg from "@/components/ChipSvg"
+import RouletteBoard from "@/components/RouletteBoard"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
@@ -1185,47 +1186,46 @@ export default function Home() {
 
                     {/* Bottom */}
                     <Flex
-                      bg="#213743"
                       padding={4}
                       gap={4}
                       w="100%"
-                      flexDirection={["column", "row"]}
+                      flexDirection="column"
                       borderRadius="md"
                     >
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Multiplier</Text>
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          {multiplier} <Text>X</Text>
-                        </Flex>
-                      </Flex>
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Roll Over</Text>
+                      <RouletteBoard />
 
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
+                      {/* Undo / Clear */}
+                      <Flex justifyContent="space-between" alignItems="center">
+                        <Button
+                          leftIcon={<RepeatIcon />}
+                          variant="link"
+                          color="gray.200"
+                          onClick={() => {
+                            toast({
+                              title: "This feature is not available yet",
+                              duration: 1000,
+                              isClosable: true,
+                              position: "top",
+                            })
+                          }}
                         >
-                          {rollOver} <RepeatIcon />
-                        </Flex>
-                      </Flex>
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Win Chance</Text>
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
+                          Undo
+                        </Button>
+                        <Button
+                          rightIcon={<RepeatIcon />}
+                          variant="link"
+                          color="gray.200"
+                          onClick={() => {
+                            toast({
+                              title: "This feature is not available yet",
+                              duration: 1000,
+                              isClosable: true,
+                              position: "top",
+                            })
+                          }}
                         >
-                          {winChance}
-                          <Text>%</Text>
-                        </Flex>
+                          Clear
+                        </Button>
                       </Flex>
                     </Flex>
                   </Flex>
