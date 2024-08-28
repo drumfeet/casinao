@@ -1,22 +1,34 @@
 import React from "react"
 
-const ChipSvg = ({ text }) => {
+const ChipSvg = ({ text, isSelected, onClick }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 100 100"
       width="40"
       height="40"
+      style={{ cursor: "pointer" }}
+      onClick={onClick}
     >
-      <circle cx="50" cy="50" r="45" fill="#adb5bd" />
-      <circle cx="50" cy="50" r="40" fill="#b7a34e" />
+      <circle
+        cx="50"
+        cy="50"
+        r="45"
+        fill={isSelected ? "#ffc107" : "#adb5bd"}
+      />
+      <circle
+        cx="50"
+        cy="50"
+        r="40"
+        fill={isSelected ? "#ffc107" : "#b7a34e"}
+      />
       <text
         x="50%"
         y="50%"
-        textAnchor="middle" // Use camelCase for JSX properties
+        textAnchor="middle"
         fill="#000"
-        fontSize="30" // Use camelCase for JSX properties
-        fontFamily="Arial, sans-serif" // Use camelCase for JSX properties
+        fontSize="30"
+        fontFamily="Arial, sans-serif"
         dy=".3em"
       >
         {text}

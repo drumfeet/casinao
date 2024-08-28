@@ -52,6 +52,11 @@ export default function Home() {
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
 
+  const [selectedChip, setSelectedChip] = useState(null)
+  const handleChipClick = (value) => {
+    setSelectedChip(value)
+  }
+
   const getWinChance = (_sliderValue) => {
     return Math.floor(SLOPE * Number(_sliderValue) + INTERCEPT)
   }
@@ -992,10 +997,16 @@ export default function Home() {
                     <Text color="#b1bad3">Chip Value : 1 $FLIP</Text>
 
                     <Flex gap={2}>
-                      <ChipSvg text={1} />
-                      <ChipSvg text={10} />
-                      <ChipSvg text={100} />
-                      <ChipSvg text={"1K"} />
+                      {[1, 10, 100, 1000].map((value) => (
+                        <ChipSvg
+                          key={value}
+                          text={value}
+                          isSelected={selectedChip === value}
+                          onClick={() => {
+                            handleChipClick(value)
+                          }}
+                        />
+                      ))}
                     </Flex>
 
                     <Flex justifyContent="space-between" paddingY={2}>
