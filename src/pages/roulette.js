@@ -28,9 +28,74 @@ import UserIcon from "@/components/icons/UserIcon"
 import WalletIcon from "@/components/icons/WalletIcon"
 import LeftNav from "@/components/LeftNav"
 
+const numberGroups = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+  [10, 11, 12],
+  [13, 14, 15],
+  [16, 17, 18],
+  [19, 20, 21],
+  [22, 23, 24],
+  [25, 26, 27],
+  [28, 29, 30],
+  [31, 32, 33],
+  [34, 35, 36],
+]
+
+const redNumbers = [
+  1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
+]
+
+const blackNumbers = [
+  2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35,
+]
+
+const getColorStyles = (number) => {
+  if (number === 0) return { bg: "green.500", borderColor: "green.500" }
+  if (redNumbers.includes(number))
+    return { bg: "red.500", borderColor: "red.500" }
+  if (blackNumbers.includes(number))
+    return { bg: "#304553", borderColor: "#304553" }
+  return { bg: "#304553", borderColor: "#304553" }
+}
+
+const getNumberRange = (start, end) => {
+  const range = []
+  for (let i = start; i <= end; i++) {
+    range.push(i)
+  }
+  return range
+}
+
+const RouletteButton = ({
+  children,
+  color,
+  borderColor,
+  bg,
+  onClick,
+  ...props
+}) => (
+  <Button
+    variant="outline"
+    color={color || "white"}
+    borderColor={borderColor || "#304553"}
+    bg={bg || "transparent"}
+    flex={["auto", "1"]}
+    borderRadius="0"
+    _hover={{
+      filter: bg ? "brightness(.5)" : "invert(20%)",
+    }}
+    onClick={onClick}
+    {...props}
+  >
+    {children}
+  </Button>
+)
+
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
-  const GAME_PROCESS_ID = "VcBNAf6TWi7_B5WnQa5EXEVMy214jh0ADlEGiyA2-cg"
+  const GAME_PROCESS_ID = "PADEZbrkTHafqOtYRsgZRXLvJFv6xrPyxPsYR9KqGic"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
@@ -40,17 +105,26 @@ export default function Home() {
 
   const [gameBalance, setGameBalance] = useState(-1)
   const [walletBalance, setWalletBalance] = useState(-1)
-  const [betAmount, setBetAmount] = useState(1)
+  const [betAmount, setBetAmount] = useState(0)
 
-  const [selectedChip, setSelectedChip] = useState(0)
-  const handleChipClick = (value) => {
+  const [selectedChip, setSelectedChip] = useState(10)
+  const handleChipSelected = (value) => {
     setSelectedChip(value)
   }
-
+  const [bets, setBets] = useState({})
   const [gameResults, setGameResults] = useState([])
-
   const toast = useToast()
 
+  const handleButtonClick = (numArray) => {
+    console.log("numArray: ", numArray)
+    console.log("selectedChip: ", selectedChip)
+    const newBets = { ...bets }
+    numArray.forEach((num) => {
+      newBets[num] = (newBets[num] || 0) + selectedChip
+      setBetAmount((prev) => prev + selectedChip)
+    })
+    setBets(newBets)
+  }
   const LoginModal = () => {
     const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -454,6 +528,49 @@ export default function Home() {
     }
   }
 
+  const flipBet = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _betAmount = multiplyByPower(betAmount)
+      console.log("_betAmount", _betAmount)
+      console.log("bets", bets)
+      return
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Bet",
+          },
+          {
+            name: "Quantity",
+            value: _betAmount.toString(),
+          },
+          {
+            name: "Bets",
+            value: JSON.stringify({ result: true, count: 42, 1: 1, 2: 2 }),
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+    } catch (e) {
+      console.error("flipBet() error!", e)
+    } finally {
+      // await fetchUserBalance()
+    }
+  }
+
   return (
     <>
       <Flex minH="100vh" backgroundColor="#0e2229">
@@ -567,7 +684,7 @@ export default function Home() {
                           text={value}
                           isSelected={selectedChip === value}
                           onClick={() => {
-                            handleChipClick(value)
+                            handleChipSelected(value)
                           }}
                         />
                       ))}
@@ -597,10 +714,11 @@ export default function Home() {
                             fontSize={10}
                             _hover={{ bg: "#4A6B72" }}
                             onClick={() => {
-                              setBetAmount((prev) => {
-                                let v = prev / 2
-                                if (v < 1) v = 1
-                                return v
+                              toast({
+                                title: "This feature is not available yet",
+                                duration: 1000,
+                                isClosable: true,
+                                position: "top",
                               })
                             }}
                           >
@@ -618,9 +736,11 @@ export default function Home() {
                             fontSize={12}
                             _hover={{ bg: "#4A6B72" }}
                             onClick={() => {
-                              setBetAmount((prev) => {
-                                const v = prev * 2
-                                return v
+                              toast({
+                                title: "This feature is not available yet",
+                                duration: 1000,
+                                isClosable: true,
+                                position: "top",
                               })
                             }}
                           >
@@ -630,7 +750,12 @@ export default function Home() {
                       </Flex>
                     </Flex>
                   </Flex>
-                  <Button bg="#00e700" paddingY={8} _hover={{}}>
+                  <Button
+                    bg="#00e700"
+                    paddingY={8}
+                    _hover={{}}
+                    onClick={flipBet}
+                  >
                     Bet
                   </Button>
                 </Flex>
@@ -678,7 +803,153 @@ export default function Home() {
                       flexDirection="column"
                       borderRadius="md"
                     >
-                      <RouletteBoard />
+                      {/* <RouletteBoard /> */}
+                      <Flex flexDirection="column" gap={1}>
+                        <Flex flexDirection={["column", "row"]} gap={1}>
+                          <Flex flexDirection={["row", "column"]} gap={1}>
+                            <RouletteButton
+                              {...getColorStyles(0)}
+                              flex="1"
+                              onClick={() => handleButtonClick([0])}
+                            >
+                              0
+                            </RouletteButton>
+                          </Flex>
+
+                          {numberGroups.map((group, idx) => (
+                            <Flex
+                              key={idx}
+                              flexDirection={["row", "column"]}
+                              gap={1}
+                              flex="1"
+                            >
+                              {group.map((number) => (
+                                <RouletteButton
+                                  key={number}
+                                  {...getColorStyles(number)}
+                                  flex="1"
+                                  onClick={() => handleButtonClick([number])}
+                                  paddingY={[0, 4]}
+                                >
+                                  {number}
+                                </RouletteButton>
+                              ))}
+                            </Flex>
+                          ))}
+
+                          <Flex
+                            flexDirection={["row", "column"]}
+                            gap={1}
+                            flex="1"
+                          >
+                            <RouletteButton
+                              flex="1"
+                              onClick={() =>
+                                handleButtonClick([
+                                  1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34,
+                                ])
+                              }
+                            >
+                              2:1
+                            </RouletteButton>
+                            <RouletteButton
+                              flex="1"
+                              onClick={() =>
+                                handleButtonClick([
+                                  2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35,
+                                ])
+                              }
+                            >
+                              2:1
+                            </RouletteButton>
+                            <RouletteButton
+                              flex="1"
+                              onClick={() =>
+                                handleButtonClick([
+                                  3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36,
+                                ])
+                              }
+                            >
+                              2:1
+                            </RouletteButton>
+                          </Flex>
+                        </Flex>
+
+                        <Flex
+                          flexDirection={["row", "column"]}
+                          gap={1}
+                          paddingX={[0, 28]}
+                        >
+                          <Flex flexDirection={["column", "row"]} gap={1}>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick(getNumberRange(1, 12))
+                              }
+                            >
+                              1 to 12
+                            </RouletteButton>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick(getNumberRange(13, 24))
+                              }
+                            >
+                              13 to 24
+                            </RouletteButton>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick(getNumberRange(25, 36))
+                              }
+                            >
+                              25 to 36
+                            </RouletteButton>
+                          </Flex>
+
+                          <Flex flexDirection={["column", "row"]} gap={1}>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick(getNumberRange(1, 18))
+                              }
+                            >
+                              1 to 18
+                            </RouletteButton>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick([
+                                  2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24,
+                                  26, 28, 30, 32, 34, 36,
+                                ])
+                              }
+                            >
+                              Even
+                            </RouletteButton>
+                            <RouletteButton
+                              {...getColorStyles(redNumbers[0])}
+                              onClick={() => handleButtonClick(redNumbers)}
+                            ></RouletteButton>
+                            <RouletteButton
+                              {...getColorStyles(2)}
+                              onClick={() => handleButtonClick(blackNumbers)}
+                            ></RouletteButton>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick([
+                                  1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25,
+                                  27, 29, 31, 33, 35,
+                                ])
+                              }
+                            >
+                              Odd
+                            </RouletteButton>
+                            <RouletteButton
+                              onClick={() =>
+                                handleButtonClick(getNumberRange(19, 36))
+                              }
+                            >
+                              19 to 36
+                            </RouletteButton>
+                          </Flex>
+                        </Flex>
+                      </Flex>
 
                       {/* Undo / Clear */}
                       <Flex justifyContent="space-between" alignItems="center">
@@ -702,12 +973,8 @@ export default function Home() {
                           variant="link"
                           color="gray.200"
                           onClick={() => {
-                            toast({
-                              title: "This feature is not available yet",
-                              duration: 1000,
-                              isClosable: true,
-                              position: "top",
-                            })
+                            setBets({})
+                            setBetAmount(0)
                           }}
                         >
                           Clear
