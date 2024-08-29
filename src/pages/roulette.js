@@ -1,11 +1,10 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
-import { HamburgerIcon, LinkIcon, RepeatIcon } from "@chakra-ui/icons"
+import { HamburgerIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
   Button,
   Divider,
   Flex,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -27,9 +26,7 @@ import ChipIcon from "@/components/icons/ChipIcon"
 import RouletteBoard from "@/components/RouletteBoard"
 import UserIcon from "@/components/icons/UserIcon"
 import WalletIcon from "@/components/icons/WalletIcon"
-import AirdropIcon from "@/components/icons/AirdropIcon"
-import TwitterIcon from "@/components/icons/TwitterIcon"
-import DiscordIcon from "@/components/icons/DiscordIcon"
+import LeftNav from "@/components/LeftNav"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
@@ -43,7 +40,6 @@ export default function Home() {
 
   const [gameBalance, setGameBalance] = useState(-1)
   const [walletBalance, setWalletBalance] = useState(-1)
-  const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
 
   const [selectedChip, setSelectedChip] = useState(0)
@@ -51,40 +47,7 @@ export default function Home() {
     setSelectedChip(value)
   }
 
-  const getWinChance = (_sliderValue) => {
-    return Math.floor(SLOPE * Number(_sliderValue) + INTERCEPT)
-  }
-  const [winChance, setWinChance] = useState(getWinChance(sliderValue))
-
-  const getMultiplier = (_winChance) => {
-    // console.log("sliderValue", sliderValue)
-
-    // const houseEdge = (100 - sliderValue) / 10000 // 0.0099 or 0.99%
-    const houseEdge = 0
-    // console.log("houseEdge", houseEdge)
-
-    const _multiplier = (1 / (Number(_winChance) / 100 + houseEdge)).toFixed(3)
-    // console.log("_multiplier", _multiplier)
-    const _multiplierFixed = parseFloat(_multiplier.slice(0, -1))
-    // console.log("_multiplierFixed", _multiplierFixed)
-    return _multiplierFixed
-  }
-  const [multiplier, setMultiplier] = useState(getMultiplier(winChance))
-
-  const getProfitOnWin = (_multiplier, _betAmount) => {
-    const _profitOnWin = (_betAmount * (_multiplier - 1)).toFixed(3)
-    // console.log("_profitOnWin", _profitOnWin)
-    const _profitOnWinFixed = parseFloat(_profitOnWin.slice(0, -1))
-    // console.log("_profitOnWinFixed", _profitOnWinFixed)
-    return _profitOnWinFixed
-  }
-  const [profitOnWin, setProfitOnWin] = useState(
-    getProfitOnWin(multiplier, betAmount)
-  )
-
-  const [rollOver, setRollOver] = useState(100 - winChance)
   const [gameResults, setGameResults] = useState([])
-  const [randomValue, setRandomValue] = useState(-1)
 
   const toast = useToast()
 
@@ -472,51 +435,6 @@ export default function Home() {
     }
   }
 
-  const requestAirdrop = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const messageId = await message({
-        process: GAME_PROCESS_ID,
-        tags: [
-          {
-            name: "Action",
-            value: "Airdrop",
-          },
-        ],
-        signer: createDataItemSigner(globalThis.arweaveWallet),
-      })
-      console.log("messageId", messageId)
-
-      const _result = await result({
-        message: messageId,
-        process: GAME_PROCESS_ID,
-      })
-      console.log("_result", _result)
-
-      _result.Messages[0].Tags.find((tag) => {
-        if (tag.name === "Error") {
-          const errorStatus = tag.value ? "error" : "success"
-          toast({
-            description: `${_result.Messages[0].Data}`,
-            status: errorStatus,
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-          return true // Exit the find loop after finding the Valid tag
-        }
-      })
-    } catch (e) {
-      console.error("requestAirdrop() error!", e)
-    } finally {
-      await fetchUserBalance()
-    }
-  }
-
   const fetchUserBalance = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
@@ -536,177 +454,12 @@ export default function Home() {
     }
   }
 
-  const casinoItems = [
-    { text: "Dice", icon: <LinkIcon />, link: "/" },
-    { text: "Roulette", icon: <LinkIcon />, link: "/roulette" },
-  ]
-
-  const cryptoItems = [
-    { text: "Points Swap", icon: <LinkIcon /> },
-    { text: "Prediction Game", icon: <LinkIcon />, link: "" },
-    { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
-  ]
-
-  const GameMenuItem = ({ icon, text, link }) => (
-    <Flex alignItems="center">
-      <Button
-        leftIcon={icon}
-        variant="ghost"
-        _hover={{}}
-        color="gray.200"
-        fontWeight="normal"
-        onClick={
-          link
-            ? () => {}
-            : () =>
-                toast({
-                  title: "This feature is not available yet",
-                  duration: 1000,
-                  isClosable: true,
-                  position: "top",
-                })
-        }
-      >
-        {link ? (
-          <>
-            <Link href={link}>{text}</Link>
-          </>
-        ) : (
-          <>
-            <Link>{text}</Link>
-          </>
-        )}
-      </Button>
-    </Flex>
-  )
-
-  const labelStyles = {
-    mt: "8",
-    ml: "-2.5",
-    fontSize: "sm",
-  }
   return (
     <>
       <Flex minH="100vh" backgroundColor="#0e2229">
         <Flex w="100%">
           {/* Left */}
-          <Flex
-            minW="288px"
-            flexDirection="column"
-            display={{ base: "none", md: "flex" }}
-            boxShadow="0px 4px 4px rgba(0, 0, 0, 0.25)"
-          >
-            {/* Left Header */}
-            <Flex
-              padding={4}
-              gap={2}
-              justifyContent="flex-end"
-              alignItems="center"
-              w="100%"
-              boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
-            >
-              <Button
-                w={"100%"}
-                paddingX={8}
-                bg="#1a2c38"
-                color="gray.200"
-                _hover={{}}
-                onClick={requestAirdrop}
-              >
-                <Flex gap={4}>
-                  <AirdropIcon />
-                  <Text>Airdrop</Text>
-                </Flex>
-              </Button>
-            </Flex>
-
-            {/* Casino Games */}
-            <Flex padding={4} flexDirection="column">
-              <Flex
-                backgroundColor="#1a2c38"
-                borderRadius="md"
-                flexDirection="column"
-                gap={2}
-                padding={4}
-                color="gray.200"
-              >
-                <Text fontWeight="bold">Casino</Text>
-                <Divider />
-                {casinoItems.map((item, index) => (
-                  <GameMenuItem
-                    key={index}
-                    icon={item.icon}
-                    text={item.text}
-                    link={item.link}
-                  />
-                ))}
-              </Flex>
-            </Flex>
-
-            {/* Crypto Games */}
-            <Flex padding={4} flexDirection="column">
-              <Flex
-                backgroundColor="#1a2c38"
-                borderRadius="md"
-                flexDirection="column"
-                gap={2}
-                padding={4}
-                color="gray.200"
-              >
-                <Text fontWeight="bold">Crypto</Text>
-                <Divider />
-                {cryptoItems.map((item, index) => (
-                  <GameMenuItem
-                    key={index}
-                    icon={item.icon}
-                    text={item.text}
-                    link={item.link}
-                  />
-                ))}
-              </Flex>
-            </Flex>
-
-            {/* Socials */}
-            <Flex padding={4} alignItems="center">
-              <Flex w="100%" backgroundColor="#1a2c38" borderRadius="md">
-                <Button
-                  variant="ghost"
-                  _hover={{}}
-                  // paddingX={4}
-                  onClick={() => {
-                    toast({
-                      title: "This feature is not available yet",
-                      duration: 1000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                  }}
-                >
-                  <TwitterIcon />
-                </Button>
-                <Button
-                  variant="ghost"
-                  _hover={{}}
-                  onClick={() => {
-                    toast({
-                      title: "This feature is not available yet",
-                      duration: 1000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                  }}
-                >
-                  <DiscordIcon />
-                </Button>
-              </Flex>
-            </Flex>
-
-            <Flex paddingX={8} alignItems="center">
-              <Text color="gray.200" fontSize="xs">
-                Flip it till you make it
-              </Text>
-            </Flex>
-          </Flex>
+          <LeftNav />
 
           {/* Right */}
           <Flex w="100%" flexDirection="column" gap={1} color="gray.200">
@@ -847,7 +600,6 @@ export default function Home() {
                               setBetAmount((prev) => {
                                 let v = prev / 2
                                 if (v < 1) v = 1
-                                setProfitOnWin(getProfitOnWin(multiplier, v))
                                 return v
                               })
                             }}
@@ -868,7 +620,6 @@ export default function Home() {
                             onClick={() => {
                               setBetAmount((prev) => {
                                 const v = prev * 2
-                                setProfitOnWin(getProfitOnWin(multiplier, v))
                                 return v
                               })
                             }}
