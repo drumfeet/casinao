@@ -838,9 +838,9 @@ export default function Home() {
                   <Flex w="100%" flexDirection="column">
                     {/* Game Results Row */}
                     <Flex gap={4} flexWrap="wrap">
-                      {gameResults.map((item, index) => (
+                      {[...gameResults].reverse().map((item, index) => (
                         <>
-                          <Flex>
+                          <Flex key={index}>
                             <Text
                               textAlign={"center"}
                               key={index}
@@ -865,7 +865,7 @@ export default function Home() {
                     </Flex>
 
                     {/* Top */}
-                    <Flex paddingY={[8, 250]} paddingX={[0, 12]}>
+                    <Flex paddingY={[8, 100]} paddingX={[0, 12]}>
                       <Flex padding={4} flexDirection="column" w="100%">
                         <Text>WIP</Text>
                       </Flex>

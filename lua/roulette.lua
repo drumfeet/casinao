@@ -22,6 +22,7 @@ Balances = Balances or {}
 BASE_UNIT = BASE_UNIT or 10
 Denomination = Denomination or 12
 Ticker = Ticker or 'FLIP'
+OldRandomSeed = OldRandomSeed or 1984
 
 local printData = function(k, v)
     local _data = {
@@ -167,6 +168,20 @@ Handlers.add('withdraw', Handlers.utils.hasMatchingTag('Action', 'Withdraw'), fu
     Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
 end)
 
+local redNumbers = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 }
+local blackNumbers = { 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35 }
+local column1Numbers = { 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34 }
+local column2Numbers = { 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35 }
+local column3Numbers = { 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36 }
+local isNumberInList = function(number, list)
+    for _, num in ipairs(list) do
+        if num == number then
+            return true
+        end
+    end
+    return false
+end
+
 Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), function(msg)
     print("--------------- Start FlipBet ---------------")
 
@@ -212,32 +227,42 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         return
     end
 
-    -- Deduct the total bet amount from the user's balance
-    -- Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
-    -- printData("Balances[msg.From]", Balances[msg.From])
-    -- Balances[ao.id] = utils.add(Balances[ao.id], msg.Tags.Quantity)
-    -- printData("Balances[ao.id]", Balances[ao.id])
+    -- Generate multiple random factors for added entropy
+    local randomFactor1 = math.random()
+    local randomFactor2 = math.random()
+    local randomFactor3 = math.random()
+    local randomFactor4 = math.random()
+    local blockHeightNum = utils.toNumber(msg["Block-Height"])
+    local mixing = ((blockHeightNum * randomFactor1) / (OldRandomSeed + randomFactor2) * randomFactor3) + randomFactor4
+    local seed = math.floor(mixing * 2 ^ 32) % 2 ^ 32
+    -- Seed the random number generator with the non-deterministic seed
+    math.randomseed(seed)
+    OldRandomSeed = seed
 
-    -- Simulate the roulette spin (0 to 36)
-    local winningNumber = math.random(0, 36)
-    -- local winningNumber = 5
-    printData("winningNumber", winningNumber)
-
-    local redNumbers = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 }
-    local blackNumbers = { 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35 }
-    local column1Numbers = { 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34 }
-    local column2Numbers = { 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35 }
-    local column3Numbers = { 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36 }
-    local function isNumberInList(number, list)
-        for _, num in ipairs(list) do
-            if num == number then
-                return true
-            end
-        end
-        return false
+    local combined = tostring(msg["Timestamp"]) .. tostring(math.floor(OldRandomSeed))
+    printData("combined", combined)
+    local length = string.len(combined)
+    printData("length", length)
+    -- Generate a random index
+    local randomIndex = math.random(1, length)
+    printData("randomIndex", randomIndex)
+    -- Pick the digit at the random index
+    local discardNum = tonumber(combined:sub(randomIndex, randomIndex))
+    printData("discardNum", discardNum)
+    -- Discard the first few values to avoid issues with some RNGs' initial values
+    for i = 1, discardNum do
+        math.random()
     end
 
-    -- Now we'll process the bets to calculate winnings
+    local winningNumber = math.random(0, 36)
+    printData("winningNumber", winningNumber)
+
+    -- Deduct the total bet amount from the user's balance
+    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
+    printData("Balances[msg.From]", Balances[msg.From])
+    Balances[ao.id] = utils.add(Balances[ao.id], msg.Tags.Quantity)
+    printData("Balances[ao.id]", Balances[ao.id])
+
     local winnings = 0
 
     -- Process individual number bets
@@ -289,8 +314,8 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
 
     -- Payout the winnings to the player
     if utils.toNumber(totalWinnings) > 0 then
-        -- Balances[ao.id] = utils.subtract(Balances[ao.id], totalWinnings)
-        -- Balances[msg.From] = utils.add(Balances[msg.From], totalWinnings)
+        Balances[ao.id] = utils.subtract(Balances[ao.id], totalWinnings)
+        Balances[msg.From] = utils.add(Balances[msg.From], totalWinnings)
     end
 
     local _data = {
@@ -299,19 +324,17 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         From = msg.From,
         BlockHeight = msg["Block-Height"],
         Timestamp = msg["Timestamp"],
-        -- OldRandomSeed = OldRandomSeed,
+        OldRandomSeed = OldRandomSeed,
         WinningNumber = winningNumber,
-        -- DiscardNum = discardNum,
+        DiscardNum = discardNum,
         UserBalance = Balances[msg.From],
         GameBalance = Balances[ao.id],
         Winnings = divideByPower(totalWinnings),
     }
+    printData("_data", _data)
 
-    -- Send result back to the player
     ao.send({
         Target = msg.From,
-        WinningNumber = winningNumber,
-        Winnings = totalWinnings,
         Data = json.encode(_data),
     })
 
