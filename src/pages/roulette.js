@@ -1,5 +1,5 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { getGameBalance, getWalletBalance } from "@/lib/utils"
+import { getGameBalance, getWalletBalance } from "@/lib/roulette-utils"
 import { HamburgerIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
   Button,
@@ -132,14 +132,22 @@ export default function Home() {
   const [gameResults, setGameResults] = useState([])
   const toast = useToast()
 
-  const handleButtonClick = (numArray) => {
-    console.log("numArray: ", numArray)
+  const handleButtonClick = (betTypeOrNumbers) => {
+    console.log("betTypeOrNumbers: ", betTypeOrNumbers)
     console.log("selectedChip: ", selectedChip)
+
     const newBets = { ...bets }
-    numArray.forEach((num) => {
-      newBets[num] = (newBets[num] || 0) + selectedChip
-      setBetAmount((prev) => prev + selectedChip)
-    })
+    if (typeof betTypeOrNumbers === "string") {
+      // This is a bet type like "Red", "Black", etc.
+      newBets[betTypeOrNumbers] =
+        (newBets[betTypeOrNumbers] || 0) + selectedChip
+    } else if (Array.isArray(betTypeOrNumbers)) {
+      // This is an array of numbers
+      betTypeOrNumbers.forEach((num) => {
+        newBets[num] = (newBets[num] || 0) + selectedChip
+      })
+    }
+    setBetAmount((prev) => prev + selectedChip)
     setBets(newBets)
   }
   const LoginModal = () => {
@@ -552,16 +560,38 @@ export default function Home() {
     }
 
     try {
+      const _gameBalance = multiplyByPower(gameBalance)
       const _betAmount = multiplyByPower(betAmount)
-      console.log("_betAmount", _betAmount)
+      console.log("gameBalance", gameBalance)
+      console.log("betAmount", betAmount)
       console.log("bets", bets)
-      return
+
+      if (_gameBalance < _betAmount) {
+        toast({
+          title: (
+            <>
+              <Flex alignItems="center" gap={2}>
+                Insufficient funds
+                <WalletIcon />
+              </Flex>
+            </>
+          ),
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      setGameBalance(divideByPower(_gameBalance - _betAmount))
+
       const messageId = await message({
         process: GAME_PROCESS_ID,
         tags: [
           {
             name: "Action",
-            value: "Bet",
+            value: "FlipBet",
           },
           {
             name: "Quantity",
@@ -569,7 +599,7 @@ export default function Home() {
           },
           {
             name: "Bets",
-            value: JSON.stringify({ result: true, count: 42, 1: 1, 2: 2 }),
+            value: JSON.stringify(bets),
           },
         ],
         signer: createDataItemSigner(globalThis.arweaveWallet),
@@ -581,10 +611,30 @@ export default function Home() {
         process: GAME_PROCESS_ID,
       })
       console.log("_result", _result)
+
+      const errorTag = _result.Messages[0].Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+      setGameResults((prevResults) => [...prevResults, jsonObj])
+      playWinSound()
     } catch (e) {
       console.error("flipBet() error!", e)
     } finally {
-      // await fetchUserBalance()
+      await fetchUserBalance()
     }
   }
 
@@ -792,13 +842,22 @@ export default function Home() {
                         <>
                           <Flex>
                             <Text
+                              textAlign={"center"}
                               key={index}
+                              minW="40px"
+                              maxW="40px"
                               borderRadius={"3xl"}
                               paddingX={2}
                               paddingY={1}
-                              bg={item.PlayerWon ? "green" : "red.500"}
+                              bg={
+                                redNumbers.includes(item.WinningNumber)
+                                  ? "red.500"
+                                  : blackNumbers.includes(item.WinningNumber)
+                                  ? "#304553"
+                                  : "green.500" // for 0
+                              }
                             >
-                              {item.RandomValue}
+                              {item.WinningNumber}
                             </Text>
                           </Flex>
                         </>
@@ -866,138 +925,30 @@ export default function Home() {
                             <RouletteButton
                               flex="1"
                               initialChildren="2:1"
-                              resetClicked={
-                                ![
-                                  bets[1],
-                                  bets[4],
-                                  bets[7],
-                                  bets[10],
-                                  bets[13],
-                                  bets[16],
-                                  bets[19],
-                                  bets[22],
-                                  bets[25],
-                                  bets[28],
-                                  bets[31],
-                                  bets[34],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["2:1_1"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[1],
-                                    bets[4],
-                                    bets[7],
-                                    bets[10],
-                                    bets[13],
-                                    bets[16],
-                                    bets[19],
-                                    bets[22],
-                                    bets[25],
-                                    bets[28],
-                                    bets[31],
-                                    bets[34],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["2:1_1"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick([
-                                  1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34,
-                                ])
-                              }
+                              onClick={() => handleButtonClick("2:1_1")}
                             />
 
                             <RouletteButton
                               flex="1"
                               initialChildren="2:1"
+                              resetClicked={!bets["2:1_2"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[2],
-                                    bets[5],
-                                    bets[8],
-                                    bets[11],
-                                    bets[14],
-                                    bets[17],
-                                    bets[20],
-                                    bets[23],
-                                    bets[26],
-                                    bets[29],
-                                    bets[32],
-                                    bets[35],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["2:1_2"]?.toString()} />
                               }
-                              resetClicked={
-                                ![
-                                  bets[2],
-                                  bets[5],
-                                  bets[8],
-                                  bets[11],
-                                  bets[14],
-                                  bets[17],
-                                  bets[20],
-                                  bets[23],
-                                  bets[26],
-                                  bets[29],
-                                  bets[32],
-                                  bets[35],
-                                ].some(Boolean)
-                              }
-                              onClick={() =>
-                                handleButtonClick([
-                                  2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35,
-                                ])
-                              }
+                              onClick={() => handleButtonClick("2:1_2")}
                             ></RouletteButton>
                             <RouletteButton
                               flex="1"
                               initialChildren="2:1"
-                              resetClicked={
-                                ![
-                                  bets[3],
-                                  bets[6],
-                                  bets[9],
-                                  bets[12],
-                                  bets[15],
-                                  bets[18],
-                                  bets[21],
-                                  bets[24],
-                                  bets[27],
-                                  bets[30],
-                                  bets[33],
-                                  bets[36],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["2:1_3"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[3],
-                                    bets[6],
-                                    bets[9],
-                                    bets[12],
-                                    bets[15],
-                                    bets[18],
-                                    bets[21],
-                                    bets[24],
-                                    bets[27],
-                                    bets[30],
-                                    bets[33],
-                                    bets[36],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["2:1_3"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick([
-                                  3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36,
-                                ])
-                              }
+                              onClick={() => handleButtonClick("2:1_3")}
                             ></RouletteButton>
                           </Flex>
                         </Flex>
@@ -1010,462 +961,80 @@ export default function Home() {
                           <Flex flexDirection={["column", "row"]} gap={1}>
                             <RouletteButton
                               initialChildren="1 to 12"
-                              resetClicked={
-                                ![
-                                  bets[1],
-                                  bets[2],
-                                  bets[3],
-                                  bets[4],
-                                  bets[5],
-                                  bets[6],
-                                  bets[7],
-                                  bets[8],
-                                  bets[9],
-                                  bets[10],
-                                  bets[11],
-                                  bets[12],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["1to12"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[1],
-                                    bets[2],
-                                    bets[3],
-                                    bets[4],
-                                    bets[5],
-                                    bets[6],
-                                    bets[7],
-                                    bets[8],
-                                    bets[9],
-                                    bets[10],
-                                    bets[11],
-                                    bets[12],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["1to12"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick(getNumberRange(1, 12))
-                              }
-                            >
-                              1 to 12
-                            </RouletteButton>
+                              onClick={() => handleButtonClick("1to12")}
+                            ></RouletteButton>
                             <RouletteButton
                               initialChildren="13 to 24"
-                              resetClicked={
-                                ![
-                                  bets[13],
-                                  bets[14],
-                                  bets[15],
-                                  bets[16],
-                                  bets[17],
-                                  bets[18],
-                                  bets[19],
-                                  bets[20],
-                                  bets[21],
-                                  bets[22],
-                                  bets[23],
-                                  bets[24],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["13to24"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[13],
-                                    bets[14],
-                                    bets[15],
-                                    bets[16],
-                                    bets[17],
-                                    bets[18],
-                                    bets[19],
-                                    bets[20],
-                                    bets[21],
-                                    bets[22],
-                                    bets[23],
-                                    bets[24],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["13to24"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick(getNumberRange(13, 24))
-                              }
+                              onClick={() => handleButtonClick("13to24")}
                             ></RouletteButton>
                             <RouletteButton
                               initialChildren="25 to 36"
-                              resetClicked={
-                                ![
-                                  bets[25],
-                                  bets[26],
-                                  bets[27],
-                                  bets[28],
-                                  bets[29],
-                                  bets[30],
-                                  bets[31],
-                                  bets[32],
-                                  bets[33],
-                                  bets[34],
-                                  bets[35],
-                                  bets[36],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["25to36"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[25],
-                                    bets[26],
-                                    bets[27],
-                                    bets[28],
-                                    bets[29],
-                                    bets[30],
-                                    bets[31],
-                                    bets[32],
-                                    bets[33],
-                                    bets[34],
-                                    bets[35],
-                                    bets[36],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["25to36"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick(getNumberRange(25, 36))
-                              }
+                              onClick={() => handleButtonClick("25to36")}
                             ></RouletteButton>
                           </Flex>
 
                           <Flex flexDirection={["column", "row"]} gap={1}>
                             <RouletteButton
                               initialChildren="1 to 18"
-                              resetClicked={
-                                ![
-                                  bets[1],
-                                  bets[2],
-                                  bets[3],
-                                  bets[4],
-                                  bets[5],
-                                  bets[6],
-                                  bets[7],
-                                  bets[8],
-                                  bets[9],
-                                  bets[10],
-                                  bets[11],
-                                  bets[12],
-                                  bets[13],
-                                  bets[14],
-                                  bets[15],
-                                  bets[16],
-                                  bets[17],
-                                  bets[18],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["1to18"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[1],
-                                    bets[2],
-                                    bets[3],
-                                    bets[4],
-                                    bets[5],
-                                    bets[6],
-                                    bets[7],
-                                    bets[8],
-                                    bets[9],
-                                    bets[10],
-                                    bets[11],
-                                    bets[12],
-                                    bets[13],
-                                    bets[14],
-                                    bets[15],
-                                    bets[16],
-                                    bets[17],
-                                    bets[18],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["1to18"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick(getNumberRange(1, 18))
-                              }
+                              onClick={() => handleButtonClick("1to18")}
                             ></RouletteButton>
                             <RouletteButton
                               initialChildren="Even"
-                              resetClicked={
-                                ![
-                                  bets[2],
-                                  bets[4],
-                                  bets[6],
-                                  bets[8],
-                                  bets[10],
-                                  bets[12],
-                                  bets[14],
-                                  bets[16],
-                                  bets[18],
-                                  bets[20],
-                                  bets[22],
-                                  bets[24],
-                                  bets[26],
-                                  bets[28],
-                                  bets[30],
-                                  bets[32],
-                                  bets[34],
-                                  bets[36],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["even"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[2],
-                                    bets[4],
-                                    bets[6],
-                                    bets[8],
-                                    bets[10],
-                                    bets[12],
-                                    bets[14],
-                                    bets[16],
-                                    bets[18],
-                                    bets[20],
-                                    bets[22],
-                                    bets[24],
-                                    bets[26],
-                                    bets[28],
-                                    bets[30],
-                                    bets[32],
-                                    bets[34],
-                                    bets[36],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["even"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick([
-                                  2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24,
-                                  26, 28, 30, 32, 34, 36,
-                                ])
-                              }
+                              onClick={() => handleButtonClick("even")}
                             ></RouletteButton>
                             <RouletteButton
                               {...getColorStyles(redNumbers[0])}
                               initialChildren="Red"
-                              resetClicked={
-                                ![
-                                  bets[1],
-                                  bets[3],
-                                  bets[5],
-                                  bets[7],
-                                  bets[9],
-                                  bets[12],
-                                  bets[14],
-                                  bets[16],
-                                  bets[18],
-                                  bets[19],
-                                  bets[21],
-                                  bets[23],
-                                  bets[25],
-                                  bets[27],
-                                  bets[30],
-                                  bets[32],
-                                  bets[34],
-                                  bets[36],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["red"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[1],
-                                    bets[3],
-                                    bets[5],
-                                    bets[7],
-                                    bets[9],
-                                    bets[12],
-                                    bets[14],
-                                    bets[16],
-                                    bets[18],
-                                    bets[19],
-                                    bets[21],
-                                    bets[23],
-                                    bets[25],
-                                    bets[27],
-                                    bets[30],
-                                    bets[32],
-                                    bets[34],
-                                    bets[36],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["red"]?.toString()} />
                               }
-                              onClick={() => handleButtonClick(redNumbers)}
+                              onClick={() => handleButtonClick("red")}
                             ></RouletteButton>
                             <RouletteButton
                               {...getColorStyles(2)}
                               initialChildren="Black"
-                              resetClicked={
-                                ![
-                                  bets[2],
-                                  bets[4],
-                                  bets[6],
-                                  bets[8],
-                                  bets[10],
-                                  bets[11],
-                                  bets[13],
-                                  bets[15],
-                                  bets[17],
-                                  bets[20],
-                                  bets[22],
-                                  bets[24],
-                                  bets[26],
-                                  bets[28],
-                                  bets[29],
-                                  bets[31],
-                                  bets[33],
-                                  bets[35],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["black"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[2],
-                                    bets[4],
-                                    bets[6],
-                                    bets[8],
-                                    bets[10],
-                                    bets[11],
-                                    bets[13],
-                                    bets[15],
-                                    bets[17],
-                                    bets[20],
-                                    bets[22],
-                                    bets[24],
-                                    bets[26],
-                                    bets[28],
-                                    bets[29],
-                                    bets[31],
-                                    bets[33],
-                                    bets[35],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["black"]?.toString()} />
                               }
-                              onClick={() => handleButtonClick(blackNumbers)}
+                              onClick={() => handleButtonClick("black")}
                             ></RouletteButton>
                             <RouletteButton
                               initialChildren="Odd"
-                              resetClicked={
-                                ![
-                                  bets[1],
-                                  bets[3],
-                                  bets[5],
-                                  bets[7],
-                                  bets[9],
-                                  bets[11],
-                                  bets[13],
-                                  bets[15],
-                                  bets[17],
-                                  bets[19],
-                                  bets[21],
-                                  bets[23],
-                                  bets[25],
-                                  bets[27],
-                                  bets[29],
-                                  bets[31],
-                                  bets[33],
-                                  bets[35],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["odd"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[1],
-                                    bets[3],
-                                    bets[5],
-                                    bets[7],
-                                    bets[9],
-                                    bets[11],
-                                    bets[13],
-                                    bets[15],
-                                    bets[17],
-                                    bets[19],
-                                    bets[21],
-                                    bets[23],
-                                    bets[25],
-                                    bets[27],
-                                    bets[29],
-                                    bets[31],
-                                    bets[33],
-                                    bets[35],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["odd"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick([
-                                  1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25,
-                                  27, 29, 31, 33, 35,
-                                ])
-                              }
+                              onClick={() => handleButtonClick("odd")}
                             ></RouletteButton>
                             <RouletteButton
                               initialChildren="19 to 36"
-                              resetClicked={
-                                ![
-                                  bets[19],
-                                  bets[20],
-                                  bets[21],
-                                  bets[22],
-                                  bets[23],
-                                  bets[24],
-                                  bets[25],
-                                  bets[26],
-                                  bets[27],
-                                  bets[28],
-                                  bets[29],
-                                  bets[30],
-                                  bets[31],
-                                  bets[32],
-                                  bets[33],
-                                  bets[34],
-                                  bets[35],
-                                  bets[36],
-                                ].some(Boolean)
-                              }
+                              resetClicked={!bets["19to36"]}
                               clickedChildren={
-                                <ChipIcon
-                                  text={[
-                                    bets[19],
-                                    bets[20],
-                                    bets[21],
-                                    bets[22],
-                                    bets[23],
-                                    bets[24],
-                                    bets[25],
-                                    bets[26],
-                                    bets[27],
-                                    bets[28],
-                                    bets[29],
-                                    bets[30],
-                                    bets[31],
-                                    bets[32],
-                                    bets[33],
-                                    bets[34],
-                                    bets[35],
-                                    bets[36],
-                                  ]
-                                    .reduce((acc, curr) => acc + curr, 0)
-                                    .toString()}
-                                />
+                                <ChipIcon text={bets["19to36"]?.toString()} />
                               }
-                              onClick={() =>
-                                handleButtonClick(getNumberRange(19, 36))
-                              }
+                              onClick={() => handleButtonClick("19to36")}
                             ></RouletteButton>
                           </Flex>
                         </Flex>
