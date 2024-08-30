@@ -16,43 +16,43 @@ const cryptoItems = [
   { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
 ]
 
-const GameMenuItem = ({ icon, text, link }) => (
-  <Flex alignItems="center">
-    <Button
-      leftIcon={icon}
-      variant="ghost"
-      _hover={{}}
-      color="gray.200"
-      fontWeight="normal"
-      onClick={
-        link
-          ? () => {}
-          : () =>
-              toast({
-                title: "This feature is not available yet",
-                duration: 1000,
-                isClosable: true,
-                position: "top",
-              })
-      }
-    >
-      {link ? (
-        <>
-          <Link href={link}>{text}</Link>
-        </>
-      ) : (
-        <>
-          <Link>{text}</Link>
-        </>
-      )}
-    </Button>
-  </Flex>
-)
-
 const GAME_PROCESS_ID = "VcBNAf6TWi7_B5WnQa5EXEVMy214jh0ADlEGiyA2-cg"
 
 export default function LeftNav() {
   const toast = useToast()
+
+  const GameMenuItem = ({ icon, text, link }) => (
+    <Flex alignItems="center">
+      <Button
+        leftIcon={icon}
+        variant="ghost"
+        _hover={{}}
+        color="gray.200"
+        fontWeight="normal"
+        onClick={
+          link
+            ? () => {}
+            : () =>
+                toast({
+                  title: "This feature is not available yet",
+                  duration: 1000,
+                  isClosable: true,
+                  position: "top",
+                })
+        }
+      >
+        {link ? (
+          <>
+            <Link href={link}>{text}</Link>
+          </>
+        ) : (
+          <>
+            <Link>{text}</Link>
+          </>
+        )}
+      </Button>
+    </Flex>
+  )
 
   const connectWallet = async () => {
     try {
