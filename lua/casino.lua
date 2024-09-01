@@ -49,8 +49,10 @@ end
 local sendErrorMessage = function(msg, err, target)
     if not target then
         ao.send({ Target = msg.From, Error = true, Data = err })
+        printData("Error", "Target" .. " " .. msg.From .. " " .. err)
     else
         ao.send({ Target = target, Error = true, Data = err })
+        printData("Error", "Target" .. " " .. target .. " " .. err)
     end
 end
 
