@@ -552,7 +552,7 @@ export default function Home() {
     }
   }
 
-  const flipBet = async () => {
+  const flipRoulette = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
       return
@@ -590,7 +590,7 @@ export default function Home() {
         tags: [
           {
             name: "Action",
-            value: "FlipBet",
+            value: "Roulette",
           },
           {
             name: "Quantity",
@@ -631,7 +631,7 @@ export default function Home() {
       setGameResults((prevResults) => [...prevResults, jsonObj])
       playWinSound()
     } catch (e) {
-      console.error("flipBet() error!", e)
+      console.error("flipRoulette() error!", e)
     } finally {
       await fetchUserBalance()
     }
@@ -820,7 +820,7 @@ export default function Home() {
                     bg="#00e700"
                     paddingY={8}
                     _hover={{}}
-                    onClick={flipBet}
+                    onClick={flipRoulette}
                   >
                     Bet
                   </Button>
