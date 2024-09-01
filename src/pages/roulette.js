@@ -565,24 +565,6 @@ export default function Home() {
       console.log("betAmount", betAmount)
       console.log("bets", bets)
 
-      if (_gameBalance < _betAmount) {
-        toast({
-          title: (
-            <>
-              <Flex alignItems="center" gap={2}>
-                Insufficient funds
-                <WalletIcon />
-              </Flex>
-            </>
-          ),
-          status: "error",
-          duration: 2000,
-          isClosable: true,
-          position: "top",
-        })
-        return
-      }
-
       const messageId = await message({
         process: GAME_PROCESS_ID,
         tags: [

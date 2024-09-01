@@ -509,9 +509,12 @@ export default function Home() {
     }
 
     try {
+      const _gameBalance = multiplyByPower(gameBalance)
       const _betAmount = multiplyByPower(betAmount)
+      console.log("gameBalance", gameBalance)
       console.log("_betAmount", _betAmount)
       console.log("sliderValue", sliderValue)
+
       const messageId = await message({
         process: GAME_PROCESS_ID,
         tags: [
