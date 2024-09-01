@@ -635,10 +635,9 @@ export default function Home() {
       )
       console.log("errorTag", errorTag)
       if (errorTag) {
-        const errorStatus = errorTag.value ? "error" : "success"
         toast({
-          description: `${_result.Messages[0].Data}`,
-          status: errorStatus,
+          description: _result.Messages[0].Data,
+          status: "error",
           duration: 2000,
           isClosable: true,
           position: "top",
@@ -1086,9 +1085,9 @@ export default function Home() {
                   <Flex w="100%" flexDirection="column">
                     {/* Game Results Row */}
                     <Flex gap={4} flexWrap="wrap">
-                      {gameResults.map((item, index) => (
+                      {[...gameResults].reverse().map((item, index) => (
                         <>
-                          <Flex>
+                          <Flex key={index}>
                             <Text
                               key={index}
                               borderRadius={"3xl"}
