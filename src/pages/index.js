@@ -428,7 +428,7 @@ export default function Home() {
   }
 
   const sliderChanged = (_sliderValue) => {
-    // console.log("_sliderValue", _sliderValue)
+    console.log("_sliderValue", _sliderValue)
     setSliderValue(_sliderValue)
     const _winChance = getWinChance(_sliderValue)
     setWinChance(_winChance)
@@ -791,7 +791,10 @@ export default function Home() {
                         <>
                           <Flex key={index}>
                             <Text
+                              textAlign="center"
                               key={index}
+                              minW="40px"
+                              maxW="40px"
                               borderRadius={"3xl"}
                               paddingX={2}
                               paddingY={1}

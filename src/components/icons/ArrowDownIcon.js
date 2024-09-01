@@ -6,7 +6,7 @@ const ArrowDownIcon = () => {
       width="20"
       height="20"
       viewBox="0 0 24 24"
-      strokWidth="1.5"
+      strokeWidth="1.5"
       stroke="#E2E8F0"
       fill="none"
       strokeLinecap="round"

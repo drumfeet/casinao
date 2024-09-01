@@ -403,14 +403,11 @@ Handlers.add('dice', Handlers.utils.hasMatchingTag('Action', 'Dice'), function(m
         math.random()
     end
     -- Generate a random number to determine win or loss
-    local _randomValue = math.random() * 100
-    print("_randomValue: " .. tostring(_randomValue))
-    -- Convert the number to a string and find the decimal point
-    local truncatedStr = string.match(string.format("%.12f", _randomValue), "%d+%.%d%d")
-    local randomValue = tonumber(truncatedStr)
+    local randomValue = math.random(0, 100)
+    print("randomValue: " .. tostring(randomValue))
 
-    local SLOPE = tonumber(-0.96)
-    local INTERCEPT = tonumber(98)
+    local SLOPE = tonumber(-0.96)  -- This slope controls the rate of change in win chance
+    local INTERCEPT = tonumber(98) -- This intercept ensures win chance starts at 98%
     local _winChance = math.floor(SLOPE * sliderNum + INTERCEPT)
     print("_winChance: " .. _winChance)
     local _rollOver = 100 - _winChance
