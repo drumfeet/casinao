@@ -4,6 +4,7 @@ import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
 import { LinkIcon } from "@chakra-ui/icons"
+import GithubIcon from "./icons/GithubIcon"
 
 const casinoItems = [
   { text: "Dice", icon: <LinkIcon />, link: "/" },
@@ -198,7 +199,6 @@ export default function LeftNav() {
           <Button
             variant="ghost"
             _hover={{}}
-            // paddingX={4}
             onClick={() => {
               toast({
                 title: "This feature is not available yet",
@@ -223,6 +223,15 @@ export default function LeftNav() {
             }}
           >
             <DiscordIcon />
+          </Button>
+          <Button
+            as="a"
+            href="https://github.com/drumfeet/aoflip"
+            target="_blank"
+            variant="ghost"
+            _hover={{}}
+          >
+            <GithubIcon />
           </Button>
         </Flex>
       </Flex>
