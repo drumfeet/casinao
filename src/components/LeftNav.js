@@ -17,7 +17,7 @@ const cryptoItems = [
   { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
 ]
 
-const GAME_PROCESS_ID = "PADEZbrkTHafqOtYRsgZRXLvJFv6xrPyxPsYR9KqGic"
+const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
 export default function LeftNav() {
   const toast = useToast()

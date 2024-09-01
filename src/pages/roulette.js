@@ -1,5 +1,5 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { getGameBalance, getWalletBalance } from "@/lib/roulette-utils"
+import { getGameBalance, getWalletBalance } from "@/lib/utils"
 import { HamburgerIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
   Button,
@@ -23,7 +23,6 @@ import {
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import ChipIcon from "@/components/icons/ChipIcon"
-import RouletteBoard from "@/components/RouletteBoard"
 import UserIcon from "@/components/icons/UserIcon"
 import WalletIcon from "@/components/icons/WalletIcon"
 import LeftNav from "@/components/LeftNav"
@@ -112,7 +111,7 @@ const RouletteButton = ({
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
-  const GAME_PROCESS_ID = "PADEZbrkTHafqOtYRsgZRXLvJFv6xrPyxPsYR9KqGic"
+  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
@@ -879,7 +878,7 @@ export default function Home() {
                       flexDirection="column"
                       borderRadius="md"
                     >
-                      {/* <RouletteBoard /> */}
+                      {/* RouletteBoard */}
                       <Flex flexDirection="column" gap={1}>
                         <Flex flexDirection={["column", "row"]} gap={1}>
                           <Flex flexDirection={["row", "column"]} gap={1}>

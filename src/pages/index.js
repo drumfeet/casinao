@@ -11,7 +11,6 @@ import {
   Button,
   Divider,
   Flex,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -34,10 +33,11 @@ import {
   useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
+import LeftNav from "@/components/LeftNav"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
-  const GAME_PROCESS_ID = "VcBNAf6TWi7_B5WnQa5EXEVMy214jh0ADlEGiyA2-cg"
+  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const BASE_UNIT = 10
   const DENOMINATION = 12
   const TICKER = "FLIP"
@@ -530,51 +530,6 @@ export default function Home() {
     }
   }
 
-  const requestAirdrop = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const messageId = await message({
-        process: GAME_PROCESS_ID,
-        tags: [
-          {
-            name: "Action",
-            value: "Airdrop",
-          },
-        ],
-        signer: createDataItemSigner(globalThis.arweaveWallet),
-      })
-      console.log("messageId", messageId)
-
-      const _result = await result({
-        message: messageId,
-        process: GAME_PROCESS_ID,
-      })
-      console.log("_result", _result)
-
-      _result.Messages[0].Tags.find((tag) => {
-        if (tag.name === "Error") {
-          const errorStatus = tag.value ? "error" : "success"
-          toast({
-            description: `${_result.Messages[0].Data}`,
-            status: errorStatus,
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-          return true // Exit the find loop after finding the Valid tag
-        }
-      })
-    } catch (e) {
-      console.error("requestAirdrop() error!", e)
-    } finally {
-      await fetchUserBalance()
-    }
-  }
-
   const fetchUserBalance = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
@@ -668,50 +623,6 @@ export default function Home() {
     }
   }
 
-  const casinoItems = [
-    { text: "Dice", icon: <LinkIcon />, link: "/" },
-    { text: "Roulette", icon: <LinkIcon />, link: "/roulette" },
-  ]
-
-  const cryptoItems = [
-    { text: "Points Swap", icon: <LinkIcon /> },
-    { text: "Prediction Game", icon: <LinkIcon />, link: "" },
-    { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
-  ]
-
-  const GameMenuItem = ({ icon, text, link }) => (
-    <Flex alignItems="center">
-      <Button
-        leftIcon={icon}
-        variant="ghost"
-        _hover={{}}
-        color="gray.200"
-        fontWeight="normal"
-        onClick={
-          link
-            ? () => {}
-            : () =>
-                toast({
-                  title: "This feature is not available yet",
-                  duration: 1000,
-                  isClosable: true,
-                  position: "top",
-                })
-        }
-      >
-        {link ? (
-          <>
-            <Link href={link}>{text}</Link>
-          </>
-        ) : (
-          <>
-            <Link>{text}</Link>
-          </>
-        )}
-      </Button>
-    </Flex>
-  )
-
   const labelStyles = {
     mt: "8",
     ml: "-2.5",
@@ -722,172 +633,7 @@ export default function Home() {
       <Flex minH="100vh" backgroundColor="#0e2229">
         <Flex w="100%">
           {/* Left */}
-          <Flex
-            minW="288px"
-            flexDirection="column"
-            display={{ base: "none", md: "flex" }}
-            boxShadow="0px 4px 4px rgba(0, 0, 0, 0.25)"
-          >
-            {/* Left Header */}
-            <Flex
-              padding={4}
-              gap={2}
-              justifyContent="flex-end"
-              alignItems="center"
-              w="100%"
-              boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
-            >
-              <Button
-                w={"100%"}
-                paddingX={8}
-                bg="#1a2c38"
-                color="gray.200"
-                _hover={{}}
-                onClick={requestAirdrop}
-              >
-                <Flex gap={4}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-parachute"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M22 12a10 10 0 1 0 -20 0" />
-                    <path d="M22 12c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3c0 -1.66 -1.57 -3 -3.5 -3s-3.5 1.34 -3.5 3c0 -1.66 -1.46 -3 -3.25 -3c-1.8 0 -3.25 1.34 -3.25 3" />
-                    <path d="M2 12l10 10l-3.5 -10" />
-                    <path d="M15.5 12l-3.5 10l10 -10" />
-                  </svg>
-                  <Text>Airdrop</Text>
-                </Flex>
-              </Button>
-            </Flex>
-
-            {/* Casino Games */}
-            <Flex padding={4} flexDirection="column">
-              <Flex
-                backgroundColor="#1a2c38"
-                borderRadius="md"
-                flexDirection="column"
-                gap={2}
-                padding={4}
-                color="gray.200"
-              >
-                <Text fontWeight="bold">Casino</Text>
-                <Divider />
-                {casinoItems.map((item, index) => (
-                  <GameMenuItem
-                    key={index}
-                    icon={item.icon}
-                    text={item.text}
-                    link={item.link}
-                  />
-                ))}
-              </Flex>
-            </Flex>
-
-            {/* Crypto Games */}
-            <Flex padding={4} flexDirection="column">
-              <Flex
-                backgroundColor="#1a2c38"
-                borderRadius="md"
-                flexDirection="column"
-                gap={2}
-                padding={4}
-                color="gray.200"
-              >
-                <Text fontWeight="bold">Crypto</Text>
-                <Divider />
-                {cryptoItems.map((item, index) => (
-                  <GameMenuItem
-                    key={index}
-                    icon={item.icon}
-                    text={item.text}
-                    link={item.link}
-                  />
-                ))}
-              </Flex>
-            </Flex>
-
-            {/* Socials */}
-            <Flex padding={4} alignItems="center">
-              <Flex w="100%" backgroundColor="#1a2c38" borderRadius="md">
-                <Button
-                  variant="ghost"
-                  _hover={{}}
-                  // paddingX={4}
-                  onClick={() => {
-                    toast({
-                      title: "This feature is not available yet",
-                      duration: 1000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-brand-x"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-                    <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-                  </svg>
-                </Button>
-                <Button
-                  variant="ghost"
-                  _hover={{}}
-                  onClick={() => {
-                    toast({
-                      title: "This feature is not available yet",
-                      duration: 1000,
-                      isClosable: true,
-                      position: "top",
-                    })
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-brand-discord"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="#E2E8F0"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                    <path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                    <path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" />
-                    <path d="M7 16.5c3.5 1 6.5 1 10 0" />
-                  </svg>
-                </Button>
-              </Flex>
-            </Flex>
-
-            <Flex paddingX={8} alignItems="center">
-              <Text color="gray.200" fontSize="xs">
-                Flip it till you make it
-              </Text>
-            </Flex>
-          </Flex>
+          <LeftNav />
 
           {/* Right */}
           <Flex w="100%" flexDirection="column" gap={1} color="gray.200">
