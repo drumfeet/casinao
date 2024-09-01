@@ -34,6 +34,9 @@ import {
 } from "@chakra-ui/react"
 import { useState } from "react"
 import LeftNav from "@/components/LeftNav"
+import WalletIcon from "@/components/icons/WalletIcon"
+import UserIcon from "@/components/icons/UserIcon"
+import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
@@ -133,44 +136,9 @@ export default function Home() {
       <>
         <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
           {walletBalance >= 0 || gameBalance >= 0 ? (
-            <>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-user-square-rounded"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="#E2E8F0"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M12 13a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" />
-                <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" />
-                <path d="M6 20.05v-.05a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v.05" />
-              </svg>
-            </>
+            <UserIcon />
           ) : (
-            <>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-wallet"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="#E2E8F0"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
-                <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
-              </svg>
-            </>
+            <WalletIcon />
           )}
         </Flex>
 
@@ -366,22 +334,7 @@ export default function Home() {
                     <>
                       <Flex alignItems="center" gap={2}>
                         Connect wallet first
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="icon icon-tabler icon-tabler-wallet"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="#E2E8F0"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
-                          <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
-                        </svg>
+                        <WalletIcon />
                       </Flex>
                     </>
                   ),
@@ -897,25 +850,7 @@ export default function Home() {
                             >
                               <Flex flexDirection="column" alignItems="center">
                                 {randomValue}
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  class="icon icon-tabler icon-tabler-arrow-big-down"
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="1.5"
-                                  stroke="#E2E8F0"
-                                  fill="none"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                >
-                                  <path
-                                    stroke="none"
-                                    d="M0 0h24v24H0z"
-                                    fill="none"
-                                  />
-                                  <path d="M15 4v8h3.586a1 1 0 0 1 .707 1.707l-6.586 6.586a1 1 0 0 1 -1.414 0l-6.586 -6.586a1 1 0 0 1 .707 -1.707h3.586v-8a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1z" />
-                                </svg>
+                                <ArrowDownIcon />
                               </Flex>
                             </SliderMark>
                           )}
