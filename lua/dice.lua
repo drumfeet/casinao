@@ -284,8 +284,8 @@ Handlers.add('flip.bet', Handlers.utils.hasMatchingTag('Action', 'FlipBet'), fun
         ao.send({ Target = msg.From, Won = true, Data = json.encode(_data) })
     else
         print(msg.From .. " PLAYER LOST")
-        Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Quantity)
-        Flippers[ao.id] = utils.add(Flippers[ao.id], msg.Quantity)
+        Flippers[msg.From] = utils.subtract(Flippers[msg.From], msg.Tags.Quantity)
+        Flippers[ao.id] = utils.add(Flippers[ao.id], msg.Tags.Quantity)
 
         local _data = {
             Action = msg.Action,

@@ -635,10 +635,9 @@ export default function Home() {
       )
       console.log("errorTag", errorTag)
       if (errorTag) {
-        const errorStatus = errorTag.value ? "error" : "success"
         toast({
-          description: `${_result.Messages[0].Data}`,
-          status: errorStatus,
+          description: _result.Messages[0].Data,
+          status: "error",
           duration: 2000,
           isClosable: true,
           position: "top",
@@ -671,7 +670,7 @@ export default function Home() {
 
   const casinoItems = [
     { text: "Dice", icon: <LinkIcon />, link: "/" },
-    { text: "Roulette", icon: <LinkIcon />, link: "" },
+    { text: "Roulette", icon: <LinkIcon />, link: "/roulette" },
   ]
 
   const cryptoItems = [
@@ -963,14 +962,9 @@ export default function Home() {
                     <Button
                       borderRadius="3xl"
                       px={8}
-                      // onClick={() => {
-                      //   toast({
-                      //     title: "This feature is not available yet",
-                      //     duration: 1000,
-                      //     isClosable: true,
-                      //     position: "top",
-                      //   })
-                      // }}
+                      bg="#304553"
+                      color="gray.200"
+                      _hover={{}}
                     >
                       Manual
                     </Button>
@@ -978,6 +972,7 @@ export default function Home() {
                       borderRadius="3xl"
                       px={8}
                       variant="link"
+                      color="gray.200"
                       onClick={() => {
                         toast({
                           title: "This feature is not available yet",
@@ -991,33 +986,75 @@ export default function Home() {
                     </Button>
                   </Flex>
                   <Flex flexDirection="column">
-                    <Text>Bet Amount</Text>
-                    <NumberInput
-                      // step={1}
-                      precision={2}
-                      defaultValue={betAmount}
-                      min={1}
-                      onChange={(e) => {
-                        setBetAmount(e)
-                        setProfitOnWin(getProfitOnWin(multiplier, e))
-                      }}
-                    >
-                      <NumberInputField bg="#0e212e" borderColor="#0e212e" />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper
+                    <Text color="#b1bad3">Bet Amount</Text>
+                    <Flex padding={1} bg="#304553" borderRadius="md" gap={2}>
+                      <NumberInput
+                        precision={2}
+                        value={betAmount}
+                        min={1}
+                        onChange={(e) => {
+                          setBetAmount(e)
+                          setProfitOnWin(getProfitOnWin(multiplier, e))
+                        }}
+                      >
+                        <NumberInputField
+                          bg="#0e212e"
                           borderColor="#0e212e"
-                          color="gray.200"
+                          borderRadius="none"
                         />
-                        <NumberDecrementStepper
-                          borderColor="#0e212e"
-                          color="gray.200"
-                        />
-                      </NumberInputStepper>
-                    </NumberInput>
+                        <NumberInputStepper>
+                          <NumberIncrementStepper
+                            borderColor="#0e212e"
+                            color="gray.200"
+                          />
+                          <NumberDecrementStepper
+                            borderColor="#0e212e"
+                            color="gray.200"
+                          />
+                        </NumberInputStepper>
+                      </NumberInput>
+                      <Button
+                        w={12}
+                        bg="#304553"
+                        color="gray.200"
+                        fontSize={12}
+                        _hover={{ bg: "#4A6B72" }}
+                        onClick={() => {
+                          setBetAmount((prev) => {
+                            let v = prev / 2
+                            if (v < 1) v = 1
+                            setProfitOnWin(getProfitOnWin(multiplier, v))
+                            return v
+                          })
+                        }}
+                      >
+                        1/2
+                      </Button>
+                      <Divider
+                        orientation="vertical"
+                        borderColor="#1a2c38"
+                        borderWidth={1}
+                      />
+                      <Button
+                        w={12}
+                        bg="#304553"
+                        color="gray.200"
+                        _hover={{ bg: "#4A6B72" }}
+                        onClick={() => {
+                          setBetAmount((prev) => {
+                            const v = prev * 2
+                            setProfitOnWin(getProfitOnWin(multiplier, v))
+                            return v
+                          })
+                        }}
+                      >
+                        2x
+                      </Button>
+                    </Flex>
                   </Flex>
 
                   <Flex flexDirection="column">
-                    <Text>Profit on Win</Text>
+                    <Text color="#b1bad3">Profit on Win</Text>
                     <Flex
                       borderRadius="md"
                       paddingY={2}
@@ -1048,9 +1085,9 @@ export default function Home() {
                   <Flex w="100%" flexDirection="column">
                     {/* Game Results Row */}
                     <Flex gap={4} flexWrap="wrap">
-                      {gameResults.map((item, index) => (
+                      {[...gameResults].reverse().map((item, index) => (
                         <>
-                          <Flex>
+                          <Flex key={index}>
                             <Text
                               key={index}
                               borderRadius={"3xl"}
