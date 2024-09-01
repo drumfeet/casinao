@@ -838,28 +838,25 @@ export default function Home() {
                     {/* Game Results Row */}
                     <Flex gap={4} flexWrap="wrap">
                       {[...gameResults].reverse().map((item, index) => (
-                        <>
-                          <Flex key={index}>
-                            <Text
-                              textAlign="center"
-                              key={index}
-                              minW="40px"
-                              maxW="40px"
-                              borderRadius={"3xl"}
-                              paddingX={2}
-                              paddingY={1}
-                              bg={
-                                redNumbers.includes(item.WinningNumber)
-                                  ? "red.500"
-                                  : blackNumbers.includes(item.WinningNumber)
-                                  ? "#304553"
-                                  : "green.500" // for 0
-                              }
-                            >
-                              {item.WinningNumber}
-                            </Text>
-                          </Flex>
-                        </>
+                        <Flex key={index}>
+                          <Text
+                            textAlign="center"
+                            minW="40px"
+                            maxW="40px"
+                            borderRadius={"3xl"}
+                            paddingX={2}
+                            paddingY={1}
+                            bg={
+                              redNumbers.includes(item.WinningNumber)
+                                ? "red.500"
+                                : blackNumbers.includes(item.WinningNumber)
+                                ? "#304553"
+                                : "green.500" // for 0
+                            }
+                          >
+                            {item.WinningNumber}
+                          </Text>
+                        </Flex>
                       ))}
                     </Flex>
 

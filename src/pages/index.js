@@ -788,22 +788,19 @@ export default function Home() {
                     {/* Game Results Row */}
                     <Flex gap={4} flexWrap="wrap">
                       {[...gameResults].reverse().map((item, index) => (
-                        <>
-                          <Flex key={index}>
-                            <Text
-                              textAlign="center"
-                              key={index}
-                              minW="40px"
-                              maxW="40px"
-                              borderRadius={"3xl"}
-                              paddingX={2}
-                              paddingY={1}
-                              bg={item.PlayerWon ? "green" : "red.500"}
-                            >
-                              {item.RandomValue}
-                            </Text>
-                          </Flex>
-                        </>
+                        <Flex key={index}>
+                          <Text
+                            textAlign="center"
+                            minW="40px"
+                            maxW="40px"
+                            borderRadius={"3xl"}
+                            paddingX={2}
+                            paddingY={1}
+                            bg={item.PlayerWon ? "green" : "red.500"}
+                          >
+                            {item.RandomValue}
+                          </Text>
+                        </Flex>
                       ))}
                     </Flex>
 
