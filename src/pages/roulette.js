@@ -583,8 +583,6 @@ export default function Home() {
         return
       }
 
-      setGameBalance(divideByPower(_gameBalance - _betAmount))
-
       const messageId = await message({
         process: GAME_PROCESS_ID,
         tags: [
@@ -604,6 +602,8 @@ export default function Home() {
         signer: createDataItemSigner(globalThis.arweaveWallet),
       })
       console.log("messageId", messageId)
+
+      setGameBalance(divideByPower(_gameBalance - _betAmount))
 
       const _result = await result({
         message: messageId,
