@@ -1061,8 +1061,12 @@ export default function Home() {
                       </Flex>
 
                       {/* Undo / Clear */}
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Button
+                      <Flex
+                        justifyContent="space-between"
+                        alignItems="center"
+                        paddingTop={4}
+                      >
+                        {/* <Button
                           leftIcon={<RepeatIcon />}
                           variant="link"
                           color="gray.200"
@@ -1076,7 +1080,7 @@ export default function Home() {
                           }}
                         >
                           Undo
-                        </Button>
+                        </Button> */}
                         <Button
                           rightIcon={<RepeatIcon />}
                           variant="link"
