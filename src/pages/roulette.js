@@ -17,6 +17,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Spacer,
   Text,
   useDisclosure,
   useToast,
@@ -26,6 +27,7 @@ import ChipIcon from "@/components/icons/ChipIcon"
 import UserIcon from "@/components/icons/UserIcon"
 import WalletIcon from "@/components/icons/WalletIcon"
 import LeftNav from "@/components/LeftNav"
+import RouletteWheel from "@/components/icons/RouletteWheel"
 
 const numberGroups = [
   [1, 2, 3],
@@ -861,10 +863,32 @@ export default function Home() {
                     </Flex>
 
                     {/* Top */}
-                    <Flex paddingY={[8, 100]} paddingX={[0, 12]}>
-                      <Flex padding={4} flexDirection="column" w="100%">
-                        <Text>WIP</Text>
+                    <Flex
+                      paddingY={[8, 10]}
+                      paddingX={[0, 12]}
+                      justifyContent="space-between"
+                    >
+                      <Flex alignItems="center">
+                        <Text
+                          bg="#213743"
+                          padding={5}
+                          borderRadius="md"
+                          fontSize="x-large"
+                          minH={76}
+                          minW={70}
+                          textAlign="center"
+                        >
+                          {gameResults.length > 0
+                            ? `${
+                                gameResults[gameResults.length - 1]
+                                  .WinningNumber
+                              }`
+                            : ""}
+                        </Text>
                       </Flex>
+                      <Spacer display={["none", "flex"]} />
+                      <RouletteWheel />
+                      <Spacer display={["none", "flex"]} />
                     </Flex>
 
                     {/* Bottom */}
