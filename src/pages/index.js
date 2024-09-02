@@ -535,6 +535,8 @@ export default function Home() {
       })
       console.log("messageId", messageId)
 
+      setGameBalance(divideByPower(_gameBalance - _betAmount))
+
       const _result = await result({
         message: messageId,
         process: GAME_PROCESS_ID,
@@ -563,7 +565,7 @@ export default function Home() {
 
       toast({
         description: `${jsonObj.PlayerWon ? "You won!" : "You lost!"}`,
-        title: `Random Value is ${jsonObj.RandomValue}`,
+        title: `Random Value is ${jsonObj.WinningNumber}`,
         status: winStatus,
         duration: 2000,
         isClosable: true,
@@ -571,7 +573,7 @@ export default function Home() {
       })
 
       if (jsonObj.PlayerWon) playWinSound()
-      setRandomValue(jsonObj.RandomValue)
+      setRandomValue(jsonObj.WinningNumber)
     } catch (e) {
       console.error("flipDice() error!", e)
     } finally {
@@ -791,14 +793,14 @@ export default function Home() {
                         <Flex key={index}>
                           <Text
                             textAlign="center"
-                            minW="40px"
-                            maxW="40px"
+                            minW="44px"
+                            maxW="44px"
                             borderRadius={"3xl"}
                             paddingX={2}
                             paddingY={1}
                             bg={item.PlayerWon ? "green" : "red.500"}
                           >
-                            {item.RandomValue}
+                            {item.WinningNumber}
                           </Text>
                         </Flex>
                       ))}

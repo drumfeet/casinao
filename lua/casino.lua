@@ -14,6 +14,20 @@ local utils = {
     end,
     toNumber = function(a)
         return bint.tonumber(a)
+    end,
+    removeDecimals = function(a)
+        local str = tostring(a)
+        local decimalPosition = str:find("%.")
+        local result
+        if decimalPosition then
+            result = bint.tonumber(str:sub(1, decimalPosition - 1))
+        else
+            result = bint.tonumber(str)
+        end
+        if result == nil then
+            error("Invalid number format: " .. str)
+        end
+        return result
     end
 }
 
@@ -33,17 +47,11 @@ local printData = function(k, v)
 end
 
 local multiplyByPower = function(v)
-    local value = v * (BASE_UNIT ^ Denomination)
-    local strValue = string.format("%.0f", value)
-    local result = utils.toNumber(strValue)
-    return result
+    return v * (BASE_UNIT ^ Denomination)
 end
 
 local divideByPower = function(v)
-    local value = v / (BASE_UNIT ^ Denomination)
-    local strValue = string.format("%.0f", value)
-    local result = utils.toNumber(strValue)
-    return result
+    return v / (BASE_UNIT ^ Denomination)
 end
 
 local sendErrorMessage = function(msg, err, target)
@@ -229,129 +237,142 @@ Handlers.add('roulette', Handlers.utils.hasMatchingTag('Action', 'Roulette'), fu
         return
     end
 
-    -- Generate multiple random factors for added entropy
-    local randomFactor1 = math.random()
-    local randomFactor2 = math.random()
-    local randomFactor3 = math.random()
-    local randomFactor4 = math.random()
-    local blockHeightNum = utils.toNumber(msg["Block-Height"])
-    local mixing = ((blockHeightNum * randomFactor1) / (OldRandomSeed + randomFactor2) * randomFactor3) + randomFactor4
-    local seed = math.floor(mixing * 2 ^ 32) % 2 ^ 32
-    -- Seed the random number generator with the non-deterministic seed
-    math.randomseed(seed)
-    OldRandomSeed = seed
+    local success, err = pcall(function()
+        -- Deduct the total bet amount from the user's balance
+        Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
+        printData("Balances[msg.From]", Balances[msg.From])
+        Balances[ao.id] = utils.add(Balances[ao.id], msg.Tags.Quantity)
+        printData("Balances[ao.id]", Balances[ao.id])
 
-    local combined = tostring(msg["Timestamp"]) .. tostring(math.floor(OldRandomSeed))
-    printData("combined", combined)
-    local length = string.len(combined)
-    printData("length", length)
-    -- Generate a random index
-    local randomIndex = math.random(1, length)
-    printData("randomIndex", randomIndex)
-    -- Pick the digit at the random index
-    local discardNum = tonumber(combined:sub(randomIndex, randomIndex))
-    printData("discardNum", discardNum)
-    -- Discard the first few values to avoid issues with some RNGs' initial values
-    for i = 1, discardNum do
-        math.random()
+        -- Generate multiple random factors for added entropy
+        local randomFactor1 = math.random()
+        local randomFactor2 = math.random()
+        local randomFactor3 = math.random()
+        local randomFactor4 = math.random()
+        local blockHeightNum = utils.toNumber(msg["Block-Height"])
+        local mixing = ((blockHeightNum * randomFactor1) / (OldRandomSeed + randomFactor2) * randomFactor3) +
+            randomFactor4
+        local seed = math.floor(mixing * 2 ^ 32) % 2 ^ 32
+        -- Seed the random number generator with the non-deterministic seed
+        math.randomseed(seed)
+        OldRandomSeed = seed
+
+        local combined = tostring(msg["Timestamp"]) .. tostring(math.floor(OldRandomSeed))
+        printData("combined", combined)
+        local length = string.len(combined)
+        printData("length", length)
+        -- Generate a random index
+        local randomIndex = math.random(1, length)
+        printData("randomIndex", randomIndex)
+        -- Pick the digit at the random index
+        local discardNum = tonumber(combined:sub(randomIndex, randomIndex))
+        printData("discardNum", discardNum)
+        -- Discard the first few values to avoid issues with some RNGs' initial values
+        for i = 1, discardNum do
+            math.random()
+        end
+
+        local winningNumber = math.random(0, 36)
+        printData("winningNumber", winningNumber)
+
+        local payout = 0
+
+        -- Process individual number bets
+        if bets[tostring(winningNumber)] then
+            payout = payout + bets[tostring(winningNumber)] * 36 -- Payout for a single number bet is 35:1
+        end
+
+        -- Process color bets (Red/Black)
+        if bets["red"] and isNumberInList(winningNumber, redNumbers) then
+            payout = payout + bets["red"] * 2   -- Payout for red bet is 1:1
+        elseif bets["black"] and isNumberInList(winningNumber, blackNumbers) then
+            payout = payout + bets["black"] * 2 -- Payout for black bet is 1:1
+        end
+
+        -- Process even/odd bets
+        if bets["even"] and winningNumber > 0 and winningNumber % 2 == 0 then
+            payout = payout + bets["even"] * 2 -- Payout for even bet is 1:1
+        elseif bets["odd"] and winningNumber > 0 and winningNumber % 2 ~= 0 then
+            payout = payout + bets["odd"] * 2  -- Payout for odd bet is 1:1
+        end
+
+        -- Process low/high bets (1-18 and 19-36)
+        if bets["1to18"] and winningNumber >= 1 and winningNumber <= 18 then
+            payout = payout + bets["1to18"] * 2  -- Payout for low bet is 1:1
+        elseif bets["19to36"] and winningNumber >= 19 and winningNumber <= 36 then
+            payout = payout + bets["19to36"] * 2 -- Payout for high bet is 1:1
+        end
+
+        -- Process dozen bets (1 to 12, 13 to 24, 25 to 36)
+        if bets["1to12"] and winningNumber >= 1 and winningNumber <= 12 then
+            payout = payout + bets["1to12"] * 3  -- Payout for dozen bet is 2:1
+        elseif bets["13to24"] and winningNumber >= 13 and winningNumber <= 24 then
+            payout = payout + bets["13to24"] * 3 -- Payout for dozen bet is 2:1
+        elseif bets["25to36"] and winningNumber >= 25 and winningNumber <= 36 then
+            payout = payout + bets["25to36"] * 3 -- Payout for dozen bet is 2:1
+        end
+
+        -- Process 2:1 column bets
+        if bets["2:1_1"] and isNumberInList(winningNumber, column1Numbers) then
+            payout = payout + bets["2:1_1"] * 3 -- Payout for column bet is 2:1
+        elseif bets["2:1_2"] and isNumberInList(winningNumber, column2Numbers) then
+            payout = payout + bets["2:1_2"] * 3 -- Payout for column bet is 2:1
+        elseif bets["2:1_3"] and isNumberInList(winningNumber, column3Numbers) then
+            payout = payout + bets["2:1_3"] * 3 -- Payout for column bet is 2:1
+        end
+
+        local totalPayout = utils.toBalanceValue(multiplyByPower(payout))
+        printData("totalPayout", "multiplyByPower(payout)" .. totalPayout)
+
+        -- Total payout to the player
+        if utils.toNumber(totalPayout) > 0 then
+            Balances[ao.id] = utils.subtract(Balances[ao.id], totalPayout)
+            Balances[msg.From] = utils.add(Balances[msg.From], totalPayout)
+        end
+
+        local _data = {
+            Action = msg.Action,
+            Quantity = msg.Tags.Quantity,
+            From = msg.From,
+            BlockHeight = msg["Block-Height"],
+            Timestamp = msg["Timestamp"],
+            OldRandomSeed = OldRandomSeed,
+            WinningNumber = winningNumber,
+            DiscardNum = discardNum,
+            UserBalance = Balances[msg.From],
+            GameBalance = Balances[ao.id],
+            Payout = "divideByPower(totalPayout): " .. divideByPower(totalPayout),
+        }
+        printData("_data", _data)
+
+        ao.send({
+            Target = msg.From,
+            Data = json.encode(_data),
+        })
+    end)
+
+    -- Error handling: if something went wrong, revert the balance and notify the user
+    if not success then
+        -- Revert the balance change
+        Balances[msg.From] = utils.add(Balances[msg.From], msg.Tags.Quantity)
+        Balances[ao.id] = utils.subtract(Balances[ao.id], msg.Tags.Quantity)
+
+        -- Send an error message back to the user
+        sendErrorMessage(msg, 'An unexpected error occurred: ' .. tostring(err))
     end
-
-    local winningNumber = math.random(0, 36)
-    printData("winningNumber", winningNumber)
-
-    -- Deduct the total bet amount from the user's balance
-    Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
-    printData("Balances[msg.From]", Balances[msg.From])
-    Balances[ao.id] = utils.add(Balances[ao.id], msg.Tags.Quantity)
-    printData("Balances[ao.id]", Balances[ao.id])
-
-    local winnings = 0
-
-    -- Process individual number bets
-    if bets[tostring(winningNumber)] then
-        winnings = winnings + bets[tostring(winningNumber)] * 36 -- Payout for a single number bet is 35:1
-    end
-
-    -- Process color bets (Red/Black)
-    if bets["red"] and isNumberInList(winningNumber, redNumbers) then
-        winnings = winnings + bets["red"] * 2   -- Payout for red bet is 1:1
-    elseif bets["black"] and isNumberInList(winningNumber, blackNumbers) then
-        winnings = winnings + bets["black"] * 2 -- Payout for black bet is 1:1
-    end
-
-    -- Process even/odd bets
-    if bets["even"] and winningNumber > 0 and winningNumber % 2 == 0 then
-        winnings = winnings + bets["even"] * 2 -- Payout for even bet is 1:1
-    elseif bets["odd"] and winningNumber > 0 and winningNumber % 2 ~= 0 then
-        winnings = winnings + bets["odd"] * 2  -- Payout for odd bet is 1:1
-    end
-
-    -- Process low/high bets (1-18 and 19-36)
-    if bets["1to18"] and winningNumber >= 1 and winningNumber <= 18 then
-        winnings = winnings + bets["1to18"] * 2  -- Payout for low bet is 1:1
-    elseif bets["19to36"] and winningNumber >= 19 and winningNumber <= 36 then
-        winnings = winnings + bets["19to36"] * 2 -- Payout for high bet is 1:1
-    end
-
-    -- Process dozen bets (1 to 12, 13 to 24, 25 to 36)
-    if bets["1to12"] and winningNumber >= 1 and winningNumber <= 12 then
-        winnings = winnings + bets["1to12"] * 3  -- Payout for dozen bet is 2:1
-    elseif bets["13to24"] and winningNumber >= 13 and winningNumber <= 24 then
-        winnings = winnings + bets["13to24"] * 3 -- Payout for dozen bet is 2:1
-    elseif bets["25to36"] and winningNumber >= 25 and winningNumber <= 36 then
-        winnings = winnings + bets["25to36"] * 3 -- Payout for dozen bet is 2:1
-    end
-
-    -- Process 2:1 column bets
-    if bets["2:1_1"] and isNumberInList(winningNumber, column1Numbers) then
-        winnings = winnings + bets["2:1_1"] * 3 -- Payout for column bet is 2:1
-    elseif bets["2:1_2"] and isNumberInList(winningNumber, column2Numbers) then
-        winnings = winnings + bets["2:1_2"] * 3 -- Payout for column bet is 2:1
-    elseif bets["2:1_3"] and isNumberInList(winningNumber, column3Numbers) then
-        winnings = winnings + bets["2:1_3"] * 3 -- Payout for column bet is 2:1
-    end
-
-    local totalWinnings = utils.toBalanceValue(multiplyByPower(winnings))
-    printData("totalWinnings", totalWinnings)
-
-    -- Payout the winnings to the player
-    if utils.toNumber(totalWinnings) > 0 then
-        Balances[ao.id] = utils.subtract(Balances[ao.id], totalWinnings)
-        Balances[msg.From] = utils.add(Balances[msg.From], totalWinnings)
-    end
-
-    local _data = {
-        Action = msg.Action,
-        Quantity = msg.Tags.Quantity,
-        From = msg.From,
-        BlockHeight = msg["Block-Height"],
-        Timestamp = msg["Timestamp"],
-        OldRandomSeed = OldRandomSeed,
-        WinningNumber = winningNumber,
-        DiscardNum = discardNum,
-        UserBalance = Balances[msg.From],
-        GameBalance = Balances[ao.id],
-        Winnings = divideByPower(totalWinnings),
-    }
-    printData("_data", _data)
-
-    ao.send({
-        Target = msg.From,
-        Data = json.encode(_data),
-    })
 
     print("--------------- End Roulette ---------------")
 end)
 
-
 Handlers.add('dice', Handlers.utils.hasMatchingTag('Action', 'Dice'), function(msg)
     print("--------------- Start Dice ---------------")
-    if type(msg.Quantity) ~= 'string' then
+
+    if type(msg.Tags.Quantity) ~= 'string' then
         sendErrorMessage(msg, 'Quantity is required and must be a string')
         return
     end
 
-    if utils.toNumber(msg.Quantity) <= 0 then
+    if utils.toNumber(msg.Tags.Quantity) <= 0 then
         sendErrorMessage(msg, 'Quantity must be greater than 0')
         return
     end
@@ -361,7 +382,7 @@ Handlers.add('dice', Handlers.utils.hasMatchingTag('Action', 'Dice'), function(m
         return
     end
 
-    if utils.toNumber(Balances[msg.From]) < utils.toNumber(msg.Quantity) then
+    if utils.toNumber(Balances[msg.From]) < utils.toNumber(msg.Tags.Quantity) then
         sendErrorMessage(msg, 'Insufficient funds')
         return
     end
@@ -376,126 +397,118 @@ Handlers.add('dice', Handlers.utils.hasMatchingTag('Action', 'Dice'), function(m
         sendErrorMessage(msg, 'Slider must be between 0 and 100')
     end
 
-    -- Generate multiple random factors for added entropy
-    local randomFactor1 = math.random()
-    local randomFactor2 = math.random()
-    local randomFactor3 = math.random()
-    local randomFactor4 = math.random()
-    local blockHeightNum = utils.toNumber(msg["Block-Height"])
-    local mixing = ((blockHeightNum * randomFactor1) / (OldRandomSeed + randomFactor2) * randomFactor3) + randomFactor4
-    local seed = math.floor(mixing * 2 ^ 32) % 2 ^ 32
-    -- Seed the random number generator with the non-deterministic seed
-    math.randomseed(seed)
-    OldRandomSeed = seed
-
-    local combined = tostring(msg["Timestamp"]) .. tostring(math.floor(OldRandomSeed))
-    print("combined: " .. combined)
-    local length = string.len(combined)
-    print("length: " .. length)
-    -- Generate a random index
-    local randomIndex = math.random(1, length)
-    print("randomIndex: " .. randomIndex)
-    -- Pick the digit at the random index
-    local discardNum = tonumber(combined:sub(randomIndex, randomIndex))
-    print("discardNum: " .. tostring(discardNum))
-    -- Discard the first few values to avoid issues with some RNGs' initial values
-    for i = 1, discardNum do
-        math.random()
-    end
-    -- Generate a random number to determine win or loss
-    local randomValue = math.random(0, 100)
-    print("randomValue: " .. tostring(randomValue))
-
-    local SLOPE = tonumber(-0.96)  -- This slope controls the rate of change in win chance
-    local INTERCEPT = tonumber(98) -- This intercept ensures win chance starts at 98%
-    local _winChance = math.floor(SLOPE * sliderNum + INTERCEPT)
-    print("_winChance: " .. _winChance)
-    local _rollOver = 100 - _winChance
-    print("_rollOver: " .. _rollOver)
-
-    -- Check if the random value is greater than the win chance
-    local playerWon = randomValue > _rollOver
-    print("Evaluate: " .. randomValue .. " > " .. _rollOver)
-    print("playerWon: " .. tostring(playerWon))
-
-    print("sliderNum: " .. sliderNum)
-    -- local houseEdge = (100 - sliderNum) / 10000 -- 0.0099 or 0.99%
-    local houseEdge = 0
-    print("houseEdge: " .. houseEdge)
-    local _multiplier = 1 / ((_winChance / 100) + houseEdge)
-    print("_multiplier: " .. _multiplier)
-    local _multiplierFormatted = string.format("%.3f", _multiplier)
-    print("_multiplierFormatted: " .. _multiplierFormatted)
-    local _multiplierSliced = _multiplierFormatted:sub(1, -2)
-    local _multiplierFixed = utils.toNumber(_multiplierSliced)
-    print("_multiplierFixed: " .. _multiplierFixed)
-
-    local _profitOnWin = utils.toNumber(msg.Tags.Quantity) * (_multiplierFixed - 1)
-    print("_profitOnWin: " .. _profitOnWin)
-    local _profitOnWinFormatted = string.format("%.0f", _profitOnWin)
-    print("_profitOnWinFormatted: " .. _profitOnWinFormatted)
-    -- Calculate the scaling factor
-    local scale = 1e10
-    local _profitOnWinScaled = math.floor(_profitOnWinFormatted / scale)
-    print("_profitOnWinScaled: " .. _profitOnWinScaled)
-    local _profitOnWinFinal = string.format("%.0f", (_profitOnWinScaled * scale))
-    print("_profitOnWinFinal: " .. _profitOnWinFinal)
-    print("divideByPower(_profitOnWinFinal): " .. divideByPower(_profitOnWinFinal))
-
-    if playerWon then
-        print(msg.From .. " PLAYER WON")
-        Balances[ao.id] = utils.subtract(Balances[ao.id], _profitOnWinFinal)
-        Balances[msg.From] = utils.add(Balances[msg.From], _profitOnWinFinal)
-
-        local _data = {
-            Action = msg.Action,
-            Quantity = msg.Quantity,
-            From = msg.From,
-            BlockHeight = msg["Block-Height"],
-            Timestamp = msg["Timestamp"],
-            WinChance = _winChance,
-            RollOver = _rollOver,
-            Multiplier = _multiplierFixed,
-            OldRandomSeed = OldRandomSeed,
-            RandomValue = randomValue,
-            DiscardNum = discardNum,
-            Slider = msg.Tags.Slider,
-            ProfitOnWin = _profitOnWinFinal,
-            ProfitOnWinPower = divideByPower(_profitOnWinFinal),
-            PlayerWon = playerWon,
-            UserBalance = Balances[msg.From],
-            GameBalance = Balances[ao.id],
-        }
-        print(_data)
-
-        ao.send({ Target = msg.From, Won = true, Data = json.encode(_data) })
-    else
-        print(msg.From .. " PLAYER LOST")
+    local success, err = pcall(function()
+        -- Deduct the total bet amount from the user's balance
         Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Tags.Quantity)
+        printData("Balances[msg.From]", Balances[msg.From])
         Balances[ao.id] = utils.add(Balances[ao.id], msg.Tags.Quantity)
+        printData("Balances[ao.id]", Balances[ao.id])
+
+        -- Generate multiple random factors for added entropy
+        local randomFactor1 = math.random()
+        local randomFactor2 = math.random()
+        local randomFactor3 = math.random()
+        local randomFactor4 = math.random()
+        local blockHeightNum = utils.toNumber(msg["Block-Height"])
+        local mixing = ((blockHeightNum * randomFactor1) / (OldRandomSeed + randomFactor2) * randomFactor3) +
+            randomFactor4
+        local seed = math.floor(mixing * 2 ^ 32) % 2 ^ 32
+        -- Seed the random number generator with the non-deterministic seed
+        math.randomseed(seed)
+        OldRandomSeed = seed
+
+        local combined = tostring(msg["Timestamp"]) .. tostring(math.floor(OldRandomSeed))
+        printData("combined", combined)
+        local length = string.len(combined)
+        printData("length", length)
+        -- Generate a random index
+        local randomIndex = math.random(1, length)
+        printData("randomIndex", randomIndex)
+        -- Pick the digit at the random index
+        local discardNum = tonumber(combined:sub(randomIndex, randomIndex))
+        printData("discardNum", discardNum)
+        -- Discard the first few values to avoid issues with some RNGs' initial values
+        for i = 1, discardNum do
+            math.random()
+        end
+        -- Generate a random number to determine win or loss
+        local winningNumber = math.random(0, 100)
+        printData("winningNumber", winningNumber)
+
+        local SLOPE = tonumber(-0.96)  -- This slope controls the rate of change in win chance
+        local INTERCEPT = tonumber(98) -- This intercept ensures win chance starts at 98%
+        local _winChance = math.floor(SLOPE * sliderNum + INTERCEPT)
+        print("_winChance: " .. _winChance)
+        local _rollOver = 100 - _winChance
+        print("_rollOver: " .. _rollOver)
+
+        -- Check if the random value is greater than the win chance
+        local playerWon = winningNumber > _rollOver
+        print("Evaluate: " .. winningNumber .. " > " .. _rollOver)
+        print("playerWon: " .. tostring(playerWon))
+
+        print("sliderNum: " .. sliderNum)
+        -- local houseEdge = (100 - sliderNum) / 10000 -- 0.0099 or 0.99%
+        local houseEdge = 0
+        print("houseEdge: " .. houseEdge)
+        local _multiplier = 1 / ((_winChance / 100) + houseEdge)
+        print("_multiplier: " .. _multiplier)
+        local _multiplierFormatted = string.format("%.3f", _multiplier)
+        print("_multiplierFormatted: " .. _multiplierFormatted)
+        local _multiplierSliced = _multiplierFormatted:sub(1, -2)
+        local _multiplierFixed = utils.toNumber(_multiplierSliced)
+        print("_multiplierFixed: " .. _multiplierFixed)
+
+        local _profitOnWin = utils.toNumber(msg.Tags.Quantity) * (_multiplierFixed - 1)
+        print("_profitOnWin: " .. _profitOnWin)
+        local _profitOnWinFormatted = string.format("%.0f", _profitOnWin)
+        print("_profitOnWinFormatted: " .. _profitOnWinFormatted)
+        -- Calculate the scaling factor
+        local scale = 1e10
+        local _profitOnWinScaled = math.floor(_profitOnWinFormatted / scale)
+        print("_profitOnWinScaled: " .. _profitOnWinScaled)
+        local _profitOnWinFinal = string.format("%.0f", (_profitOnWinScaled * scale))
+        print("_profitOnWinFinal: " .. _profitOnWinFinal)
+
+        local totalPayout = "0"
+        if playerWon then
+            -- The total amount to add back is the original bet + profit
+            totalPayout = utils.add(msg.Tags.Quantity, _profitOnWinFormatted)
+            Balances[ao.id] = utils.subtract(Balances[ao.id], totalPayout)
+            Balances[msg.From] = utils.add(Balances[msg.From], totalPayout)
+        end
 
         local _data = {
             Action = msg.Action,
-            Quantity = msg.Quantity,
+            Quantity = msg.Tags.Quantity,
             From = msg.From,
             BlockHeight = msg["Block-Height"],
             Timestamp = msg["Timestamp"],
+            OldRandomSeed = OldRandomSeed,
+            WinningNumber = winningNumber,
+            DiscardNum = discardNum,
             WinChance = _winChance,
             RollOver = _rollOver,
             Multiplier = _multiplierFixed,
-            OldRandomSeed = OldRandomSeed,
-            RandomValue = randomValue,
-            DiscardNum = discardNum,
             Slider = msg.Tags.Slider,
-            ProfitOnWin = _profitOnWinFinal,
-            ProfitOnWinPower = divideByPower(_profitOnWinFinal),
+            ProfitOnWin = "divideByPower(_profitOnWinFinal): " .. divideByPower(_profitOnWinFinal),
             PlayerWon = playerWon,
             UserBalance = Balances[msg.From],
             GameBalance = Balances[ao.id],
+            Payout = "divideByPower(totalPayout): " .. divideByPower(totalPayout),
         }
         print(_data)
+        ao.send({ Target = msg.From, Won = playerWon, Data = json.encode(_data) })
+    end)
 
-        ao.send({ Target = msg.From, Won = false, Data = json.encode(_data) })
+    -- Error handling: if something went wrong, revert the balance and notify the user
+    if not success then
+        -- Revert the balance change
+        Balances[msg.From] = utils.add(Balances[msg.From], msg.Tags.Quantity)
+        Balances[ao.id] = utils.subtract(Balances[ao.id], msg.Tags.Quantity)
+
+        -- Send an error message back to the user
+        sendErrorMessage(msg, 'An unexpected error occurred: ' .. tostring(err))
     end
 
     print("--------------- End Dice ---------------")
