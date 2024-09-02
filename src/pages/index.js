@@ -428,7 +428,7 @@ export default function Home() {
   }
 
   const sliderChanged = (_sliderValue) => {
-    console.log("_sliderValue", _sliderValue)
+    // console.log("_sliderValue", _sliderValue)
     setSliderValue(_sliderValue)
     const _winChance = getWinChance(_sliderValue)
     setWinChance(_winChance)

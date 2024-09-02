@@ -554,6 +554,29 @@ export default function Home() {
     }
   }
 
+  const adjustBet = (adjustmentType) => {
+    setBets((prevBets) => {
+      const updatedBets = {}
+      let totalBetAmount = 0
+
+      for (let key in prevBets) {
+        let currentBet = prevBets[key]
+
+        if (adjustmentType === "double") {
+          currentBet *= 2 // Double the bet
+        } else if (adjustmentType === "half" && currentBet > 1) {
+          currentBet = Math.floor(currentBet / 2) // Half the bet, but don't go below 1 chip
+        }
+
+        updatedBets[key] = currentBet
+        totalBetAmount += currentBet
+      }
+
+      setBetAmount(totalBetAmount) // Update total bet amount
+      return updatedBets
+    })
+  }
+
   const flipRoulette = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
@@ -782,12 +805,7 @@ export default function Home() {
                             fontSize={10}
                             _hover={{ bg: "#4A6B72" }}
                             onClick={() => {
-                              toast({
-                                title: "This feature is not available yet",
-                                duration: 1000,
-                                isClosable: true,
-                                position: "top",
-                              })
+                              adjustBet("half")
                             }}
                           >
                             1/2
@@ -804,12 +822,7 @@ export default function Home() {
                             fontSize={12}
                             _hover={{ bg: "#4A6B72" }}
                             onClick={() => {
-                              toast({
-                                title: "This feature is not available yet",
-                                duration: 1000,
-                                isClosable: true,
-                                position: "top",
-                              })
+                              adjustBet("double")
                             }}
                           >
                             2x
