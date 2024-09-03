@@ -38,6 +38,7 @@ import WalletIcon from "@/components/icons/WalletIcon"
 import UserIcon from "@/components/icons/UserIcon"
 import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
 import LoginKeyIcon from "@/components/icons/LoginKeyIcon"
+import CoinsIcon from "@/components/icons/CoinsIcon"
 
 export default function Home() {
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
@@ -367,8 +368,13 @@ export default function Home() {
 
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Account</ModalHeader>
+          <ModalContent bg="#1a2c38" color="gray.200">
+            <ModalHeader>
+              <Flex alignItems="center" gap={2}>
+                <CoinsIcon />
+                Account
+              </Flex>
+            </ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <Flex flexDirection="column" gap={4}>
@@ -409,7 +415,9 @@ export default function Home() {
                       setTxQuantity(e)
                     }}
                   >
-                    <NumberInputField />
+                    <NumberInputField
+                      _focus={{ borderColor: "white", boxShadow: "none" }}
+                    />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
@@ -421,10 +429,20 @@ export default function Home() {
 
             <ModalFooter>
               <Flex gap={4}>
-                <Button colorScheme="blue" onClick={depositTokens}>
+                <Button
+                  bg="#213743"
+                  color="white"
+                  _hover={{ bg: "#213743" }}
+                  onClick={depositTokens}
+                >
                   Deposit
                 </Button>
-                <Button variant="ghost" onClick={withdrawTokens}>
+                <Button
+                  variant="ghost"
+                  color="white"
+                  _hover={{}}
+                  onClick={withdrawTokens}
+                >
                   Withdraw
                 </Button>
               </Flex>
