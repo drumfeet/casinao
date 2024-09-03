@@ -12,9 +12,9 @@ const casinoItems = [
 ]
 
 const cryptoItems = [
-  { text: "Points Swap", icon: <LinkIcon /> },
-  { text: "Prediction Game", icon: <LinkIcon />, link: "" },
-  { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
+  { text: "Coming Soon", icon: <LinkIcon /> }, //Points Swap
+  { text: "Coming Soon", icon: <LinkIcon />, link: "" }, //Prediction Game
+  { text: "Coming Soon", icon: <LinkIcon />, link: "" }, //1000x Leverage
 ]
 
 const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"

@@ -168,12 +168,12 @@ export default function Home() {
       })
       await fetchUserBalance()
       toast({
-        description: "Account balance updated",
-        duration: 2000,
+        title: "Connected.",
+        description: "Click the user icon to set up wallet auto-sign.",
+        duration: 4000,
         isClosable: true,
         position: "top",
       })
-      onClose()
     }
 
     const logout = async () => {
@@ -195,17 +195,20 @@ export default function Home() {
 
     return (
       <>
-        <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
-          {walletBalance >= 0 || gameBalance >= 0 ? (
-            <>
-              <UserIcon />
-            </>
-          ) : (
-            <>
-              <WalletIcon />
-            </>
-          )}
-        </Flex>
+        {walletBalance >= 0 || gameBalance >= 0 ? (
+          <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
+            <UserIcon />
+          </Flex>
+        ) : (
+          <Flex
+            _hover={{ cursor: "pointer" }}
+            onClick={async () => {
+              await login()
+            }}
+          >
+            <WalletIcon />
+          </Flex>
+        )}
 
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
@@ -228,10 +231,7 @@ export default function Home() {
 
             <ModalFooter>
               <Flex gap={4}>
-                <Button colorScheme="blue" onClick={login}>
-                  Connect
-                </Button>
-                <Button variant="ghost" onClick={logout}>
+                <Button colorScheme="blue" onClick={logout}>
                   Disconnect
                 </Button>
               </Flex>
@@ -703,7 +703,7 @@ export default function Home() {
                   fontWeight="bold"
                   letterSpacing="wide"
                 >
-                  FLIP
+                  CasinAO
                 </Text>
               </Flex>
 
