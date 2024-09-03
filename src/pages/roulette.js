@@ -28,6 +28,7 @@ import UserIcon from "@/components/icons/UserIcon"
 import WalletIcon from "@/components/icons/WalletIcon"
 import LeftNav from "@/components/LeftNav"
 import RouletteWheel from "@/components/icons/RouletteWheel"
+import LoginKeyIcon from "@/components/icons/LoginKeyIcon"
 
 const numberGroups = [
   [1, 2, 3],
@@ -168,7 +169,7 @@ export default function Home() {
       })
       await fetchUserBalance()
       toast({
-        title: "Connected.",
+        title: "Connected",
         description: "Click the user icon to set up wallet auto-sign.",
         duration: 4000,
         isClosable: true,
@@ -212,8 +213,13 @@ export default function Home() {
 
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Wallet Setup</ModalHeader>
+          <ModalContent bg="#1a2c38" color="gray.200">
+            <ModalHeader>
+              <Flex justifyContent="center" alignItems="center" gap={2}>
+                <LoginKeyIcon />
+                Wallet Setup
+              </Flex>
+            </ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <Flex flexDirection="column" gap={4}>
@@ -231,7 +237,12 @@ export default function Home() {
 
             <ModalFooter>
               <Flex gap={4}>
-                <Button colorScheme="blue" onClick={logout}>
+                <Button
+                  bg="#213743"
+                  color="white"
+                  _hover={{ bg: "#213743" }}
+                  onClick={logout}
+                >
                   Disconnect
                 </Button>
               </Flex>
