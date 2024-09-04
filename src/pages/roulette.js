@@ -864,7 +864,19 @@ export default function Home() {
                     bg="#00e700"
                     paddingY={8}
                     _hover={{}}
-                    onClick={flipRoulette}
+                    onClick={async (event) => {
+                      const button = event.currentTarget
+                      button.disabled = true
+                      button.innerText = "Processing..."
+                      try {
+                        await flipRoulette()
+                      } finally {
+                        button.disabled = false
+                        button.innerText = "Bet"
+                        setBets({})
+                        setBetAmount(0)
+                      }
+                    }}
                   >
                     Bet
                   </Button>
