@@ -6,6 +6,8 @@ import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
 import { LinkIcon } from "@chakra-ui/icons"
 import GithubIcon from "./icons/GithubIcon"
+import { useContext } from "react"
+import { AppContext } from "@/context/AppContext"
 
 const casinoItems = [
   { text: "Dice", icon: <LinkIcon />, link: "/" },
@@ -18,9 +20,8 @@ const cryptoItems = [
   { text: "Coming Soon", icon: <LinkIcon />, link: "" }, //1000x Leverage
 ]
 
-const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
-
 export default function LeftNav() {
+  const { requestAirdrop } = useContext(AppContext)
   const toast = useToast()
 
   const GameMenuItem = ({ icon, text, link }) => (
@@ -75,48 +76,6 @@ export default function LeftNav() {
     }
   }
 
-  const requestAirdrop = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const messageId = await message({
-        process: GAME_PROCESS_ID,
-        tags: [
-          {
-            name: "Action",
-            value: "Airdrop",
-          },
-        ],
-        signer: createDataItemSigner(globalThis.arweaveWallet),
-      })
-      console.log("messageId", messageId)
-
-      const _result = await result({
-        message: messageId,
-        process: GAME_PROCESS_ID,
-      })
-      console.log("_result", _result)
-
-      _result.Messages[0].Tags.find((tag) => {
-        if (tag.name === "Error") {
-          const errorStatus = tag.value ? "error" : "success"
-          toast({
-            description: `${_result.Messages[0].Data}`,
-            status: errorStatus,
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-          return true // Exit the find loop after finding the Valid tag
-        }
-      })
-    } catch (e) {
-      console.error("requestAirdrop() error!", e)
-    }
-  }
   return (
     <Flex
       minW="288px"

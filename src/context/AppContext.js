@@ -1,6 +1,9 @@
+import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "@/lib/utils"
 import { useToast } from "@chakra-ui/react"
 import { createContext, useEffect, useState } from "react"
+
+const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
 export const AppContext = createContext()
 
@@ -59,9 +62,50 @@ export const AppContextProvider = ({ children }) => {
     }
   }
 
-  useEffect(() => {
-    console.log("useEffect() gameBalance", gameBalance)
-  }, [gameBalance])
+  const requestAirdrop = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Airdrop",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      _result.Messages[0].Tags.find((tag) => {
+        if (tag.name === "Error") {
+          const errorStatus = tag.value ? "error" : "success"
+          toast({
+            description: `${_result.Messages[0].Data}`,
+            status: errorStatus,
+            duration: 2000,
+            isClosable: true,
+            position: "top",
+          })
+          return true // Exit the find loop after finding the Valid tag
+        }
+      })
+    } catch (e) {
+      console.error("requestAirdrop() error!", e)
+    } finally {
+      await fetchUserBalance()
+    }
+  }
 
   return (
     <AppContext.Provider
@@ -74,6 +118,7 @@ export const AppContextProvider = ({ children }) => {
         walletBalance,
         setWalletBalance,
         fetchUserBalance,
+        requestAirdrop,
       }}
     >
       {children}
