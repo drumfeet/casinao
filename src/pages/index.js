@@ -1,9 +1,7 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { getGameBalance, getWalletBalance } from "@/lib/utils"
 import {
   DragHandleIcon,
   HamburgerIcon,
-  LinkIcon,
   RepeatIcon,
 } from "@chakra-ui/icons"
 import {
@@ -11,13 +9,6 @@ import {
   Button,
   Divider,
   Flex,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -29,18 +20,26 @@ import {
   SliderThumb,
   SliderTrack,
   Text,
-  useDisclosure,
   useToast,
 } from "@chakra-ui/react"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import LeftNav from "@/components/LeftNav"
-import WalletIcon from "@/components/icons/WalletIcon"
-import UserIcon from "@/components/icons/UserIcon"
 import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
-import LoginKeyIcon from "@/components/icons/LoginKeyIcon"
-import CoinsIcon from "@/components/icons/CoinsIcon"
+import { AppContext } from "@/context/AppContext"
+import LoginModal from "@/components/LoginModal"
+import BalanceModal from "@/components/BalanceModal"
 
 export default function Home() {
+  const {
+    multiplyByPower,
+    divideByPower,
+    connectWallet,
+    gameBalance,
+    setGameBalance,
+    walletBalance,
+    setWalletBalance,
+    fetchUserBalance,
+  } = useContext(AppContext)
   const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const BASE_UNIT = 10
@@ -50,8 +49,6 @@ export default function Home() {
   const SLOPE = -0.96
   const INTERCEPT = 98
 
-  const [gameBalance, setGameBalance] = useState(-1)
-  const [walletBalance, setWalletBalance] = useState(-1)
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
 
@@ -92,367 +89,6 @@ export default function Home() {
 
   const toast = useToast()
 
-  const LoginModal = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-
-    const login = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      toast({
-        description: "Fetching account info",
-        duration: 1000,
-        isClosable: true,
-        position: "top",
-      })
-      await fetchUserBalance()
-      toast({
-        title: "Connected",
-        description: "Click the user icon to set up wallet auto-sign.",
-        duration: 4000,
-        isClosable: true,
-        position: "top",
-      })
-    }
-
-    const logout = async () => {
-      const _connected = await disconnectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      setWalletBalance(-1)
-      setGameBalance(-1)
-      toast({
-        description: "Account disconnected",
-        duration: 2000,
-        isClosable: true,
-        position: "top",
-      })
-      onClose()
-    }
-
-    return (
-      <>
-        {walletBalance >= 0 || gameBalance >= 0 ? (
-          <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
-            <UserIcon />
-          </Flex>
-        ) : (
-          <Flex
-            _hover={{ cursor: "pointer" }}
-            onClick={async () => {
-              await login()
-            }}
-          >
-            <WalletIcon />
-          </Flex>
-        )}
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent bg="#1a2c38" color="gray.200">
-            <ModalHeader>
-              <Flex justifyContent="center" alignItems="center" gap={2}>
-                <LoginKeyIcon />
-                Wallet Setup
-              </Flex>
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Flex flexDirection="column" gap={4}>
-                <Flex w="100%" gap={4} flexDirection="column">
-                  <Text>
-                    To enable wallet auto sign, first disconnect your account.
-                  </Text>
-                  <Text>
-                    Then, sign in with ArConnect and select &apos;Always
-                    allow&apos;
-                  </Text>
-                </Flex>
-              </Flex>
-            </ModalBody>
-
-            <ModalFooter>
-              <Flex gap={4}>
-                <Button
-                  bg="#213743"
-                  color="white"
-                  _hover={{ bg: "#213743" }}
-                  onClick={logout}
-                >
-                  Disconnect
-                </Button>
-              </Flex>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </>
-    )
-  }
-  const BalanceModal = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [txQuantity, setTxQuantity] = useState(1)
-
-    const depositTokens = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      try {
-        const _txQuantity = multiplyByPower(txQuantity)
-        console.log("_txQuantity", _txQuantity)
-
-        let _tags = [
-          {
-            name: "Action",
-            value: "Transfer",
-          },
-          {
-            name: "Recipient",
-            value: GAME_PROCESS_ID,
-          },
-          {
-            name: "Quantity",
-            value: _txQuantity.toString(),
-          },
-        ]
-        console.log("_tags", _tags)
-
-        const messageId = await message({
-          process: TOKEN_PROCESS_ID,
-          tags: _tags,
-          signer: createDataItemSigner(globalThis.arweaveWallet),
-        })
-        console.log("messageId", messageId)
-
-        const _result = await result({
-          message: messageId,
-          process: TOKEN_PROCESS_ID,
-        })
-        console.log("_result", _result)
-
-        const error = _result.Messages[0].Tags[6].value
-        if (error === "Transfer-Error") {
-          toast({
-            title: "Deposit Failed",
-            description: `${_result.Messages[0].Tags[7].value}`,
-            status: "error",
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-        } else {
-          const amountDebit = _result.Messages[0].Tags[8].value
-          const amountCredit = _result.Messages[1].Tags[8].value
-
-          if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
-            toast({
-              description: "Deposit Successful",
-              status: "info",
-              duration: 2000,
-              isClosable: true,
-              position: "top",
-            })
-          }
-        }
-      } catch (e) {
-        console.error("depositTokens() error!", e)
-      } finally {
-        await fetchUserBalance()
-      }
-    }
-
-    const withdrawTokens = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      try {
-        const _txQuantity = multiplyByPower(txQuantity)
-        console.log("_txQuantity", _txQuantity)
-
-        let _tags = [
-          {
-            name: "Action",
-            value: "Withdraw",
-          },
-          {
-            name: "Quantity",
-            value: _txQuantity.toString(),
-          },
-        ]
-        console.log("_tags", _tags)
-
-        const messageId = await message({
-          process: GAME_PROCESS_ID,
-          tags: _tags,
-          signer: createDataItemSigner(globalThis.arweaveWallet),
-        })
-        console.log("messageId", messageId)
-
-        const _result = await result({
-          message: messageId,
-          process: GAME_PROCESS_ID,
-        })
-        console.log("_result", _result)
-
-        _result.Messages[0].Tags.find((tag) => {
-          if (tag.name === "Error") {
-            const errorStatus = tag.value ? "error" : "success"
-            toast({
-              description: `${_result.Messages[0].Data}`,
-              status: errorStatus,
-              duration: 2000,
-              isClosable: true,
-              position: "top",
-            })
-            return true
-          }
-        })
-      } catch (e) {
-        console.error("withdrawTokens() error!", e)
-      } finally {
-        await fetchUserBalance()
-      }
-    }
-
-    return (
-      <>
-        {walletBalance >= 0 || gameBalance >= 0 ? (
-          <>
-            <Flex
-              _hover={{ cursor: "pointer" }}
-              bg="#0e212e"
-              paddingY={2}
-              paddingX={4}
-              borderRadius="md"
-              onClick={onOpen}
-            >
-              {gameBalance}
-            </Flex>
-          </>
-        ) : (
-          <>
-            <Flex
-              _hover={{ cursor: "pointer" }}
-              bg="#0e212e"
-              paddingY={2}
-              paddingX={4}
-              borderRadius="md"
-              onClick={async () => {
-                toast({
-                  title: (
-                    <>
-                      <Flex alignItems="center" gap={2}>
-                        Connect wallet first
-                        <WalletIcon />
-                      </Flex>
-                    </>
-                  ),
-                  status: "error",
-                  duration: 2000,
-                  isClosable: true,
-                  position: "top",
-                })
-              }}
-            >
-              0.000000000000
-            </Flex>
-          </>
-        )}
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent bg="#1a2c38" color="gray.200">
-            <ModalHeader>
-              <Flex alignItems="center" gap={2}>
-                <CoinsIcon />
-                Account
-              </Flex>
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Flex flexDirection="column" gap={4}>
-                {walletBalance >= 0 || gameBalance >= 0 ? (
-                  <>
-                    <Text>
-                      Wallet Balance :{" "}
-                      {walletBalance >= 0
-                        ? `${walletBalance} $${TICKER}`
-                        : "loading...."}{" "}
-                    </Text>
-                    <Text>
-                      Game Balance :{" "}
-                      {gameBalance >= 0
-                        ? `${gameBalance} $${TICKER}`
-                        : "loading...."}{" "}
-                    </Text>
-                    {/* <Text>Token Process ID: {TOKEN_PROCESS_ID}</Text>
-                    <Text>Game Process ID: {GAME_PROCESS_ID}</Text> */}
-                  </>
-                ) : (
-                  <></>
-                )}
-
-                <Flex
-                  paddingTop={20}
-                  w="100%"
-                  justifyContent="flex-end"
-                  alignItems="center"
-                  gap={4}
-                >
-                  <Text>Quantity</Text>
-                  <NumberInput
-                    step={1}
-                    defaultValue={txQuantity}
-                    min={1}
-                    onChange={(e) => {
-                      setTxQuantity(e)
-                    }}
-                  >
-                    <NumberInputField
-                      _focus={{ borderColor: "white", boxShadow: "none" }}
-                    />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </Flex>
-              </Flex>
-            </ModalBody>
-
-            <ModalFooter>
-              <Flex gap={4}>
-                <Button
-                  bg="#213743"
-                  color="white"
-                  _hover={{ bg: "#213743" }}
-                  onClick={depositTokens}
-                >
-                  Deposit
-                </Button>
-                <Button
-                  variant="ghost"
-                  color="white"
-                  _hover={{}}
-                  onClick={withdrawTokens}
-                >
-                  Withdraw
-                </Button>
-              </Flex>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </>
-    )
-  }
-
   const playWinSound = () => {
     const audio = new Audio("/win.mp3")
     audio.play().catch((error) => {
@@ -471,68 +107,6 @@ export default function Home() {
     setMultiplier(_multiplier)
 
     setProfitOnWin(getProfitOnWin(_multiplier, betAmount))
-  }
-
-  const multiplyByPower = (v) => {
-    return v * Math.pow(BASE_UNIT, DENOMINATION)
-  }
-
-  const divideByPower = (v) => {
-    return (v / Math.pow(BASE_UNIT, DENOMINATION)).toFixed(12)
-  }
-
-  const connectWallet = async () => {
-    try {
-      await globalThis.arweaveWallet.connect([
-        "ACCESS_ADDRESS",
-        "SIGN_TRANSACTION",
-      ])
-      return { success: true }
-    } catch (e) {
-      console.error("Wallet missing!", e)
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
-      return { success: false, error: e }
-    }
-  }
-
-  const disconnectWallet = async () => {
-    try {
-      await window.arweaveWallet.disconnect()
-      return { success: true }
-    } catch (e) {
-      console.error("Wallet missing!", e)
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
-      return { success: false, error: e }
-    }
-  }
-
-  const fetchUserBalance = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const userAddress = await globalThis.arweaveWallet.getActiveAddress()
-
-      const gameBalance = await getGameBalance({ recipient: userAddress })
-      setGameBalance(divideByPower(gameBalance))
-
-      const walletBalance = await getWalletBalance({ recipient: userAddress })
-      setWalletBalance(divideByPower(walletBalance))
-    } catch (e) {
-      console.error("fetchUserBalance() error!", e)
-    }
   }
 
   const flipDice = async () => {

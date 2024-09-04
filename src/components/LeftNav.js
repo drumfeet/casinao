@@ -1,5 +1,6 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { Button, Divider, Flex, Link, Text, useToast } from "@chakra-ui/react"
+import { Button, Divider, Flex, Text, useToast } from "@chakra-ui/react"
+import Link from "next/link"
 import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
@@ -48,7 +49,7 @@ export default function LeftNav() {
           </>
         ) : (
           <>
-            <Link>{text}</Link>
+            <Link href="#">{text}</Link>
           </>
         )}
       </Button>
