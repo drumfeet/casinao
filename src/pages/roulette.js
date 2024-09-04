@@ -904,7 +904,7 @@ export default function Home() {
                       ))}
                     </Flex>
 
-                    {/* Top */}
+                    {/* Roulette Wheel */}
                     <Flex
                       paddingY={[8, 10]}
                       paddingX={[0, 12]}
@@ -933,7 +933,7 @@ export default function Home() {
                       <Spacer display={["none", "flex"]} />
                     </Flex>
 
-                    {/* Bottom */}
+                    {/* Container */}
                     <Flex
                       padding={4}
                       gap={4}
@@ -941,9 +941,11 @@ export default function Home() {
                       flexDirection="column"
                       borderRadius="md"
                     >
-                      {/* RouletteBoard */}
+                      {/* Roulette Board Container */}
                       <Flex flexDirection="column" gap={1}>
+                        {/* Roulette Board Upper Container */}
                         <Flex flexDirection={["column", "row"]} gap={1}>
+                          {/* Number 0 */}
                           <Flex flexDirection={["row", "column"]} gap={1}>
                             <RouletteButton
                               {...getColorStyles(0)}
@@ -955,6 +957,7 @@ export default function Home() {
                             ></RouletteButton>
                           </Flex>
 
+                          {/* Numbers 1-36 */}
                           {numberGroups.map((group, idx) => (
                             <Flex
                               key={idx}
@@ -974,11 +977,17 @@ export default function Home() {
                                   resetClicked={!bets[number]}
                                   onClick={() => handleButtonClick([number])}
                                   paddingY={[0, 4]}
+                                  // sx={{
+                                  //   minW: "55px",
+                                  //   minH: "70px",
+                                  //   padding: 0,
+                                  // }}
                                 ></RouletteButton>
                               ))}
                             </Flex>
                           ))}
 
+                          {/* 2:1 Container */}
                           <Flex
                             flexDirection={["row", "column"]}
                             gap={1}
@@ -993,7 +1002,6 @@ export default function Home() {
                               }
                               onClick={() => handleButtonClick("2:1_1")}
                             />
-
                             <RouletteButton
                               flex="1"
                               initialChildren="2:1"
@@ -1015,11 +1023,13 @@ export default function Home() {
                           </Flex>
                         </Flex>
 
+                        {/* Roulette Board Bottom Container */}
                         <Flex
                           flexDirection={["row", "column"]}
                           gap={1}
                           paddingX={[0, 28]}
                         >
+                          {/* 1 to 12, 13 to 24, 25 to 36 */}
                           <Flex flexDirection={["column", "row"]} gap={1}>
                             <RouletteButton
                               initialChildren="1 to 12"
@@ -1047,6 +1057,7 @@ export default function Home() {
                             ></RouletteButton>
                           </Flex>
 
+                          {/* 1 to 18, 19 to 36, even, odd, red, black */}
                           <Flex flexDirection={["column", "row"]} gap={1}>
                             <RouletteButton
                               initialChildren="1 to 18"
