@@ -1,9 +1,13 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { Button, Divider, Flex, Link, Text, useToast } from "@chakra-ui/react"
+import { Button, Divider, Flex, Text, useToast } from "@chakra-ui/react"
+import Link from "next/link"
 import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
 import { LinkIcon } from "@chakra-ui/icons"
+import GithubIcon from "./icons/GithubIcon"
+import { useContext } from "react"
+import { AppContext } from "@/context/AppContext"
 
 const casinoItems = [
   { text: "Dice", icon: <LinkIcon />, link: "/" },
@@ -11,14 +15,13 @@ const casinoItems = [
 ]
 
 const cryptoItems = [
-  { text: "Points Swap", icon: <LinkIcon /> },
-  { text: "Prediction Game", icon: <LinkIcon />, link: "" },
-  { text: "1000x Leverage", icon: <LinkIcon />, link: "" },
+  { text: "Coming Soon", icon: <LinkIcon /> }, //Points Swap
+  { text: "Coming Soon", icon: <LinkIcon />, link: "" }, //Prediction Game
+  { text: "Coming Soon", icon: <LinkIcon />, link: "" }, //1000x Leverage
 ]
 
-const GAME_PROCESS_ID = "PADEZbrkTHafqOtYRsgZRXLvJFv6xrPyxPsYR9KqGic"
-
 export default function LeftNav() {
+  const { requestAirdrop } = useContext(AppContext)
   const toast = useToast()
 
   const GameMenuItem = ({ icon, text, link }) => (
@@ -47,7 +50,7 @@ export default function LeftNav() {
           </>
         ) : (
           <>
-            <Link>{text}</Link>
+            <Link href="#">{text}</Link>
           </>
         )}
       </Button>
@@ -73,48 +76,6 @@ export default function LeftNav() {
     }
   }
 
-  const requestAirdrop = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const messageId = await message({
-        process: GAME_PROCESS_ID,
-        tags: [
-          {
-            name: "Action",
-            value: "Airdrop",
-          },
-        ],
-        signer: createDataItemSigner(globalThis.arweaveWallet),
-      })
-      console.log("messageId", messageId)
-
-      const _result = await result({
-        message: messageId,
-        process: GAME_PROCESS_ID,
-      })
-      console.log("_result", _result)
-
-      _result.Messages[0].Tags.find((tag) => {
-        if (tag.name === "Error") {
-          const errorStatus = tag.value ? "error" : "success"
-          toast({
-            description: `${_result.Messages[0].Data}`,
-            status: errorStatus,
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-          return true // Exit the find loop after finding the Valid tag
-        }
-      })
-    } catch (e) {
-      console.error("requestAirdrop() error!", e)
-    }
-  }
   return (
     <Flex
       minW="288px"
@@ -198,7 +159,6 @@ export default function LeftNav() {
           <Button
             variant="ghost"
             _hover={{}}
-            // paddingX={4}
             onClick={() => {
               toast({
                 title: "This feature is not available yet",
@@ -223,6 +183,15 @@ export default function LeftNav() {
             }}
           >
             <DiscordIcon />
+          </Button>
+          <Button
+            as="a"
+            href="https://github.com/drumfeet/aoflip"
+            target="_blank"
+            variant="ghost"
+            _hover={{}}
+          >
+            <GithubIcon />
           </Button>
         </Flex>
       </Flex>

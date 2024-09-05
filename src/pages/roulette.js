@@ -1,32 +1,13 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { getGameBalance, getWalletBalance } from "@/lib/roulette-utils"
 import { HamburgerIcon, RepeatIcon } from "@chakra-ui/icons"
-import {
-  Button,
-  Divider,
-  Flex,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Text,
-  useDisclosure,
-  useToast,
-} from "@chakra-ui/react"
-import { useEffect, useState } from "react"
+import { Button, Divider, Flex, Spacer, Text, useToast } from "@chakra-ui/react"
+import { useContext, useEffect, useState } from "react"
 import ChipIcon from "@/components/icons/ChipIcon"
-import RouletteBoard from "@/components/RouletteBoard"
-import UserIcon from "@/components/icons/UserIcon"
-import WalletIcon from "@/components/icons/WalletIcon"
 import LeftNav from "@/components/LeftNav"
+import RouletteWheel from "@/components/icons/RouletteWheel"
+import { AppContext } from "@/context/AppContext"
+import LoginModal from "@/components/LoginModal"
+import BalanceModal from "@/components/BalanceModal"
 
 const numberGroups = [
   [1, 2, 3],
@@ -111,17 +92,17 @@ const RouletteButton = ({
 }
 
 export default function Home() {
-  const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
-  const GAME_PROCESS_ID = "PADEZbrkTHafqOtYRsgZRXLvJFv6xrPyxPsYR9KqGic"
-  const BASE_UNIT = 10
-  const DENOMINATION = 12
-  const TICKER = "FLIP"
-
-  const SLOPE = -0.96
-  const INTERCEPT = 98
-
-  const [gameBalance, setGameBalance] = useState(-1)
-  const [walletBalance, setWalletBalance] = useState(-1)
+  const {
+    multiplyByPower,
+    divideByPower,
+    connectWallet,
+    gameBalance,
+    setGameBalance,
+    walletBalance,
+    setWalletBalance,
+    fetchUserBalance,
+  } = useContext(AppContext)
+  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const [betAmount, setBetAmount] = useState(0)
 
   const [selectedChip, setSelectedChip] = useState(10)
@@ -150,339 +131,6 @@ export default function Home() {
     setBetAmount((prev) => prev + selectedChip)
     setBets(newBets)
   }
-  const LoginModal = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-
-    const login = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      toast({
-        description: "Fetching account info",
-        duration: 1000,
-        isClosable: true,
-        position: "top",
-      })
-      await fetchUserBalance()
-      toast({
-        description: "Account balance updated",
-        duration: 2000,
-        isClosable: true,
-        position: "top",
-      })
-      onClose()
-    }
-
-    const logout = async () => {
-      const _connected = await disconnectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      setWalletBalance(-1)
-      setGameBalance(-1)
-      toast({
-        description: "Account disconnected",
-        duration: 2000,
-        isClosable: true,
-        position: "top",
-      })
-      onClose()
-    }
-
-    return (
-      <>
-        <Flex _hover={{ cursor: "pointer" }} onClick={onOpen}>
-          {walletBalance >= 0 || gameBalance >= 0 ? (
-            <>
-              <UserIcon />
-            </>
-          ) : (
-            <>
-              <WalletIcon />
-            </>
-          )}
-        </Flex>
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Wallet Setup</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Flex flexDirection="column" gap={4}>
-                <Flex w="100%" gap={4} flexDirection="column">
-                  <Text>
-                    To enable wallet auto sign, first disconnect your account.
-                  </Text>
-                  <Text>
-                    Then, sign in with ArConnect and select &apos;Always
-                    allow&apos;
-                  </Text>
-                </Flex>
-              </Flex>
-            </ModalBody>
-
-            <ModalFooter>
-              <Flex gap={4}>
-                <Button colorScheme="blue" onClick={login}>
-                  Connect
-                </Button>
-                <Button variant="ghost" onClick={logout}>
-                  Disconnect
-                </Button>
-              </Flex>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </>
-    )
-  }
-  const BalanceModal = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [txQuantity, setTxQuantity] = useState(1)
-
-    const depositTokens = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      try {
-        const _txQuantity = multiplyByPower(txQuantity)
-        console.log("_txQuantity", _txQuantity)
-
-        let _tags = [
-          {
-            name: "Action",
-            value: "Transfer",
-          },
-          {
-            name: "Recipient",
-            value: GAME_PROCESS_ID,
-          },
-          {
-            name: "Quantity",
-            value: _txQuantity.toString(),
-          },
-        ]
-        console.log("_tags", _tags)
-
-        const messageId = await message({
-          process: TOKEN_PROCESS_ID,
-          tags: _tags,
-          signer: createDataItemSigner(globalThis.arweaveWallet),
-        })
-        console.log("messageId", messageId)
-
-        const _result = await result({
-          message: messageId,
-          process: TOKEN_PROCESS_ID,
-        })
-        console.log("_result", _result)
-
-        const error = _result.Messages[0].Tags[6].value
-        if (error === "Transfer-Error") {
-          toast({
-            title: "Deposit Failed",
-            description: `${_result.Messages[0].Tags[7].value}`,
-            status: "error",
-            duration: 2000,
-            isClosable: true,
-            position: "top",
-          })
-        } else {
-          const amountDebit = _result.Messages[0].Tags[8].value
-          const amountCredit = _result.Messages[1].Tags[8].value
-
-          if (Number(amountDebit) > 0 && Number(amountCredit) > 0) {
-            toast({
-              description: "Deposit Successful",
-              status: "info",
-              duration: 2000,
-              isClosable: true,
-              position: "top",
-            })
-          }
-        }
-      } catch (e) {
-        console.error("depositTokens() error!", e)
-      } finally {
-        await fetchUserBalance()
-      }
-    }
-
-    const withdrawTokens = async () => {
-      const _connected = await connectWallet()
-      if (_connected.success === false) {
-        return
-      }
-
-      try {
-        const _txQuantity = multiplyByPower(txQuantity)
-        console.log("_txQuantity", _txQuantity)
-
-        let _tags = [
-          {
-            name: "Action",
-            value: "Withdraw",
-          },
-          {
-            name: "Quantity",
-            value: _txQuantity.toString(),
-          },
-        ]
-        console.log("_tags", _tags)
-
-        const messageId = await message({
-          process: GAME_PROCESS_ID,
-          tags: _tags,
-          signer: createDataItemSigner(globalThis.arweaveWallet),
-        })
-        console.log("messageId", messageId)
-
-        const _result = await result({
-          message: messageId,
-          process: GAME_PROCESS_ID,
-        })
-        console.log("_result", _result)
-
-        _result.Messages[0].Tags.find((tag) => {
-          if (tag.name === "Error") {
-            const errorStatus = tag.value ? "error" : "success"
-            toast({
-              description: `${_result.Messages[0].Data}`,
-              status: errorStatus,
-              duration: 2000,
-              isClosable: true,
-              position: "top",
-            })
-            return true
-          }
-        })
-      } catch (e) {
-        console.error("withdrawTokens() error!", e)
-      } finally {
-        await fetchUserBalance()
-      }
-    }
-
-    return (
-      <>
-        {walletBalance >= 0 || gameBalance >= 0 ? (
-          <>
-            <Flex
-              _hover={{ cursor: "pointer" }}
-              bg="#0e212e"
-              paddingY={2}
-              paddingX={4}
-              borderRadius="md"
-              onClick={onOpen}
-            >
-              {gameBalance}
-            </Flex>
-          </>
-        ) : (
-          <>
-            <Flex
-              _hover={{ cursor: "pointer" }}
-              bg="#0e212e"
-              paddingY={2}
-              paddingX={4}
-              borderRadius="md"
-              onClick={async () => {
-                toast({
-                  title: (
-                    <>
-                      <Flex alignItems="center" gap={2}>
-                        Connect wallet first
-                        <WalletIcon />
-                      </Flex>
-                    </>
-                  ),
-                  status: "error",
-                  duration: 2000,
-                  isClosable: true,
-                  position: "top",
-                })
-              }}
-            >
-              0.000000000000
-            </Flex>
-          </>
-        )}
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Account</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Flex flexDirection="column" gap={4}>
-                {walletBalance >= 0 || gameBalance >= 0 ? (
-                  <>
-                    <Text>
-                      Wallet Balance :{" "}
-                      {walletBalance >= 0
-                        ? `${walletBalance} $${TICKER}`
-                        : "loading...."}{" "}
-                    </Text>
-                    <Text>
-                      Game Balance :{" "}
-                      {gameBalance >= 0
-                        ? `${gameBalance} $${TICKER}`
-                        : "loading...."}{" "}
-                    </Text>
-                    {/* <Text>Token Process ID: {TOKEN_PROCESS_ID}</Text>
-                    <Text>Game Process ID: {GAME_PROCESS_ID}</Text> */}
-                  </>
-                ) : (
-                  <></>
-                )}
-
-                <Flex
-                  paddingTop={20}
-                  w="100%"
-                  justifyContent="flex-end"
-                  alignItems="center"
-                  gap={4}
-                >
-                  <Text>Quantity</Text>
-                  <NumberInput
-                    step={1}
-                    defaultValue={txQuantity}
-                    min={1}
-                    onChange={(e) => {
-                      setTxQuantity(e)
-                    }}
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </Flex>
-              </Flex>
-            </ModalBody>
-
-            <ModalFooter>
-              <Flex gap={4}>
-                <Button colorScheme="blue" onClick={depositTokens}>
-                  Deposit
-                </Button>
-                <Button variant="ghost" onClick={withdrawTokens}>
-                  Withdraw
-                </Button>
-              </Flex>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </>
-    )
-  }
 
   const playWinSound = () => {
     const audio = new Audio("/win.mp3")
@@ -491,69 +139,30 @@ export default function Home() {
     })
   }
 
-  const multiplyByPower = (v) => {
-    return v * Math.pow(BASE_UNIT, DENOMINATION)
+  const adjustBet = (adjustmentType) => {
+    setBets((prevBets) => {
+      const updatedBets = {}
+      let totalBetAmount = 0
+
+      for (let key in prevBets) {
+        let currentBet = prevBets[key]
+
+        if (adjustmentType === "double") {
+          currentBet *= 2 // Double the bet
+        } else if (adjustmentType === "half" && currentBet > 1) {
+          currentBet = Math.floor(currentBet / 2) // Half the bet, but don't go below 1 chip
+        }
+
+        updatedBets[key] = currentBet
+        totalBetAmount += currentBet
+      }
+
+      setBetAmount(totalBetAmount) // Update total bet amount
+      return updatedBets
+    })
   }
 
-  const divideByPower = (v) => {
-    return (v / Math.pow(BASE_UNIT, DENOMINATION)).toFixed(12)
-  }
-
-  const connectWallet = async () => {
-    try {
-      await globalThis.arweaveWallet.connect([
-        "ACCESS_ADDRESS",
-        "SIGN_TRANSACTION",
-      ])
-      return { success: true }
-    } catch (e) {
-      console.error("Wallet missing!", e)
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
-      return { success: false, error: e }
-    }
-  }
-
-  const disconnectWallet = async () => {
-    try {
-      await window.arweaveWallet.disconnect()
-      return { success: true }
-    } catch (e) {
-      console.error("Wallet missing!", e)
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
-      return { success: false, error: e }
-    }
-  }
-
-  const fetchUserBalance = async () => {
-    const _connected = await connectWallet()
-    if (_connected.success === false) {
-      return
-    }
-
-    try {
-      const userAddress = await globalThis.arweaveWallet.getActiveAddress()
-
-      const gameBalance = await getGameBalance({ recipient: userAddress })
-      setGameBalance(divideByPower(gameBalance))
-
-      const walletBalance = await getWalletBalance({ recipient: userAddress })
-      setWalletBalance(divideByPower(walletBalance))
-    } catch (e) {
-      console.error("fetchUserBalance() error!", e)
-    }
-  }
-
-  const flipBet = async () => {
+  const flipRoulette = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
       return
@@ -566,32 +175,30 @@ export default function Home() {
       console.log("betAmount", betAmount)
       console.log("bets", bets)
 
-      if (_gameBalance < _betAmount) {
-        toast({
-          title: (
-            <>
-              <Flex alignItems="center" gap={2}>
-                Insufficient funds
-                <WalletIcon />
-              </Flex>
-            </>
-          ),
-          status: "error",
-          duration: 2000,
-          isClosable: true,
-          position: "top",
-        })
-        return
-      }
-
-      setGameBalance(divideByPower(_gameBalance - _betAmount))
+      // if (_gameBalance < _betAmount) {
+      //   toast({
+      //     title: (
+      //       <>
+      //         <Flex alignItems="center" gap={2}>
+      //           Insufficient funds
+      //           <WalletIcon />
+      //         </Flex>
+      //       </>
+      //     ),
+      //     status: "error",
+      //     duration: 2000,
+      //     isClosable: true,
+      //     position: "top",
+      //   })
+      //   return
+      // }
 
       const messageId = await message({
         process: GAME_PROCESS_ID,
         tags: [
           {
             name: "Action",
-            value: "FlipBet",
+            value: "Roulette",
           },
           {
             name: "Quantity",
@@ -605,6 +212,8 @@ export default function Home() {
         signer: createDataItemSigner(globalThis.arweaveWallet),
       })
       console.log("messageId", messageId)
+
+      setGameBalance(divideByPower(_gameBalance - _betAmount))
 
       const _result = await result({
         message: messageId,
@@ -632,7 +241,7 @@ export default function Home() {
       setGameResults((prevResults) => [...prevResults, jsonObj])
       playWinSound()
     } catch (e) {
-      console.error("flipBet() error!", e)
+      console.error("flipRoulette() error!", e)
     } finally {
       await fetchUserBalance()
     }
@@ -679,7 +288,7 @@ export default function Home() {
                   fontWeight="bold"
                   letterSpacing="wide"
                 >
-                  FLIP
+                  CasinAO
                 </Text>
               </Flex>
 
@@ -781,12 +390,7 @@ export default function Home() {
                             fontSize={10}
                             _hover={{ bg: "#4A6B72" }}
                             onClick={() => {
-                              toast({
-                                title: "This feature is not available yet",
-                                duration: 1000,
-                                isClosable: true,
-                                position: "top",
-                              })
+                              adjustBet("half")
                             }}
                           >
                             1/2
@@ -803,12 +407,7 @@ export default function Home() {
                             fontSize={12}
                             _hover={{ bg: "#4A6B72" }}
                             onClick={() => {
-                              toast({
-                                title: "This feature is not available yet",
-                                duration: 1000,
-                                isClosable: true,
-                                position: "top",
-                              })
+                              adjustBet("double")
                             }}
                           >
                             2x
@@ -821,7 +420,19 @@ export default function Home() {
                     bg="#00e700"
                     paddingY={8}
                     _hover={{}}
-                    onClick={flipBet}
+                    onClick={async (event) => {
+                      const button = event.currentTarget
+                      button.disabled = true
+                      button.innerText = "Processing..."
+                      try {
+                        await flipRoulette()
+                      } finally {
+                        button.disabled = false
+                        button.innerText = "Bet"
+                        setBets({})
+                        setBetAmount(0)
+                      }
+                    }}
                   >
                     Bet
                   </Button>
@@ -839,39 +450,58 @@ export default function Home() {
                     {/* Game Results Row */}
                     <Flex gap={4} flexWrap="wrap">
                       {[...gameResults].reverse().map((item, index) => (
-                        <>
-                          <Flex key={index}>
-                            <Text
-                              textAlign={"center"}
-                              key={index}
-                              minW="40px"
-                              maxW="40px"
-                              borderRadius={"3xl"}
-                              paddingX={2}
-                              paddingY={1}
-                              bg={
-                                redNumbers.includes(item.WinningNumber)
-                                  ? "red.500"
-                                  : blackNumbers.includes(item.WinningNumber)
-                                  ? "#304553"
-                                  : "green.500" // for 0
-                              }
-                            >
-                              {item.WinningNumber}
-                            </Text>
-                          </Flex>
-                        </>
+                        <Flex key={index}>
+                          <Text
+                            textAlign="center"
+                            minW="40px"
+                            maxW="40px"
+                            borderRadius={"3xl"}
+                            paddingX={2}
+                            paddingY={1}
+                            bg={
+                              redNumbers.includes(item.WinningNumber)
+                                ? "red.500"
+                                : blackNumbers.includes(item.WinningNumber)
+                                ? "#304553"
+                                : "green.500" // for 0
+                            }
+                          >
+                            {item.WinningNumber}
+                          </Text>
+                        </Flex>
                       ))}
                     </Flex>
 
-                    {/* Top */}
-                    <Flex paddingY={[8, 100]} paddingX={[0, 12]}>
-                      <Flex padding={4} flexDirection="column" w="100%">
-                        <Text>WIP</Text>
+                    {/* Roulette Wheel */}
+                    <Flex
+                      paddingY={[8, 10]}
+                      paddingX={[0, 12]}
+                      justifyContent="space-between"
+                    >
+                      <Flex alignItems="center">
+                        <Text
+                          bg="#213743"
+                          padding={5}
+                          borderRadius="md"
+                          fontSize="x-large"
+                          minH={76}
+                          minW={70}
+                          textAlign="center"
+                        >
+                          {gameResults.length > 0
+                            ? `${
+                                gameResults[gameResults.length - 1]
+                                  .WinningNumber
+                              }`
+                            : ""}
+                        </Text>
                       </Flex>
+                      <Spacer display={["none", "flex"]} />
+                      <RouletteWheel />
+                      <Spacer display={["none", "flex"]} />
                     </Flex>
 
-                    {/* Bottom */}
+                    {/* Container */}
                     <Flex
                       padding={4}
                       gap={4}
@@ -879,9 +509,11 @@ export default function Home() {
                       flexDirection="column"
                       borderRadius="md"
                     >
-                      {/* <RouletteBoard /> */}
+                      {/* Roulette Board Container */}
                       <Flex flexDirection="column" gap={1}>
+                        {/* Roulette Board Upper Container */}
                         <Flex flexDirection={["column", "row"]} gap={1}>
+                          {/* Number 0 */}
                           <Flex flexDirection={["row", "column"]} gap={1}>
                             <RouletteButton
                               {...getColorStyles(0)}
@@ -893,6 +525,7 @@ export default function Home() {
                             ></RouletteButton>
                           </Flex>
 
+                          {/* Numbers 1-36 */}
                           {numberGroups.map((group, idx) => (
                             <Flex
                               key={idx}
@@ -912,11 +545,17 @@ export default function Home() {
                                   resetClicked={!bets[number]}
                                   onClick={() => handleButtonClick([number])}
                                   paddingY={[0, 4]}
+                                  // sx={{
+                                  //   minW: "55px",
+                                  //   minH: "70px",
+                                  //   padding: 0,
+                                  // }}
                                 ></RouletteButton>
                               ))}
                             </Flex>
                           ))}
 
+                          {/* 2:1 Container */}
                           <Flex
                             flexDirection={["row", "column"]}
                             gap={1}
@@ -931,7 +570,6 @@ export default function Home() {
                               }
                               onClick={() => handleButtonClick("2:1_1")}
                             />
-
                             <RouletteButton
                               flex="1"
                               initialChildren="2:1"
@@ -953,11 +591,13 @@ export default function Home() {
                           </Flex>
                         </Flex>
 
+                        {/* Roulette Board Bottom Container */}
                         <Flex
                           flexDirection={["row", "column"]}
                           gap={1}
                           paddingX={[0, 28]}
                         >
+                          {/* 1 to 12, 13 to 24, 25 to 36 */}
                           <Flex flexDirection={["column", "row"]} gap={1}>
                             <RouletteButton
                               initialChildren="1 to 12"
@@ -985,6 +625,7 @@ export default function Home() {
                             ></RouletteButton>
                           </Flex>
 
+                          {/* 1 to 18, 19 to 36, even, odd, red, black */}
                           <Flex flexDirection={["column", "row"]} gap={1}>
                             <RouletteButton
                               initialChildren="1 to 18"
@@ -1041,8 +682,12 @@ export default function Home() {
                       </Flex>
 
                       {/* Undo / Clear */}
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Button
+                      <Flex
+                        justifyContent="space-between"
+                        alignItems="center"
+                        paddingTop={4}
+                      >
+                        {/* <Button
                           leftIcon={<RepeatIcon />}
                           variant="link"
                           color="gray.200"
@@ -1056,7 +701,7 @@ export default function Home() {
                           }}
                         >
                           Undo
-                        </Button>
+                        </Button> */}
                         <Button
                           rightIcon={<RepeatIcon />}
                           variant="link"
