@@ -648,7 +648,7 @@ export default function Home() {
                 <Flex
                   justifyContent="space-between"
                   alignItems="center"
-                  paddingTop={4}
+                  paddingTop={8}
                 >
                   {/* <Button
                     leftIcon={<RepeatIcon />}
