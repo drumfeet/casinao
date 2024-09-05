@@ -78,7 +78,7 @@ export default function LeftNav() {
 
   return (
     <Flex
-      minW="288px"
+      minW="270px"
       flexDirection="column"
       display={{ base: "none", md: "flex" }}
       boxShadow="0px 4px 4px rgba(0, 0, 0, 0.25)"
