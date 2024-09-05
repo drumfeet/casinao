@@ -148,16 +148,23 @@ const BalanceModal = () => {
 
       _result.Messages[0].Tags.find((tag) => {
         if (tag.name === "Error") {
-          const errorStatus = tag.value ? "error" : "success"
           toast({
             description: `${_result.Messages[0].Data}`,
-            status: errorStatus,
+            status: "error",
             duration: 2000,
             isClosable: true,
             position: "top",
           })
-          return true
+          return
         }
+      })
+
+      toast({
+        description: "Withdraw Successful",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+        position: "top",
       })
     } catch (e) {
       console.error("withdrawTokens() error!", e)

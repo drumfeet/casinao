@@ -1,10 +1,10 @@
 import { HamburgerIcon } from "@chakra-ui/icons"
 import BalanceModal from "./BalanceModal"
 import LoginModal from "./LoginModal"
-
-const { Flex, Text } = require("@chakra-ui/react")
+import { Flex, Text, useToast } from "@chakra-ui/react"
 
 const AppHeader = () => {
+  const toast = useToast()
   return (
     <>
       <Flex
@@ -34,16 +34,16 @@ const AppHeader = () => {
         </Flex>
 
         {/* Logo */}
-          <Text
-            color="white"
-            fontSize={"2xl"}
-            fontFamily={"Comic Sans MS, cursive, sans-serif"}
-            fontWeight="bold"
-            letterSpacing="wide"
-            noOfLines={1}
-          >
-            CasinAO
-          </Text>
+        <Text
+          color="white"
+          fontSize={"2xl"}
+          fontFamily={"Comic Sans MS, cursive, sans-serif"}
+          fontWeight="bold"
+          letterSpacing="wide"
+          noOfLines={1}
+        >
+          CasinAO
+        </Text>
 
         {/* BalanceModal Container */}
         <Flex>
