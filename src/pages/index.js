@@ -1,9 +1,5 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import {
-  DragHandleIcon,
-  HamburgerIcon,
-  RepeatIcon,
-} from "@chakra-ui/icons"
+import { DragHandleIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
   Box,
   Button,
@@ -26,8 +22,7 @@ import { useContext, useState } from "react"
 import LeftNav from "@/components/LeftNav"
 import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
 import { AppContext } from "@/context/AppContext"
-import LoginModal from "@/components/LoginModal"
-import BalanceModal from "@/components/BalanceModal"
+import AppHeader from "@/components/AppHeader"
 
 export default function Home() {
   const {
@@ -40,12 +35,8 @@ export default function Home() {
     setWalletBalance,
     fetchUserBalance,
   } = useContext(AppContext)
-  const TOKEN_PROCESS_ID = "XIJzo8ooZVGIsxFVhQDYW0ziJBX7Loh9Pi280ro2YU4"
-  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
-  const BASE_UNIT = 10
-  const DENOMINATION = 12
-  const TICKER = "FLIP"
 
+  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const SLOPE = -0.96
   const INTERCEPT = 98
 
@@ -195,254 +186,215 @@ export default function Home() {
   }
   return (
     <>
-      <Flex minH="100vh" backgroundColor="#0e2229">
-        <Flex w="100%">
-          {/* Left */}
-          <LeftNav />
+      <Flex minH="100vh" bg="#0e2229">
+        <LeftNav />
 
-          {/* Right */}
-          <Flex w="100%" flexDirection="column" gap={1} color="gray.200">
-            {/* Right Header */}
+        {/* Main Body Container */}
+        <Flex
+          flexDirection="column"
+          flex="1" //fill available width horizontally
+          gap={1}
+          color="gray.200"
+        >
+          {/* AppHeader Container */}
+          <Flex>
+            <AppHeader />
+          </Flex>
+
+          {/* Main Content Container */}
+          <Flex
+            flex="1" //fill available height vertically
+            bg="#1a2c38"
+            overflow="hidden"
+            padding={[2, 12]}
+          >
+            {/* Left & Right Section Container */}
             <Flex
-              paddingY={4}
-              paddingX={{ base: 4, md: 20 }}
-              alignItems="center"
-              w="100%"
-              bg="#1a2c38"
-              boxShadow="0px 4px 0px rgba(0, 0, 0, 0.25)"
-              justifyContent="space-between"
-              color="gray.200"
+              bg="#213743"
+              borderRadius="md"
+              flex="1" //fill available width horizontally
+              flexDirection={["column", "row"]}
             >
-              <Flex
-                display={{ base: "flex", md: "none" }}
-                onClick={() => {
-                  toast({
-                    title: "This feature is not available yet",
-                    duration: 1000,
-                    isClosable: true,
-                    position: "top",
-                  })
-                }}
-              >
-                <HamburgerIcon color="gray.200" fontSize={"2xl"} />
-              </Flex>
-              <Flex paddingLeft={{ base: 0, md: 20 }}>
-                <Text
-                  color="white"
-                  fontSize={"2xl"}
-                  fontFamily={"Comic Sans MS, cursive, sans-serif"}
-                  fontWeight="bold"
-                  letterSpacing="wide"
+              {/* Left Section */}
+              <Flex padding={4} flexDirection="column" gap={4}>
+                <Flex
+                  bg="#0e212e"
+                  borderRadius="3xl"
+                  padding={2}
+                  gap={4}
+                  color="gray.200"
+                  alignItems="center"
+                  flexDirection={["column", "row"]}
                 >
-                  CasinAO
-                </Text>
-              </Flex>
-
-              <Flex display={{ base: "none", md: "flex" }}>
-                <BalanceModal />
-              </Flex>
-
-              {/* Wallet */}
-              <Flex alignItems="center" gap={2}>
-                <Flex display={{ base: "flex", md: "none" }}>
-                  <BalanceModal />
-                </Flex>
-                <LoginModal />
-              </Flex>
-            </Flex>
-
-            {/* Right Body */}
-            <Flex bg="#1a2c38" padding={[2, 12]}>
-              <Flex
-                bg="#213743"
-                borderRadius="md"
-                w="100%"
-                flexDirection={["column", "row"]}
-              >
-                {/* Left */}
-                <Flex padding={4} flexDirection="column" gap={4}>
-                  <Flex
-                    bg="#0e212e"
+                  <Button
                     borderRadius="3xl"
-                    padding={2}
-                    gap={4}
+                    px={8}
+                    bg="#304553"
                     color="gray.200"
-                    alignItems="center"
-                    flexDirection={["column", "row"]}
+                    _hover={{}}
                   >
+                    Manual
+                  </Button>
+                  <Button
+                    borderRadius="3xl"
+                    px={8}
+                    variant="link"
+                    color="gray.200"
+                    onClick={() => {
+                      toast({
+                        title: "This feature is not available yet",
+                        duration: 1000,
+                        isClosable: true,
+                        position: "top",
+                      })
+                    }}
+                  >
+                    Auto
+                  </Button>
+                </Flex>
+                <Flex flexDirection="column">
+                  <Text color="#b1bad3">Bet Amount</Text>
+                  <Flex padding={1} bg="#304553" borderRadius="md" gap={2}>
+                    <NumberInput
+                      precision={2}
+                      value={betAmount}
+                      min={1}
+                      onChange={(e) => {
+                        setBetAmount(e)
+                        setProfitOnWin(getProfitOnWin(multiplier, e))
+                      }}
+                    >
+                      <NumberInputField
+                        bg="#0e212e"
+                        borderColor="#0e212e"
+                        borderRadius="none"
+                      />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper
+                          borderColor="#0e212e"
+                          color="gray.200"
+                        />
+                        <NumberDecrementStepper
+                          borderColor="#0e212e"
+                          color="gray.200"
+                        />
+                      </NumberInputStepper>
+                    </NumberInput>
                     <Button
-                      borderRadius="3xl"
-                      px={8}
+                      w={12}
                       bg="#304553"
                       color="gray.200"
-                      _hover={{}}
-                    >
-                      Manual
-                    </Button>
-                    <Button
-                      borderRadius="3xl"
-                      px={8}
-                      variant="link"
-                      color="gray.200"
+                      fontSize={12}
+                      _hover={{ bg: "#4A6B72" }}
                       onClick={() => {
-                        toast({
-                          title: "This feature is not available yet",
-                          duration: 1000,
-                          isClosable: true,
-                          position: "top",
+                        setBetAmount((prev) => {
+                          let v = prev / 2
+                          if (v < 1) v = 1
+                          setProfitOnWin(getProfitOnWin(multiplier, v))
+                          return v
                         })
                       }}
                     >
-                      Auto
+                      1/2
+                    </Button>
+                    <Divider
+                      orientation="vertical"
+                      borderColor="#1a2c38"
+                      borderWidth={1}
+                    />
+                    <Button
+                      w={12}
+                      bg="#304553"
+                      color="gray.200"
+                      _hover={{ bg: "#4A6B72" }}
+                      onClick={() => {
+                        setBetAmount((prev) => {
+                          const v = prev * 2
+                          setProfitOnWin(getProfitOnWin(multiplier, v))
+                          return v
+                        })
+                      }}
+                    >
+                      2x
                     </Button>
                   </Flex>
-                  <Flex flexDirection="column">
-                    <Text color="#b1bad3">Bet Amount</Text>
-                    <Flex padding={1} bg="#304553" borderRadius="md" gap={2}>
-                      <NumberInput
-                        precision={2}
-                        value={betAmount}
-                        min={1}
-                        onChange={(e) => {
-                          setBetAmount(e)
-                          setProfitOnWin(getProfitOnWin(multiplier, e))
-                        }}
-                      >
-                        <NumberInputField
-                          bg="#0e212e"
-                          borderColor="#0e212e"
-                          borderRadius="none"
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper
-                            borderColor="#0e212e"
-                            color="gray.200"
-                          />
-                          <NumberDecrementStepper
-                            borderColor="#0e212e"
-                            color="gray.200"
-                          />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <Button
-                        w={12}
-                        bg="#304553"
-                        color="gray.200"
-                        fontSize={12}
-                        _hover={{ bg: "#4A6B72" }}
-                        onClick={() => {
-                          setBetAmount((prev) => {
-                            let v = prev / 2
-                            if (v < 1) v = 1
-                            setProfitOnWin(getProfitOnWin(multiplier, v))
-                            return v
-                          })
-                        }}
-                      >
-                        1/2
-                      </Button>
-                      <Divider
-                        orientation="vertical"
-                        borderColor="#1a2c38"
-                        borderWidth={1}
-                      />
-                      <Button
-                        w={12}
-                        bg="#304553"
-                        color="gray.200"
-                        _hover={{ bg: "#4A6B72" }}
-                        onClick={() => {
-                          setBetAmount((prev) => {
-                            const v = prev * 2
-                            setProfitOnWin(getProfitOnWin(multiplier, v))
-                            return v
-                          })
-                        }}
-                      >
-                        2x
-                      </Button>
-                    </Flex>
-                  </Flex>
-
-                  <Flex flexDirection="column">
-                    <Text color="#b1bad3">Profit on Win</Text>
-                    <Flex
-                      borderRadius="md"
-                      paddingY={2}
-                      paddingX={4}
-                      bg="#304553"
-                    >
-                      {profitOnWin}
-                    </Flex>
-                  </Flex>
-                  <Button
-                    bg="#00e700"
-                    paddingY={8}
-                    _hover={{}}
-                    onClick={flipDice}
+                </Flex>
+                <Flex flexDirection="column">
+                  <Text color="#b1bad3">Profit on Win</Text>
+                  <Flex
+                    borderRadius="md"
+                    paddingY={2}
+                    paddingX={4}
+                    bg="#304553"
                   >
-                    Bet
-                  </Button>
+                    {profitOnWin}
+                  </Flex>
+                </Flex>
+                <Button
+                  bg="#00e700"
+                  paddingY={8}
+                  _hover={{}}
+                  onClick={flipDice}
+                >
+                  Bet
+                </Button>
+              </Flex>
+
+              {/* Right Section */}
+              <Flex
+                w="100%"
+                padding={4}
+                bg="#0e212e"
+                marginBottom={[0, 1]}
+                flexDirection="column"
+              >
+                {/* Game Results Row */}
+                <Flex gap={4} flexWrap="wrap">
+                  {gameResults.map((item, index) => (
+                    <Flex key={index}>
+                      <Text
+                        textAlign="center"
+                        minW="44px"
+                        maxW="44px"
+                        borderRadius={"3xl"}
+                        paddingX={2}
+                        paddingY={1}
+                        bg={item.PlayerWon ? "green" : "red.500"}
+                      >
+                        {item.WinningNumber}
+                      </Text>
+                    </Flex>
+                  ))}
                 </Flex>
 
-                {/* Right */}
-                <Flex
-                  padding={4}
-                  w="100%"
-                  bg="#0e212e"
-                  marginBottom={[0, 1]}
-                  flexDirection="column"
-                >
-                  <Flex w="100%" flexDirection="column">
-                    {/* Game Results Row */}
-                    <Flex gap={4} flexWrap="wrap">
-                      {[...gameResults].reverse().map((item, index) => (
-                        <Flex key={index}>
-                          <Text
-                            textAlign="center"
-                            minW="44px"
-                            maxW="44px"
-                            borderRadius={"3xl"}
-                            paddingX={2}
-                            paddingY={1}
-                            bg={item.PlayerWon ? "green" : "red.500"}
-                          >
-                            {item.WinningNumber}
-                          </Text>
-                        </Flex>
-                      ))}
-                    </Flex>
-
-                    {/* Top */}
-                    <Flex paddingY={[8, 250]} paddingX={[0, 12]}>
-                      <Flex padding={4} flexDirection="column" w="100%">
-                        <Slider
-                          flex="1"
-                          focusThumbOnChange={false}
-                          value={sliderValue}
-                          onChange={(val) => {
-                            sliderChanged(val)
-                          }}
-                          min={0}
-                          max={100}
-                          step={1}
-                        >
-                          <SliderMark value={0} {...labelStyles}>
-                            0
-                          </SliderMark>
-                          <SliderMark value={25} {...labelStyles}>
-                            25
-                          </SliderMark>
-                          <SliderMark value={50} {...labelStyles}>
-                            50
-                          </SliderMark>
-                          <SliderMark value={75} {...labelStyles}>
-                            75
-                          </SliderMark>
-                          <SliderMark value={100} {...labelStyles}>
-                            100
-                          </SliderMark>
-                          {/* <SliderMark
+                {/* Slider Container */}
+                <Flex paddingY={[20, 250]} paddingX={[0, 8]}>
+                  <Slider
+                    focusThumbOnChange={false}
+                    value={sliderValue}
+                    onChange={(val) => {
+                      sliderChanged(val)
+                    }}
+                    min={0}
+                    max={100}
+                    step={1}
+                  >
+                    <SliderMark value={0} {...labelStyles}>
+                      0
+                    </SliderMark>
+                    <SliderMark value={25} {...labelStyles}>
+                      25
+                    </SliderMark>
+                    <SliderMark value={50} {...labelStyles}>
+                      50
+                    </SliderMark>
+                    <SliderMark value={75} {...labelStyles}>
+                      75
+                    </SliderMark>
+                    <SliderMark value={100} {...labelStyles}>
+                      100
+                    </SliderMark>
+                    {/* <SliderMark
                             value={sliderValue}
                             textAlign="center"
                             bg="blue.500"
@@ -454,80 +406,87 @@ export default function Home() {
                             {sliderValue}%
                           </SliderMark> */}
 
-                          {randomValue >= 0 && randomValue <= 100 && (
-                            <SliderMark
-                              value={randomValue}
-                              marginTop="-58px"
-                              ml={-5}
-                            >
-                              <Flex flexDirection="column" alignItems="center">
-                                {randomValue}
-                                <ArrowDownIcon />
-                              </Flex>
-                            </SliderMark>
-                          )}
+                    {randomValue >= 0 && randomValue <= 100 && (
+                      <SliderMark value={randomValue} marginTop="-58px" ml={-5}>
+                        <Flex flexDirection="column" alignItems="center">
+                          {randomValue}
+                          <ArrowDownIcon />
+                        </Flex>
+                      </SliderMark>
+                    )}
 
-                          <SliderTrack bg="green">
-                            <SliderFilledTrack bg="red" />
-                          </SliderTrack>
-                          <SliderThumb
-                            // fontSize="sm"
-                            boxSize="28px"
-                            bg="blue.400"
-                            borderRadius="none"
-                            // bg={sliderValue <= 50 ? "green" : "red"}
-                          >
-                            <Box as={DragHandleIcon} color="gray.200" />
-                            {/* {sliderValue} */}
-                          </SliderThumb>
-                        </Slider>
-                      </Flex>
-                    </Flex>
-
-                    {/* Bottom */}
-                    <Flex
-                      bg="#213743"
-                      padding={4}
-                      gap={4}
-                      w="100%"
-                      flexDirection={["column", "row"]}
-                      borderRadius="md"
+                    <SliderTrack bg="green">
+                      <SliderFilledTrack bg="red" />
+                    </SliderTrack>
+                    <SliderThumb
+                      // fontSize="sm"
+                      boxSize="28px"
+                      bg="blue.400"
+                      borderRadius="none"
+                      // bg={sliderValue <= 50 ? "green" : "red"}
                     >
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Multiplier</Text>
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          {multiplier} <Text>X</Text>
-                        </Flex>
-                      </Flex>
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Roll Over</Text>
+                      <Box as={DragHandleIcon} color="gray.200" />
+                      {/* {sliderValue} */}
+                    </SliderThumb>
+                  </Slider>
+                </Flex>
 
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          {rollOver} <RepeatIcon />
-                        </Flex>
-                      </Flex>
-                      <Flex flexDirection="column" w="100%">
-                        <Text>Win Chance</Text>
-                        <Flex
-                          bg="#0e212e"
-                          padding={2}
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          {winChance}
-                          <Text>%</Text>
-                        </Flex>
-                      </Flex>
+                {/* Bottom Container */}
+                <Flex
+                  bg="#213743"
+                  padding={4}
+                  gap={4}
+                  flexDirection={["column", "row"]}
+                  borderRadius="md"
+                >
+                  {/* Multiplier Container */}
+                  <Flex
+                    flex="1" //fill available width horizontally
+                    flexDirection="column"
+                    justifyContent="space-between"
+                  >
+                    <Text>Multiplier</Text>
+                    <Flex
+                      bg="#0e212e"
+                      padding={2}
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      {multiplier} <Text>X</Text>
+                    </Flex>
+                  </Flex>
+                  {/* Roll Over Container */}
+                  <Flex
+                    flex="1" //fill available width horizontally
+                    flexDirection="column"
+                    justifyContent="space-between"
+                  >
+                    <Text>Roll Over</Text>
+
+                    <Flex
+                      bg="#0e212e"
+                      padding={2}
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      {rollOver} <RepeatIcon />
+                    </Flex>
+                  </Flex>
+                  {/* Win Chance Container */}
+                  <Flex
+                    flex="1" //fill available width horizontally
+                    flexDirection="column"
+                    justifyContent="space-between"
+                  >
+                    <Text>Win Chance</Text>
+                    <Flex
+                      bg="#0e212e"
+                      padding={2}
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      {winChance}
+                      <Text>%</Text>
                     </Flex>
                   </Flex>
                 </Flex>

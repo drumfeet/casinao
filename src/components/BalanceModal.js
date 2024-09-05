@@ -246,7 +246,6 @@ const BalanceModal = () => {
 
               <Flex
                 paddingTop={20}
-                w="100%"
                 justifyContent="flex-end"
                 alignItems="center"
                 gap={4}
@@ -264,8 +263,8 @@ const BalanceModal = () => {
                     _focus={{ borderColor: "white", boxShadow: "none" }}
                   />
                   <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
+                    <NumberIncrementStepper color="white" />
+                    <NumberDecrementStepper color="white" />
                   </NumberInputStepper>
                 </NumberInput>
               </Flex>
@@ -278,7 +277,17 @@ const BalanceModal = () => {
                 bg="#213743"
                 color="white"
                 _hover={{ bg: "#213743" }}
-                onClick={depositTokens}
+                onClick={async (event) => {
+                  const button = event.currentTarget
+                  button.disabled = true
+                  button.innerText = "Loading..."
+                  try {
+                    await depositTokens()
+                  } finally {
+                    button.disabled = false
+                    button.innerText = "Deposit"
+                  }
+                }}
               >
                 Deposit
               </Button>
@@ -286,7 +295,17 @@ const BalanceModal = () => {
                 variant="ghost"
                 color="white"
                 _hover={{}}
-                onClick={withdrawTokens}
+                onClick={async (event) => {
+                  const button = event.currentTarget
+                  button.disabled = true
+                  button.innerText = "Loading..."
+                  try {
+                    await withdrawTokens()
+                  } finally {
+                    button.disabled = false
+                    button.innerText = "Withdraw"
+                  }
+                }}
               >
                 Withdraw
               </Button>
