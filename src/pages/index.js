@@ -205,7 +205,6 @@ export default function Home() {
           <Flex
             flex="1" //fill available height vertically
             bg="#1a2c38"
-            overflow="hidden"
             padding={[2, 12]}
           >
             {/* Left & Right Section Container */}
