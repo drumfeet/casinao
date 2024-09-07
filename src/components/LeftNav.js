@@ -8,10 +8,12 @@ import { LinkIcon } from "@chakra-ui/icons"
 import GithubIcon from "./icons/GithubIcon"
 import { useContext } from "react"
 import { AppContext } from "@/context/AppContext"
+import ChipIcon2 from "./icons/ChipIcon2"
+import DiceIcon from "./icons/DiceIcon"
 
 const casinoItems = [
-  { text: "Dice", icon: <LinkIcon />, link: "/" },
-  { text: "Roulette", icon: <LinkIcon />, link: "/roulette" },
+  { text: "Dice", icon: <DiceIcon />, link: "/" },
+  { text: "Roulette", icon: <ChipIcon2 />, link: "/roulette" },
 ]
 
 const cryptoItems = [
