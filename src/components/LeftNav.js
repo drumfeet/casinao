@@ -100,7 +100,15 @@ export default function LeftNav() {
           bg="#1a2c38"
           color="gray.200"
           _hover={{}}
-          onClick={requestAirdrop}
+          onClick={async (event) => {
+            const button = event.currentTarget
+            button.disabled = true
+            try {
+              await requestAirdrop()
+            } finally {
+              button.disabled = false
+            }
+          }}
         >
           <Flex gap={4}>
             <AirdropIcon />
