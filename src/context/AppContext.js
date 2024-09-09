@@ -32,12 +32,13 @@ export const AppContextProvider = ({ children }) => {
       ])
       return { success: true }
     } catch (e) {
-      console.error("Wallet missing!", e)
+      console.error("connectWallet() error!", e)
       toast({
-        description: "Install arconnect.io wallet",
+        description: "Something went wrong with your wallet. Please try again.",
         status: "error",
         duration: 2000,
         isClosable: true,
+        position: "top",
       })
       return { success: false, error: e }
     }

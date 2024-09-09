@@ -18,7 +18,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react"
-import { useContext, useState } from "react"
+import { useContext, useState, useRef } from "react"
 import LeftNav from "@/components/LeftNav"
 import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
 import { AppContext } from "@/context/AppContext"
@@ -42,6 +42,9 @@ export default function Home() {
 
   const [sliderValue, setSliderValue] = useState(50)
   const [betAmount, setBetAmount] = useState(1)
+  const [autoBet, setAutoBet] = useState(false)
+  const isAutoPlayingRef = useRef(false)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false)
 
   const getWinChance = (_sliderValue) => {
     return Math.floor(SLOPE * Number(_sliderValue) + INTERCEPT)
@@ -100,9 +103,20 @@ export default function Home() {
     setProfitOnWin(getProfitOnWin(_multiplier, betAmount))
   }
 
+  const startAutoPlaying = () => {
+    isAutoPlayingRef.current = true
+    setIsAutoPlaying(true)
+  }
+
+  const stopAutoPlaying = () => {
+    isAutoPlayingRef.current = false
+    setIsAutoPlaying(false)
+  }
+
   const flipDice = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
+      stopAutoPlaying()
       return
     }
 
@@ -133,7 +147,7 @@ export default function Home() {
       })
       console.log("messageId", messageId)
 
-      setGameBalance(divideByPower(_gameBalance - _betAmount))
+      if (!autoBet) setGameBalance(divideByPower(_gameBalance - _betAmount))
 
       const _result = await result({
         message: messageId,
@@ -141,7 +155,7 @@ export default function Home() {
       })
       console.log("_result", _result)
 
-      const errorTag = _result.Messages[0].Tags.find(
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
         (tag) => tag.name === "Error"
       )
       console.log("errorTag", errorTag)
@@ -153,10 +167,12 @@ export default function Home() {
           isClosable: true,
           position: "top",
         })
+        stopAutoPlaying() // Stop auto-play on error
         return
       }
 
-      const winStatus = _result.Messages[0].Tags[6].value ? "success" : "error"
+      const { value: winStatusTag } = _result.Messages[0].Tags[6]
+      const winStatus = winStatusTag ? "success" : "error"
       const jsonObj = JSON.parse(_result.Messages[0].Data)
       console.log("jsonObj", jsonObj)
       setGameResults((prevResults) => [...prevResults, jsonObj])
@@ -172,10 +188,22 @@ export default function Home() {
 
       if (jsonObj.PlayerWon) playWinSound()
       setRandomValue(jsonObj.WinningNumber)
+
+      if (autoBet) {
+        // await fetchUserBalance()
+        if (isAutoPlayingRef.current) setTimeout(flipDice, 0)
+      }
     } catch (e) {
+      stopAutoPlaying() // Stop auto-play on error
       console.error("flipDice() error!", e)
     } finally {
-      await fetchUserBalance()
+      if (autoBet) {
+        if (!isAutoPlayingRef.current) {
+          await fetchUserBalance()
+        }
+      } else {
+        await fetchUserBalance()
+      }
     }
   }
 
@@ -228,24 +256,49 @@ export default function Home() {
                   <Button
                     borderRadius="3xl"
                     px={8}
-                    bg="#304553"
+                    bg={autoBet ? "#0e212e" : "#304553"}
                     color="gray.200"
                     _hover={{}}
+                    onClick={() => {
+                      setAutoBet(false)
+                    }}
                   >
                     Manual
                   </Button>
                   <Button
                     borderRadius="3xl"
                     px={8}
-                    variant="link"
+                    bg={autoBet ? "#304553" : "#0e212e"}
                     color="gray.200"
-                    onClick={() => {
+                    _hover={{}}
+                    onClick={async (event) => {
+                      const button = event.target
+                      button.disabled = true
+
+                      const _connected = await connectWallet()
+                      if (_connected.success === false) {
+                        button.disabled = false
+                        return
+                      }
+                      setAutoBet(true)
+
                       toast({
-                        title: "This feature is not available yet",
+                        description: "Fetching account info",
                         duration: 1000,
                         isClosable: true,
                         position: "top",
                       })
+                      await fetchUserBalance()
+                      toast({
+                        title: "Wallet Setup",
+                        description:
+                          "Click the user icon to set up wallet auto-sign.",
+                        duration: 2000,
+                        isClosable: true,
+                        position: "top",
+                      })
+
+                      button.disabled = false
                     }}
                   >
                     Auto
@@ -329,14 +382,52 @@ export default function Home() {
                     {profitOnWin}
                   </Flex>
                 </Flex>
-                <Button
-                  bg="#00e700"
-                  paddingY={8}
-                  _hover={{}}
-                  onClick={flipDice}
-                >
-                  Bet
-                </Button>
+                {!isAutoPlayingRef.current && (
+                  <Button
+                    bg="#00e700"
+                    paddingY={8}
+                    _hover={{}}
+                    onClick={async (event) => {
+                      const button = event.currentTarget
+                      button.disabled = true
+                      button.innerText = "Processing..."
+                      try {
+                        if (autoBet) {
+                          startAutoPlaying()
+                        }
+                        await flipDice()
+                      } finally {
+                        button.disabled = false
+                        button.innerText = "Bet"
+                      }
+                    }}
+                  >
+                    Bet
+                  </Button>
+                )}
+
+                {isAutoPlayingRef.current && (
+                  <Button
+                    bg="red.400"
+                    variant="outline"
+                    border="none"
+                    paddingY={8}
+                    _hover={{}}
+                    onClick={async (event) => {
+                      const button = event.currentTarget
+                      button.disabled = true
+                      button.innerText = "Stopping..."
+                      try {
+                        stopAutoPlaying()
+                      } finally {
+                        button.disabled = false
+                        button.innerText = "Stop"
+                      }
+                    }}
+                  >
+                    Stop
+                  </Button>
+                )}
               </Flex>
 
               {/* Right Section */}

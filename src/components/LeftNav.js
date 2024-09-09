@@ -59,25 +59,6 @@ export default function LeftNav() {
     </Flex>
   )
 
-  const connectWallet = async () => {
-    try {
-      await globalThis.arweaveWallet.connect([
-        "ACCESS_ADDRESS",
-        "SIGN_TRANSACTION",
-      ])
-      return { success: true }
-    } catch (e) {
-      console.error("Wallet missing!", e)
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
-      return { success: false, error: e }
-    }
-  }
-
   return (
     <Flex
       minW="270px"
@@ -196,7 +177,7 @@ export default function LeftNav() {
           </Button>
           <Button
             as="a"
-            href="https://github.com/drumfeet/aoflip"
+            href="https://github.com/drumfeet/casinao"
             target="_blank"
             variant="ghost"
             _hover={{}}
