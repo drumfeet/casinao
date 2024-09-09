@@ -1,7 +1,7 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { HamburgerIcon, RepeatIcon } from "@chakra-ui/icons"
 import { Button, Divider, Flex, Spacer, Text, useToast } from "@chakra-ui/react"
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState, useRef } from "react"
 import ChipIcon from "@/components/icons/ChipIcon"
 import LeftNav from "@/components/LeftNav"
 import RouletteWheel from "@/components/icons/RouletteWheel"
@@ -119,6 +119,20 @@ export default function Home() {
   const [gameResults, setGameResults] = useState([])
   const toast = useToast()
 
+  const [autoBet, setAutoBet] = useState(false)
+  const isAutoPlayingRef = useRef(false)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false)
+
+  const startAutoPlaying = () => {
+    isAutoPlayingRef.current = true
+    setIsAutoPlaying(true)
+  }
+
+  const stopAutoPlaying = () => {
+    isAutoPlayingRef.current = false
+    setIsAutoPlaying(false)
+  }
+
   const handleButtonClick = (betTypeOrNumbers) => {
     console.log("betTypeOrNumbers: ", betTypeOrNumbers)
     console.log("selectedChip: ", selectedChip)
@@ -171,6 +185,7 @@ export default function Home() {
   const flipRoulette = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
+      stopAutoPlaying()
       return
     }
 
@@ -219,7 +234,7 @@ export default function Home() {
       })
       console.log("messageId", messageId)
 
-      setGameBalance(divideByPower(_gameBalance - _betAmount))
+      if (!autoBet) setGameBalance(divideByPower(_gameBalance - _betAmount))
 
       const _result = await result({
         message: messageId,
@@ -227,7 +242,7 @@ export default function Home() {
       })
       console.log("_result", _result)
 
-      const errorTag = _result.Messages[0].Tags.find(
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
         (tag) => tag.name === "Error"
       )
       console.log("errorTag", errorTag)
@@ -239,6 +254,7 @@ export default function Home() {
           isClosable: true,
           position: "top",
         })
+        stopAutoPlaying()
         return
       }
 
@@ -246,10 +262,22 @@ export default function Home() {
       console.log("jsonObj", jsonObj)
       setGameResults((prevResults) => [...prevResults, jsonObj])
       playWinSound()
+
+      if (autoBet) {
+        // await fetchUserBalance()
+        if (isAutoPlayingRef.current) setTimeout(flipRoulette, 0)
+      }
     } catch (e) {
+      stopAutoPlaying()
       console.error("flipRoulette() error!", e)
     } finally {
-      await fetchUserBalance()
+      if (autoBet) {
+        if (!isAutoPlayingRef.current) {
+          await fetchUserBalance()
+        }
+      } else {
+        await fetchUserBalance()
+      }
     }
   }
 
@@ -297,24 +325,49 @@ export default function Home() {
                   <Button
                     borderRadius="3xl"
                     px={8}
-                    bg="#304553"
+                    bg={autoBet ? "#0e212e" : "#304553"}
                     color="gray.200"
                     _hover={{}}
+                    onClick={() => {
+                      setAutoBet(false)
+                    }}
                   >
                     Manual
                   </Button>
                   <Button
                     borderRadius="3xl"
                     px={8}
-                    variant="link"
+                    bg={autoBet ? "#304553" : "#0e212e"}
                     color="gray.200"
-                    onClick={() => {
+                    _hover={{}}
+                    onClick={async (event) => {
+                      const button = event.target
+                      button.disabled = true
+
+                      const _connected = await connectWallet()
+                      if (_connected.success === false) {
+                        button.disabled = false
+                        return
+                      }
+                      setAutoBet(true)
+
                       toast({
-                        title: "This feature is not available yet",
+                        description: "Fetching account info",
                         duration: 1000,
                         isClosable: true,
                         position: "top",
                       })
+                      await fetchUserBalance()
+                      toast({
+                        title: "Wallet Setup",
+                        description:
+                          "Click the user icon to set up wallet auto-sign.",
+                        duration: 2000,
+                        isClosable: true,
+                        position: "top",
+                      })
+
+                      button.disabled = false
                     }}
                   >
                     Auto
@@ -386,26 +439,57 @@ export default function Home() {
                     </Flex>
                   </Flex>
                 </Flex>
-                <Button
-                  bg="#00e700"
-                  paddingY={8}
-                  _hover={{}}
-                  onClick={async (event) => {
-                    const button = event.currentTarget
-                    button.disabled = true
-                    button.innerText = "Processing..."
-                    try {
-                      await flipRoulette()
-                    } finally {
-                      button.disabled = false
-                      button.innerText = "Bet"
-                      setBets({})
-                      setBetAmount(0)
-                    }
-                  }}
-                >
-                  Bet
-                </Button>
+
+                {!isAutoPlayingRef.current && (
+                  <Button
+                    bg="#00e700"
+                    paddingY={8}
+                    _hover={{}}
+                    onClick={async (event) => {
+                      const button = event.currentTarget
+                      button.disabled = true
+                      button.innerText = "Processing..."
+                      try {
+                        if (autoBet) {
+                          startAutoPlaying()
+                        }
+                        await flipRoulette()
+                      } finally {
+                        button.disabled = false
+                        button.innerText = "Bet"
+                        if (!autoBet) {
+                          setBets({})
+                          setBetAmount(0)
+                        }
+                      }
+                    }}
+                  >
+                    Bet
+                  </Button>
+                )}
+
+                {isAutoPlayingRef.current && (
+                  <Button
+                    bg="red.400"
+                    variant="outline"
+                    border="none"
+                    paddingY={8}
+                    _hover={{}}
+                    onClick={async (event) => {
+                      const button = event.currentTarget
+                      button.disabled = true
+                      button.innerText = "Stopping..."
+                      try {
+                        stopAutoPlaying()
+                      } finally {
+                        button.disabled = false
+                        button.innerText = "Stop"
+                      }
+                    }}
+                  >
+                    Stop
+                  </Button>
+                )}
               </Flex>
 
               {/* Right Section */}
@@ -419,7 +503,7 @@ export default function Home() {
               >
                 {/* Game Results Row */}
                 <Flex gap={4} flexWrap="wrap">
-                  {[...gameResults].reverse().map((item, index) => (
+                  {gameResults.map((item, index) => (
                     <Flex key={index}>
                       <Text
                         textAlign="center"

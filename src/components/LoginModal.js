@@ -37,12 +37,13 @@ const LoginModal = () => {
       await window.arweaveWallet.disconnect()
       return { success: true }
     } catch (e) {
-      console.error("Wallet missing!", e)
+      console.error("disconnectWallet() error!", e)
       toast({
-        description: "Install arconnect.io wallet",
+        description: "Something went wrong with your wallet. Please try again.",
         status: "error",
         duration: 2000,
         isClosable: true,
+        position: "top",
       })
       return { success: false, error: e }
     }
@@ -51,12 +52,6 @@ const LoginModal = () => {
   const login = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
-      toast({
-        description: "Install arconnect.io wallet",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
       return
     }
 
@@ -70,7 +65,7 @@ const LoginModal = () => {
     toast({
       title: "Connected",
       description: "Click the user icon to set up wallet auto-sign.",
-      duration: 4000,
+      duration: 2000,
       isClosable: true,
       position: "top",
     })
