@@ -7,7 +7,7 @@ import AirdropIcon from "./icons/AirdropIcon"
 import { LinkIcon } from "@chakra-ui/icons"
 import GithubIcon from "./icons/GithubIcon"
 import { useContext } from "react"
-import { AppContext } from "@/context/AppContext"
+import { AppContext } from "../AppContext"
 import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
 
