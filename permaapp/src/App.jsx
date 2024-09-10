@@ -1,4 +1,3 @@
-import "./App.css"
 import GripIcon from "./components/icons/GripIcon"
 import RepeatIcon from "./components/icons/RepeatIcon"
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
