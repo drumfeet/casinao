@@ -52,7 +52,7 @@ export default function LeftNav() {
           </>
         ) : (
           <>
-            <Link to="#">{text}ss</Link>
+            <Link to="#">{text}</Link>
           </>
         )}
       </Button>
