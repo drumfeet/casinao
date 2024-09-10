@@ -8,7 +8,7 @@ import { useContext } from "react"
 import { AppContext } from "../AppContext"
 import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import LinkIcon from "./icons/LinkIcon"
 
 const casinoItems = [
@@ -26,38 +26,33 @@ export default function LeftNav() {
   const { requestAirdrop } = useContext(AppContext)
   const toast = useToast()
 
-  const GameMenuItem = ({ icon, text, link }) => (
-    <Flex alignItems="center">
-      <Button
-        leftIcon={icon}
-        variant="ghost"
-        _hover={{}}
-        color="gray.200"
-        fontWeight="normal"
-        onClick={
-          link
-            ? () => {}
-            : () =>
-                toast({
-                  title: "This feature is not available yet",
-                  duration: 1000,
-                  isClosable: true,
-                  position: "top",
-                })
-        }
-      >
-        {link ? (
-          <>
-            <Link to={link}>{text}</Link>
-          </>
-        ) : (
-          <>
-            <Link to="#">{text}</Link>
-          </>
-        )}
-      </Button>
-    </Flex>
-  )
+  const GameMenuItem = ({ icon, text, link }) => {
+    const navigate = useNavigate()
+    return (
+      <Flex alignItems="center">
+        <Button
+          leftIcon={icon}
+          variant="ghost"
+          _hover={{}}
+          color="gray.200"
+          fontWeight="normal"
+          onClick={
+            link
+              ? () => navigate(link)
+              : () =>
+                  toast({
+                    title: "This feature is not available yet",
+                    duration: 1000,
+                    isClosable: true,
+                    position: "top",
+                  })
+          }
+        >
+          {text}
+        </Button>
+      </Flex>
+    )
+  }
 
   return (
     <Flex
