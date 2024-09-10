@@ -37,7 +37,7 @@ const AppHeader = () => {
         <Text
           color="white"
           fontSize={"2xl"}
-          fontFamily={"Comic Sans MS, cursive, sans-serif"}
+          fontFamily={"Arial, Helvetica, sans-serif"}
           fontWeight="bold"
           letterSpacing="wide"
           noOfLines={1}
