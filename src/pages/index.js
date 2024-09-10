@@ -1,5 +1,4 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { DragHandleIcon, RepeatIcon } from "@chakra-ui/icons"
 import {
   Box,
   Button,
@@ -23,6 +22,8 @@ import LeftNav from "@/components/LeftNav"
 import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
 import { AppContext } from "@/context/AppContext"
 import AppHeader from "@/components/AppHeader"
+import GripIcon from "@/components/icons/GripIcon"
+import RepeatIcon from "@/components/icons/RepeatIcon"
 
 export default function Home() {
   const {
@@ -515,7 +516,7 @@ export default function Home() {
                       borderRadius="none"
                       // bg={sliderValue <= 50 ? "green" : "red"}
                     >
-                      <Box as={DragHandleIcon} color="gray.200" />
+                      <Box as={GripIcon} color="gray.200" />
                       {/* {sliderValue} */}
                     </SliderThumb>
                   </Slider>
