@@ -1,5 +1,4 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { HamburgerIcon, RepeatIcon } from "@chakra-ui/icons"
 import { Button, Divider, Flex, Spacer, Text, useToast } from "@chakra-ui/react"
 import { useContext, useEffect, useState, useRef } from "react"
 import ChipIcon from "@/components/icons/ChipIcon"
@@ -9,6 +8,7 @@ import { AppContext } from "@/context/AppContext"
 import LoginModal from "@/components/LoginModal"
 import BalanceModal from "@/components/BalanceModal"
 import AppHeader from "@/components/AppHeader"
+import RepeatIcon from "@/components/icons/RepeatIcon"
 
 const numberGroups = [
   [1, 2, 3],

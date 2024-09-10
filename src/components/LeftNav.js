@@ -4,12 +4,12 @@ import Link from "next/link"
 import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
-import { LinkIcon } from "@chakra-ui/icons"
 import GithubIcon from "./icons/GithubIcon"
 import { useContext } from "react"
 import { AppContext } from "@/context/AppContext"
 import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
+import LinkIcon from "./icons/LinkIcon"
 
 const casinoItems = [
   { text: "Dice", icon: <DiceIcon />, link: "/" },
