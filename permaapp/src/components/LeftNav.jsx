@@ -1,15 +1,15 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { Button, Divider, Flex, Text, useToast } from "@chakra-ui/react"
-import Link from "next/link"
 import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
-import { LinkIcon } from "@chakra-ui/icons"
 import GithubIcon from "./icons/GithubIcon"
 import { useContext } from "react"
 import { AppContext } from "../AppContext"
 import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
+import { Link } from "react-router-dom"
+import LinkIcon from "./icons/LinkIcon"
 
 const casinoItems = [
   { text: "Dice", icon: <DiceIcon />, link: "/" },
@@ -48,11 +48,11 @@ export default function LeftNav() {
       >
         {link ? (
           <>
-            <Link href={link}>{text}</Link>
+            <Link to={link}>{text}</Link>
           </>
         ) : (
           <>
-            <Link href="#">{text}</Link>
+            <Link to="#">{text}ss</Link>
           </>
         )}
       </Button>
