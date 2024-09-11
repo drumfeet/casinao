@@ -85,7 +85,7 @@ function App() {
   const toast = useToast()
 
   const playWinSound = () => {
-    const audio = new Audio("/win.mp3")
+    const audio = new Audio("https://arweave.net/3GSTZEFF1hJkqAZIOIvmLuBwMNQ6_vbtIKkMG0K_aAU")
     audio.play().catch((error) => {
       console.error("Error playing the sound:", error)
     })
