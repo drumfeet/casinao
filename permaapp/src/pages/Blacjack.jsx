@@ -11,10 +11,71 @@ import {
 } from "@chakra-ui/react"
 import LeftNav from "../components/LeftNav"
 import AppHeader from "../components/AppHeader"
-import { useState } from "react"
+import { useContext, useState } from "react"
+import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
+import { AppContext } from "../AppContext"
 
 export default function Blackjack() {
-  const [betAmount, setBetAmount] = useState(1)
+  const {
+    multiplyByPower,
+    divideByPower,
+    connectWallet,
+    gameBalance,
+    setGameBalance,
+    walletBalance,
+    setWalletBalance,
+    fetchUserBalance,
+  } = useContext(AppContext)
+  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
+
+  const [betAmount, setBetAmount] = useState(0)
+
+  const deal = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _gameBalance = multiplyByPower(gameBalance)
+      const _betAmount = multiplyByPower(betAmount)
+      console.log("gameBalance", gameBalance)
+      console.log("_betAmount", _betAmount)
+
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Deal",
+          },
+          {
+            name: "Quantity",
+            value: _betAmount.toString(),
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      setGameBalance(divideByPower(_gameBalance - _betAmount))
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+    } catch (e) {
+      console.error("deal() error!", e)
+    } finally {
+      await fetchUserBalance()
+    }
+  }
+  const hit = async () => {}
+  const stand = async () => {}
+  const split = async () => {}
+  const double = async () => {}
+
   return (
     <>
       <Flex minH="100vh" backgroundColor="#0e2229">
@@ -53,7 +114,7 @@ export default function Blackjack() {
                     <NumberInput
                       precision={2}
                       value={betAmount}
-                      min={1}
+                      min={0}
                       onChange={(e) => {
                         setBetAmount(e)
                       }}
@@ -112,6 +173,56 @@ export default function Blackjack() {
                   </Flex>
                 </Flex>
 
+                <Flex gap={2}>
+                  <Button
+                    variant="outline"
+                    color="gray.200"
+                    flex={1}
+                    _hover={{}}
+                    bg="#283e4b"
+                    border="none"
+                    isDisabled={true}
+                  >
+                    Hit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    color="gray.200"
+                    flex={1}
+                    _hover={{}}
+                    bg="#283e4b"
+                    border="none"
+                    isDisabled={true}
+                  >
+                    Stand
+                  </Button>
+                </Flex>
+
+                <Flex gap={2}>
+                  <Button
+                    variant="outline"
+                    color="gray.200"
+                    flex={1}
+                    _hover={{}}
+                    bg="#283e4b"
+                    border="none"
+                    isDisabled={true}
+                  >
+                    Split
+                  </Button>
+                  <Button
+                    variant="outline"
+                    color="gray.200"
+                    flex={1}
+                    _hover={{}}
+                    bg="#283e4b"
+                    border="none"
+                    isDisabled={true}
+                  >
+                    Double
+                  </Button>
+                </Flex>
+
                 <Button
                   bg="#00e700"
                   paddingY={8}
@@ -121,6 +232,7 @@ export default function Blackjack() {
                     button.disabled = true
                     button.innerText = "Processing..."
                     try {
+                      await deal()
                     } finally {
                       button.disabled = false
                       button.innerText = "Bet"
@@ -139,7 +251,43 @@ export default function Blackjack() {
                 marginBottom={[0, 1]}
                 flexDirection="column"
               >
-                {/* TODO */}
+                <Flex
+                  justifyContent="center"
+                  flexDirection="column"
+                  alignItems="center"
+                  //   bg="red.500"
+                  flex={1}
+                >
+                  {/* Upper Section */}
+                  <Flex gap={2} justifyContent="center">
+                    {/* Upper Cards Section */}
+                  </Flex>
+
+                  {/* Center Section */}
+                  <Flex
+                    flexDirection="column"
+                    color="gray.500"
+                    alignItems="center"
+                    paddingY={100}
+                    gap={2}
+                  >
+                    <Text
+                      bg="#162c39"
+                      fontWeight="bold"
+                      paddingX={28}
+                      paddingY={2}
+                    >
+                      BLACKJACK PAYS 3 TO 2
+                    </Text>
+
+                    <Text fontWeight="bold">INSURANCE PAYS 2 TO 1</Text>
+                  </Flex>
+
+                  {/* Lower Section */}
+                  <Flex gap={2} justifyContent="center">
+                    {/* Lower Cards Section */}
+                  </Flex>
+                </Flex>
               </Flex>
             </Flex>
           </Flex>
