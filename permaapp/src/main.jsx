@@ -5,6 +5,7 @@ import { ChakraProvider } from "@chakra-ui/react"
 import { AppContextProvider } from "./AppContext.jsx"
 import { createHashRouter, RouterProvider } from "react-router-dom"
 import Roulette from "./pages/Roulette.jsx"
+import Blackjack from "./pages/Blacjack.jsx"
 
 const router = createHashRouter([
   {
@@ -14,6 +15,10 @@ const router = createHashRouter([
   {
     path: "/roulette",
     element: <Roulette />,
+  },
+  {
+    path: "/blackjack",
+    element: <Blackjack />,
   },
 ])
 

@@ -10,10 +10,12 @@ import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
 import { Link, useNavigate } from "react-router-dom"
 import LinkIcon from "./icons/LinkIcon"
+import CardIcon from "./icons/CardIcon"
 
 const casinoItems = [
   { text: "Dice", icon: <DiceIcon />, link: "/" },
   { text: "Roulette", icon: <ChipIcon2 />, link: "/roulette" },
+  { text: "Blackjack", icon: <CardIcon />, link: "/blackjack" },
 ]
 
 const cryptoItems = [
