@@ -107,6 +107,8 @@ export default function Roulette() {
     walletBalance,
     setWalletBalance,
     fetchUserBalance,
+    fetchGameBalance,
+    fetchWalletBalance,
   } = useContext(AppContext)
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const [betAmount, setBetAmount] = useState(0)
@@ -264,8 +266,8 @@ export default function Roulette() {
       playWinSound()
 
       if (autoBet) {
-        // await fetchUserBalance()
-        if (isAutoPlayingRef.current) setTimeout(flipRoulette, 0)
+        await fetchGameBalance()
+        if (isAutoPlayingRef.current) setTimeout(flipRoulette, 1000)
       }
     } catch (e) {
       stopAutoPlaying()
@@ -357,7 +359,7 @@ export default function Roulette() {
                         isClosable: true,
                         position: "top",
                       })
-                      await fetchUserBalance()
+                      await fetchGameBalance()
                       toast({
                         title: "Wallet Setup",
                         description:

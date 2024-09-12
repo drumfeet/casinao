@@ -193,8 +193,8 @@ export default function Home() {
       setRandomValue(jsonObj.WinningNumber)
 
       if (autoBet) {
-        // await fetchUserBalance()
-        if (isAutoPlayingRef.current) setTimeout(flipDice, 0)
+        await fetchGameBalance()
+        if (isAutoPlayingRef.current) setTimeout(flipDice, 1000)
       }
     } catch (e) {
       stopAutoPlaying() // Stop auto-play on error
