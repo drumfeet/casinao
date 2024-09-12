@@ -231,7 +231,20 @@ const BalanceModal = () => {
           <ModalBody>
             <Flex flexDirection="column" gap={4}>
               {walletBalance >= 0 || gameBalance >= 0 ? (
-                <>
+                <Flex
+                  flexDirection="column"
+                  gap={4}
+                  _hover={{ cursor: "pointer" }}
+                  onClick={async () => {
+                    await fetchUserBalance()
+                    toast({
+                      description: "Updated user balance",
+                      duration: 1000,
+                      isClosable: true,
+                      position: "top",
+                    })
+                  }}
+                >
                   <Text>
                     Wallet Balance :{" "}
                     {walletBalance >= 0
@@ -246,7 +259,7 @@ const BalanceModal = () => {
                   </Text>
                   {/* <Text>Token Process ID: {TOKEN_PROCESS_ID}</Text>
                     <Text>Game Process ID: {GAME_PROCESS_ID}</Text> */}
-                </>
+                </Flex>
               ) : (
                 <></>
               )}
