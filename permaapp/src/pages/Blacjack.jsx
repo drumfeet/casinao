@@ -8,6 +8,7 @@ import {
   NumberInputField,
   NumberInputStepper,
   Text,
+  useToast,
 } from "@chakra-ui/react"
 import LeftNav from "../components/LeftNav"
 import AppHeader from "../components/AppHeader"
@@ -28,7 +29,10 @@ export default function Blackjack() {
   } = useContext(AppContext)
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
+  const toast = useToast()
+
   const [betAmount, setBetAmount] = useState(0)
+  const [insuranceOption, setInsuranceOption] = useState(false)
 
   const deal = async () => {
     const _connected = await connectWallet()
@@ -65,6 +69,30 @@ export default function Blackjack() {
         process: GAME_PROCESS_ID,
       })
       console.log("_result", _result)
+
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        stopAutoPlaying()
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+
+      if (jsonObj.InsuranceOption) {
+        setInsuranceOption(jsonObj.InsuranceOption)
+        console.log("InsuranceOption", jsonObj.InsuranceOption)
+      }
     } catch (e) {
       console.error("deal() error!", e)
     } finally {
@@ -173,68 +201,106 @@ export default function Blackjack() {
                   </Flex>
                 </Flex>
 
-                <Flex gap={2}>
-                  <Button
-                    variant="outline"
-                    color="gray.200"
-                    flex={1}
-                    _hover={{}}
-                    bg="#283e4b"
-                    border="none"
-                    isDisabled={true}
-                  >
-                    Hit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    color="gray.200"
-                    flex={1}
-                    _hover={{}}
-                    bg="#283e4b"
-                    border="none"
-                    isDisabled={true}
-                  >
-                    Stand
-                  </Button>
-                </Flex>
+                {insuranceOption && (
+                  <>
+                    <Flex gap={2}>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        onClick={() => {
+                          setInsuranceOption(false)
+                        }}
+                      >
+                        Accept Insurance
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        onClick={() => {
+                          setInsuranceOption(false)
+                        }}
+                      >
+                        No Insurance
+                      </Button>
+                    </Flex>
+                  </>
+                )}
 
-                <Flex gap={2}>
-                  <Button
-                    variant="outline"
-                    color="gray.200"
-                    flex={1}
-                    _hover={{}}
-                    bg="#283e4b"
-                    border="none"
-                    isDisabled={true}
-                  >
-                    Split
-                  </Button>
-                  <Button
-                    variant="outline"
-                    color="gray.200"
-                    flex={1}
-                    _hover={{}}
-                    bg="#283e4b"
-                    border="none"
-                    isDisabled={true}
-                  >
-                    Double
-                  </Button>
-                </Flex>
+                {!insuranceOption && (
+                  <>
+                    <Flex gap={2}>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Hit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Stand
+                      </Button>
+                    </Flex>
+
+                    <Flex gap={2}>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Split
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Double
+                      </Button>
+                    </Flex>
+                  </>
+                )}
 
                 <Button
                   bg="#00e700"
                   paddingY={8}
                   _hover={{}}
+                  isDisabled={insuranceOption}
                   onClick={async (event) => {
                     const button = event.currentTarget
-                    button.disabled = true
+                    // button.disabled = true
                     button.innerText = "Processing..."
                     try {
                       await deal()
                     } finally {
-                      button.disabled = false
+                      //   button.disabled = false
                       button.innerText = "Bet"
                     }
                   }}
