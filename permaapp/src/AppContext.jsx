@@ -63,6 +63,38 @@ export const AppContextProvider = ({ children }) => {
     }
   }
 
+  const fetchGameBalance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const userAddress = await globalThis.arweaveWallet.getActiveAddress()
+
+      const gameBalance = await getGameBalance({ recipient: userAddress })
+      setGameBalance(divideByPower(gameBalance))
+    } catch (e) {
+      console.error("fetchGameBalance() error!", e)
+    }
+  }
+
+  const fetchWalletBalance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const userAddress = await globalThis.arweaveWallet.getActiveAddress()
+
+      const walletBalance = await getWalletBalance({ recipient: userAddress })
+      setWalletBalance(divideByPower(walletBalance))
+    } catch (e) {
+      console.error("fetchWalletBalance() error!", e)
+    }
+  }
+
   const requestAirdrop = async () => {
     const _connected = await connectWallet()
     if (_connected.success === false) {
@@ -121,6 +153,8 @@ export const AppContextProvider = ({ children }) => {
         walletBalance,
         setWalletBalance,
         fetchUserBalance,
+        fetchGameBalance,
+        fetchWalletBalance,
         requestAirdrop,
       }}
     >

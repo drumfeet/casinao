@@ -35,6 +35,8 @@ export default function Home() {
     walletBalance,
     setWalletBalance,
     fetchUserBalance,
+    fetchGameBalance,
+    fetchWalletBalance,
   } = useContext(AppContext)
 
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
@@ -289,7 +291,7 @@ export default function Home() {
                         isClosable: true,
                         position: "top",
                       })
-                      await fetchUserBalance()
+                      await fetchGameBalance()
                       toast({
                         title: "Wallet Setup",
                         description:
