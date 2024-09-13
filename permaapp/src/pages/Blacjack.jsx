@@ -26,6 +26,8 @@ export default function Blackjack() {
     walletBalance,
     setWalletBalance,
     fetchUserBalance,
+    fetchGameBalance,
+    fetchWalletBalance,
   } = useContext(AppContext)
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
@@ -33,6 +35,7 @@ export default function Blackjack() {
 
   const [betAmount, setBetAmount] = useState(0)
   const [insuranceOption, setInsuranceOption] = useState(false)
+  const [gameState, setGameState] = useState(null)
 
   const deal = async () => {
     const _connected = await connectWallet()
@@ -62,7 +65,7 @@ export default function Blackjack() {
       })
       console.log("messageId", messageId)
 
-      setGameBalance(divideByPower(_gameBalance - _betAmount))
+      // setGameBalance(divideByPower(_gameBalance - _betAmount))
 
       const _result = await result({
         message: messageId,
@@ -82,27 +85,176 @@ export default function Blackjack() {
           isClosable: true,
           position: "top",
         })
-        stopAutoPlaying()
         return
       }
 
       const jsonObj = JSON.parse(_result.Messages[0].Data)
       console.log("jsonObj", jsonObj)
+      setGameState(jsonObj)
 
-      if (jsonObj.InsuranceOption) {
+      if (jsonObj.Result === "Push") {
+        toast({
+          description: "Push! Your bet has been returned.",
+          status: "info",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else if (jsonObj.Result === "PlayerWinsBlackjack") {
+        toast({
+          description: "Blackjack! You win 1.5x your bet.",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else {
+        // Continue the game with normal flow if no immediate Blackjack outcome
+
         setInsuranceOption(jsonObj.InsuranceOption)
         console.log("InsuranceOption", jsonObj.InsuranceOption)
       }
     } catch (e) {
       console.error("deal() error!", e)
     } finally {
-      await fetchUserBalance()
+      await fetchGameBalance()
     }
   }
+
   const hit = async () => {}
   const stand = async () => {}
   const split = async () => {}
   const double = async () => {}
+
+  const acceptInsurance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      console.log("insuranceOption", insuranceOption)
+
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Insurance",
+          },
+          {
+            name: "InsuranceAccepted",
+            value: "true",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+      setGameState(jsonObj)
+
+      if (jsonObj.Result === "DealerWinsBlackjack") {
+        toast({
+          description: "DealerWinsBlackjack",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else if (jsonObj.Result === "GameContinues") {
+        toast({
+          description: "GameContinues",
+          status: "info",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else {
+        // Continue the game with normal flow if no immediate Blackjack outcome
+
+        setInsuranceOption(jsonObj.InsuranceOption)
+        console.log("InsuranceOption", jsonObj.InsuranceOption)
+      }
+    } catch (e) {
+      console.error("acceptInsurance() error!", e)
+    }
+  }
+
+  const rejectInsurance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      console.log("insuranceOption", insuranceOption)
+
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Insurance",
+          },
+          {
+            name: "InsuranceAccepted",
+            value: "false",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+    } catch (e) {
+      console.error("rejectInsurance() error!", e)
+    }
+  }
 
   return (
     <>
@@ -211,8 +363,16 @@ export default function Blackjack() {
                         _hover={{}}
                         bg="#283e4b"
                         border="none"
-                        onClick={() => {
-                          setInsuranceOption(false)
+                        isDisabled={!insuranceOption}
+                        onClick={async (event) => {
+                          const button = event.currentTarget
+                          button.innerText = "Processing..."
+                          try {
+                            setInsuranceOption(false)
+                            await acceptInsurance()
+                          } finally {
+                            button.innerText = "Accept Insurance"
+                          }
                         }}
                       >
                         Accept Insurance
@@ -224,8 +384,16 @@ export default function Blackjack() {
                         _hover={{}}
                         bg="#283e4b"
                         border="none"
-                        onClick={() => {
-                          setInsuranceOption(false)
+                        isDisabled={!insuranceOption}
+                        onClick={async (event) => {
+                          const button = event.currentTarget
+                          button.innerText = "Processing..."
+                          try {
+                            setInsuranceOption(false)
+                            await rejectInsurance()
+                          } finally {
+                            button.innerText = "No Insurance"
+                          }
                         }}
                       >
                         No Insurance
@@ -292,15 +460,20 @@ export default function Blackjack() {
                   bg="#00e700"
                   paddingY={8}
                   _hover={{}}
-                  isDisabled={insuranceOption}
                   onClick={async (event) => {
                     const button = event.currentTarget
-                    // button.disabled = true
+                    button.disabled = true
                     button.innerText = "Processing..."
                     try {
-                      await deal()
+                      // await deal()
+                      toast({
+                        title: "This game is not available yet",
+                        duration: 1000,
+                        isClosable: true,
+                        position: "top",
+                      })
                     } finally {
-                      //   button.disabled = false
+                      button.disabled = false
                       button.innerText = "Bet"
                     }
                   }}
