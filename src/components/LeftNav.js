@@ -26,31 +26,46 @@ export default function LeftNav() {
   const { requestAirdrop } = useAppContext()
   const toast = useToast()
 
-  const GameMenuItem = ({ icon, text, link }) => (
-    <Flex alignItems="center">
-      <Button
-        as={link ? "a" : "button"}
-        href={link || "#"}
-        leftIcon={icon}
-        variant="ghost"
-        _hover={{}}
-        color="gray.200"
-        fontWeight="normal"
-        onClick={() => {
-          if (!link) {
-            toast({
-              title: "This feature is not available yet",
-              duration: 1000,
-              isClosable: true,
-              position: "top",
-            })
-          }
-        }}
-      >
-        {text}
-      </Button>
-    </Flex>
-  )
+  const GameMenuItem = ({ icon, text, link }) => {
+    const toast = useToast()
+
+    return (
+      <Flex alignItems="center">
+        {link ? (
+          <Link href={link} passHref>
+            <Button
+              leftIcon={icon}
+              variant="ghost"
+              color="gray.200"
+              fontWeight="normal"
+              _hover={{}}
+              as="div"
+            >
+              {text}
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            leftIcon={icon}
+            variant="ghost"
+            color="gray.200"
+            fontWeight="normal"
+            _hover={{}}
+            onClick={() =>
+              toast({
+                title: "This feature is not available yet",
+                duration: 1000,
+                isClosable: true,
+                position: "top",
+              })
+            }
+          >
+            {text}
+          </Button>
+        )}
+      </Flex>
+    )
+  }
 
   return (
     <Flex
