@@ -59,9 +59,9 @@ Variant = "0.0.3"
 Denomination = Denomination or 12
 Balances = Balances or { [ao.id] = utils.toBalanceValue(1000000 * 10 ^ Denomination) }
 TotalSupply = TotalSupply or utils.toBalanceValue(1000000 * 10 ^ Denomination)
-if Name ~= 'FLIP Coin' then Name = 'FLIP Coin' end
+if Name ~= 'FLIP' then Name = 'FLIP' end
 Ticker = Ticker or 'FLIP'
-Logo = Logo or 'dLbFWaJ1DpLpsyxdFX38AkzuMwSA6A598uRFBlHMvJo'
+Logo = Logo or '62Xi37z2A3zf74EH8WcdHsgerupea3xGgC6L_M3HT50'
 
 --[[
      Add handlers for each incoming Action defined by the ao Standard Token Specification

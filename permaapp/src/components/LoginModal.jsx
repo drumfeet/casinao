@@ -15,8 +15,7 @@ import {
 import UserIcon from "./icons/UserIcon"
 import WalletIcon from "./icons/WalletIcon"
 import LoginKeyIcon from "./icons/LoginKeyIcon"
-import { useContext, useState } from "react"
-import { AppContext } from "../AppContext"
+import { useAppContext } from "../AppContext"
 
 const LoginModal = () => {
   const {
@@ -28,7 +27,7 @@ const LoginModal = () => {
     walletBalance,
     setWalletBalance,
     fetchUserBalance,
-  } = useContext(AppContext)
+  } = useAppContext()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const toast = useToast()
 

@@ -1,19 +1,19 @@
-import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { Button, Divider, Flex, Text, useToast } from "@chakra-ui/react"
 import Link from "next/link"
 import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
 import GithubIcon from "./icons/GithubIcon"
-import { useContext } from "react"
-import { AppContext } from "@/context/AppContext"
+import { useAppContext } from "@/context/AppContext"
 import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
 import LinkIcon from "./icons/LinkIcon"
+import CardIcon from "./icons/CardIcon"
 
 const casinoItems = [
   { text: "Dice", icon: <DiceIcon />, link: "/" },
   { text: "Roulette", icon: <ChipIcon2 />, link: "/roulette" },
+  { text: "Blackjack", icon: <CardIcon />, link: "/blackjack" },
 ]
 
 const cryptoItems = [
@@ -23,38 +23,31 @@ const cryptoItems = [
 ]
 
 export default function LeftNav() {
-  const { requestAirdrop } = useContext(AppContext)
+  const { requestAirdrop } = useAppContext()
   const toast = useToast()
 
   const GameMenuItem = ({ icon, text, link }) => (
     <Flex alignItems="center">
       <Button
+        as={link ? "a" : "button"}
+        href={link || "#"}
         leftIcon={icon}
         variant="ghost"
         _hover={{}}
         color="gray.200"
         fontWeight="normal"
-        onClick={
-          link
-            ? () => {}
-            : () =>
-                toast({
-                  title: "This feature is not available yet",
-                  duration: 1000,
-                  isClosable: true,
-                  position: "top",
-                })
-        }
+        onClick={() => {
+          if (!link) {
+            toast({
+              title: "This feature is not available yet",
+              duration: 1000,
+              isClosable: true,
+              position: "top",
+            })
+          }
+        }}
       >
-        {link ? (
-          <>
-            <Link href={link}>{text}</Link>
-          </>
-        ) : (
-          <>
-            <Link href="#">{text}</Link>
-          </>
-        )}
+        {text}
       </Button>
     </Flex>
   )

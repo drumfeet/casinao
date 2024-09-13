@@ -342,6 +342,7 @@ Handlers.add('roulette', Handlers.utils.hasMatchingTag('Action', 'Roulette'), fu
             UserBalance = Balances[msg.From],
             GameBalance = Balances[ao.id],
             Payout = "divideByPower(totalPayout): " .. divideByPower(totalPayout),
+            Bets = bets,
         }
         printData("_data", _data)
 

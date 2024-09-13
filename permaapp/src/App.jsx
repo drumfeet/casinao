@@ -20,9 +20,9 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react"
-import { useContext, useState, useRef } from "react"
+import { useState, useRef } from "react"
 import ArrowDownIcon from "./components/icons/ArrowDownIcon"
-import { AppContext } from "./AppContext"
+import { useAppContext } from "./AppContext"
 import AppHeader from "./components/AppHeader"
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
     fetchUserBalance,
     fetchGameBalance,
     fetchWalletBalance,
-  } = useContext(AppContext)
+  } = useAppContext()
 
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const SLOPE = -0.96
@@ -205,7 +205,7 @@ function App() {
           await fetchUserBalance()
         }
       } else {
-        await fetchUserBalance()
+        await fetchGameBalance()
       }
     }
   }

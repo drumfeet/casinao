@@ -1,11 +1,11 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { getGameBalance, getWalletBalance } from "./lib/utils"
 import { useToast } from "@chakra-ui/react"
-import { createContext, useEffect, useState } from "react"
+import { createContext, useContext, useState } from "react"
 
 const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
-export const AppContext = createContext()
+const AppContext = createContext()
 
 export const AppContextProvider = ({ children }) => {
   const BASE_UNIT = 10
@@ -163,7 +163,10 @@ export const AppContextProvider = ({ children }) => {
   )
 }
 
-// // Create a custom hook to use the context
-// export function useAppContext() {
-//   return useContext(AppContext);
-// }
+export const useAppContext = () => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error("useAppContext must be used within an AppProvider")
+  }
+  return context
+}

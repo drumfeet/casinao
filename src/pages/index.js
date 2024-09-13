@@ -17,10 +17,10 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react"
-import { useContext, useState, useRef } from "react"
+import { useState, useRef } from "react"
 import LeftNav from "@/components/LeftNav"
 import ArrowDownIcon from "@/components/icons/ArrowDownIcon"
-import { AppContext } from "@/context/AppContext"
+import { useAppContext } from "@/context/AppContext"
 import AppHeader from "@/components/AppHeader"
 import GripIcon from "@/components/icons/GripIcon"
 import RepeatIcon from "@/components/icons/RepeatIcon"
@@ -37,7 +37,7 @@ export default function Home() {
     fetchUserBalance,
     fetchGameBalance,
     fetchWalletBalance,
-  } = useContext(AppContext)
+  } = useAppContext()
 
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const SLOPE = -0.96
@@ -205,7 +205,7 @@ export default function Home() {
           await fetchUserBalance()
         }
       } else {
-        await fetchUserBalance()
+        await fetchGameBalance()
       }
     }
   }
