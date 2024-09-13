@@ -260,8 +260,19 @@ export default function Home() {
 
       const jsonObj = JSON.parse(_result.Messages[0].Data)
       console.log("jsonObj", jsonObj)
+      if (jsonObj?.PayoutNum > 0) {
+        toast({
+          description: "Payout: " + jsonObj?.PayoutNum + " $FLIP",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top-right",
+        })
+
+        playWinSound()
+      }
+
       setGameResults((prevResults) => [...prevResults, jsonObj])
-      playWinSound()
 
       if (autoBet) {
         await fetchGameBalance()
