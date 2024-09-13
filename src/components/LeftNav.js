@@ -29,32 +29,25 @@ export default function LeftNav() {
   const GameMenuItem = ({ icon, text, link }) => (
     <Flex alignItems="center">
       <Button
+        as={link ? "a" : "button"}
+        href={link || "#"}
         leftIcon={icon}
         variant="ghost"
         _hover={{}}
         color="gray.200"
         fontWeight="normal"
-        onClick={
-          link
-            ? () => {}
-            : () =>
-                toast({
-                  title: "This feature is not available yet",
-                  duration: 1000,
-                  isClosable: true,
-                  position: "top",
-                })
-        }
+        onClick={() => {
+          if (!link) {
+            toast({
+              title: "This feature is not available yet",
+              duration: 1000,
+              isClosable: true,
+              position: "top",
+            })
+          }
+        }}
       >
-        {link ? (
-          <>
-            <Link href={link}>{text}</Link>
-          </>
-        ) : (
-          <>
-            <Link href="#">{text}</Link>
-          </>
-        )}
+        {text}
       </Button>
     </Flex>
   )
