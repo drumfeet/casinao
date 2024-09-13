@@ -1,12 +1,10 @@
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { Button, Divider, Flex, Spacer, Text, useToast } from "@chakra-ui/react"
-import { useContext, useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef } from "react"
 import ChipIcon from "../components/icons/ChipIcon"
 import LeftNav from "../components/LeftNav"
 import RouletteWheel from "../components/icons/RouletteWheel"
-import { AppContext } from "../AppContext"
-import LoginModal from "../components/LoginModal"
-import BalanceModal from "../components/BalanceModal"
+import { useAppContext } from "../AppContext"
 import AppHeader from "../components/AppHeader"
 import RepeatIcon from "../components/icons/RepeatIcon"
 
@@ -109,7 +107,7 @@ export default function Roulette() {
     fetchUserBalance,
     fetchGameBalance,
     fetchWalletBalance,
-  } = useContext(AppContext)
+  } = useAppContext()
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
   const [betAmount, setBetAmount] = useState(0)
 

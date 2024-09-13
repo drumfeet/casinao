@@ -8,13 +8,254 @@ import {
   NumberInputField,
   NumberInputStepper,
   Text,
+  useToast,
 } from "@chakra-ui/react"
 import LeftNav from "../components/LeftNav"
 import AppHeader from "../components/AppHeader"
 import { useState } from "react"
+import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
+import { useAppContext } from "../AppContext"
 
 export default function Blackjack() {
-  const [betAmount, setBetAmount] = useState(1)
+  const {
+    multiplyByPower,
+    divideByPower,
+    connectWallet,
+    gameBalance,
+    setGameBalance,
+    walletBalance,
+    setWalletBalance,
+    fetchUserBalance,
+    fetchGameBalance,
+    fetchWalletBalance,
+  } = useAppContext()
+  const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
+
+  const toast = useToast()
+
+  const [betAmount, setBetAmount] = useState(0)
+  const [insuranceOption, setInsuranceOption] = useState(false)
+  const [gameState, setGameState] = useState(null)
+
+  const deal = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      const _gameBalance = multiplyByPower(gameBalance)
+      const _betAmount = multiplyByPower(betAmount)
+      console.log("gameBalance", gameBalance)
+      console.log("_betAmount", _betAmount)
+
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Deal",
+          },
+          {
+            name: "Quantity",
+            value: _betAmount.toString(),
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      // setGameBalance(divideByPower(_gameBalance - _betAmount))
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+      setGameState(jsonObj)
+
+      if (jsonObj.Result === "Push") {
+        toast({
+          description: "Push! Your bet has been returned.",
+          status: "info",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else if (jsonObj.Result === "PlayerWinsBlackjack") {
+        toast({
+          description: "Blackjack! You win 1.5x your bet.",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else {
+        // Continue the game with normal flow if no immediate Blackjack outcome
+
+        setInsuranceOption(jsonObj.InsuranceOption)
+        console.log("InsuranceOption", jsonObj.InsuranceOption)
+      }
+    } catch (e) {
+      console.error("deal() error!", e)
+    } finally {
+      await fetchGameBalance()
+    }
+  }
+
+  const hit = async () => {}
+  const stand = async () => {}
+  const split = async () => {}
+  const double = async () => {}
+
+  const acceptInsurance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      console.log("insuranceOption", insuranceOption)
+
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Insurance",
+          },
+          {
+            name: "InsuranceAccepted",
+            value: "true",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+      setGameState(jsonObj)
+
+      if (jsonObj.Result === "DealerWinsBlackjack") {
+        toast({
+          description: "DealerWinsBlackjack",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else if (jsonObj.Result === "GameContinues") {
+        toast({
+          description: "GameContinues",
+          status: "info",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+      } else {
+        // Continue the game with normal flow if no immediate Blackjack outcome
+
+        setInsuranceOption(jsonObj.InsuranceOption)
+        console.log("InsuranceOption", jsonObj.InsuranceOption)
+      }
+    } catch (e) {
+      console.error("acceptInsurance() error!", e)
+    }
+  }
+
+  const rejectInsurance = async () => {
+    const _connected = await connectWallet()
+    if (_connected.success === false) {
+      return
+    }
+
+    try {
+      console.log("insuranceOption", insuranceOption)
+
+      const messageId = await message({
+        process: GAME_PROCESS_ID,
+        tags: [
+          {
+            name: "Action",
+            value: "Insurance",
+          },
+          {
+            name: "InsuranceAccepted",
+            value: "false",
+          },
+        ],
+        signer: createDataItemSigner(globalThis.arweaveWallet),
+      })
+      console.log("messageId", messageId)
+
+      const _result = await result({
+        message: messageId,
+        process: GAME_PROCESS_ID,
+      })
+      console.log("_result", _result)
+
+      const errorTag = _result?.Messages?.[0]?.Tags.find(
+        (tag) => tag.name === "Error"
+      )
+      console.log("errorTag", errorTag)
+      if (errorTag) {
+        toast({
+          description: _result.Messages[0].Data,
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        })
+        return
+      }
+
+      const jsonObj = JSON.parse(_result.Messages[0].Data)
+      console.log("jsonObj", jsonObj)
+    } catch (e) {
+      console.error("rejectInsurance() error!", e)
+    }
+  }
+
   return (
     <>
       <Flex minH="100vh" backgroundColor="#0e2229">
@@ -53,7 +294,7 @@ export default function Blackjack() {
                     <NumberInput
                       precision={2}
                       value={betAmount}
-                      min={1}
+                      min={0}
                       onChange={(e) => {
                         setBetAmount(e)
                       }}
@@ -112,6 +353,109 @@ export default function Blackjack() {
                   </Flex>
                 </Flex>
 
+                {insuranceOption && (
+                  <>
+                    <Flex gap={2}>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={!insuranceOption}
+                        onClick={async (event) => {
+                          const button = event.currentTarget
+                          button.innerText = "Processing..."
+                          try {
+                            setInsuranceOption(false)
+                            await acceptInsurance()
+                          } finally {
+                            button.innerText = "Accept Insurance"
+                          }
+                        }}
+                      >
+                        Accept Insurance
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={!insuranceOption}
+                        onClick={async (event) => {
+                          const button = event.currentTarget
+                          button.innerText = "Processing..."
+                          try {
+                            setInsuranceOption(false)
+                            await rejectInsurance()
+                          } finally {
+                            button.innerText = "No Insurance"
+                          }
+                        }}
+                      >
+                        No Insurance
+                      </Button>
+                    </Flex>
+                  </>
+                )}
+
+                {!insuranceOption && (
+                  <>
+                    <Flex gap={2}>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Hit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Stand
+                      </Button>
+                    </Flex>
+
+                    <Flex gap={2}>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Split
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="gray.200"
+                        flex={1}
+                        _hover={{}}
+                        bg="#283e4b"
+                        border="none"
+                        isDisabled={true}
+                      >
+                        Double
+                      </Button>
+                    </Flex>
+                  </>
+                )}
+
                 <Button
                   bg="#00e700"
                   paddingY={8}
@@ -121,6 +465,13 @@ export default function Blackjack() {
                     button.disabled = true
                     button.innerText = "Processing..."
                     try {
+                      // await deal()
+                      toast({
+                        title: "This game is not available yet",
+                        duration: 1000,
+                        isClosable: true,
+                        position: "top",
+                      })
                     } finally {
                       button.disabled = false
                       button.innerText = "Bet"
@@ -139,7 +490,43 @@ export default function Blackjack() {
                 marginBottom={[0, 1]}
                 flexDirection="column"
               >
-                {/* TODO */}
+                <Flex
+                  justifyContent="center"
+                  flexDirection="column"
+                  alignItems="center"
+                  //   bg="red.500"
+                  flex={1}
+                >
+                  {/* Upper Section */}
+                  <Flex gap={2} justifyContent="center">
+                    {/* Upper Cards Section */}
+                  </Flex>
+
+                  {/* Center Section */}
+                  <Flex
+                    flexDirection="column"
+                    color="gray.500"
+                    alignItems="center"
+                    paddingY={100}
+                    gap={2}
+                  >
+                    <Text
+                      bg="#162c39"
+                      fontWeight="bold"
+                      paddingX={28}
+                      paddingY={2}
+                    >
+                      BLACKJACK PAYS 3 TO 2
+                    </Text>
+
+                    <Text fontWeight="bold">INSURANCE PAYS 2 TO 1</Text>
+                  </Flex>
+
+                  {/* Lower Section */}
+                  <Flex gap={2} justifyContent="center">
+                    {/* Lower Cards Section */}
+                  </Flex>
+                </Flex>
               </Flex>
             </Flex>
           </Flex>

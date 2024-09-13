@@ -19,8 +19,8 @@ import {
   useToast,
 } from "@chakra-ui/react"
 import WalletIcon from "./icons/WalletIcon"
-import { useContext, useState } from "react"
-import { AppContext } from "../AppContext"
+import { useState } from "react"
+import { useAppContext } from "../AppContext"
 import CoinsIcon from "./icons/CoinsIcon"
 
 const BalanceModal = () => {
@@ -36,7 +36,7 @@ const BalanceModal = () => {
     walletBalance,
     setWalletBalance,
     fetchUserBalance,
-  } = useContext(AppContext)
+  } = useAppContext()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [txQuantity, setTxQuantity] = useState(1)
   const toast = useToast()

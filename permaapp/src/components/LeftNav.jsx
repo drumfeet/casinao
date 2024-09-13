@@ -1,14 +1,12 @@
-import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
 import { Button, Divider, Flex, Text, useToast } from "@chakra-ui/react"
 import TwitterIcon from "./icons/TwitterIcon"
 import DiscordIcon from "./icons/DiscordIcon"
 import AirdropIcon from "./icons/AirdropIcon"
 import GithubIcon from "./icons/GithubIcon"
-import { useContext } from "react"
-import { AppContext } from "../AppContext"
+import { useAppContext } from "../AppContext"
 import ChipIcon2 from "./icons/ChipIcon2"
 import DiceIcon from "./icons/DiceIcon"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import LinkIcon from "./icons/LinkIcon"
 import CardIcon from "./icons/CardIcon"
 
@@ -25,7 +23,7 @@ const cryptoItems = [
 ]
 
 export default function LeftNav() {
-  const { requestAirdrop } = useContext(AppContext)
+  const { requestAirdrop } = useAppContext()
   const toast = useToast()
 
   const GameMenuItem = ({ icon, text, link }) => {

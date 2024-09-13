@@ -12,9 +12,9 @@ import {
 } from "@chakra-ui/react"
 import LeftNav from "../components/LeftNav"
 import AppHeader from "../components/AppHeader"
-import { useContext, useState } from "react"
+import { useState } from "react"
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { AppContext } from "../AppContext"
+import { useAppContext } from "../AppContext"
 
 export default function Blackjack() {
   const {
@@ -28,7 +28,7 @@ export default function Blackjack() {
     fetchUserBalance,
     fetchGameBalance,
     fetchWalletBalance,
-  } = useContext(AppContext)
+  } = useAppContext()
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
   const toast = useToast()
