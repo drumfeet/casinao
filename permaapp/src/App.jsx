@@ -205,7 +205,7 @@ function App() {
           await fetchUserBalance()
         }
       } else {
-        await fetchUserBalance()
+        await fetchGameBalance()
       }
     }
   }

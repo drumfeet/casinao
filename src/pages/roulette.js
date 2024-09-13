@@ -276,7 +276,7 @@ export default function Home() {
           await fetchUserBalance()
         }
       } else {
-        await fetchUserBalance()
+        await fetchGameBalance()
       }
     }
   }

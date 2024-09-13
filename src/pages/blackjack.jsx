@@ -14,7 +14,7 @@ import LeftNav from "../components/LeftNav"
 import AppHeader from "../components/AppHeader"
 import { useState } from "react"
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect"
-import { useAppContext } from "../AppContext"
+import { useAppContext } from "@/context/AppContext"
 
 export default function Blackjack() {
   const {
@@ -28,7 +28,7 @@ export default function Blackjack() {
     fetchUserBalance,
     fetchGameBalance,
     fetchWalletBalance,
-  } = useAppContext()
+  } = useAppContext
   const GAME_PROCESS_ID = "PkV8-8lAbwsfGjcjNV_Qj5OK0zc7YVZ4Gx_VqiymguI"
 
   const toast = useToast()
