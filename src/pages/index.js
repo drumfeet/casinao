@@ -174,7 +174,7 @@ export default function Home() {
         return
       }
 
-      const { value: winStatusTag } = _result.Messages[0].Tags[6]
+      const { value: winStatusTag } = _result.Messages[0].Tags[6] //array index 6 not found in aos 2.0
       const winStatus = winStatusTag ? "success" : "error"
       const jsonObj = JSON.parse(_result.Messages[0].Data)
       console.log("jsonObj", jsonObj)

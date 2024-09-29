@@ -1,5 +1,4 @@
 local bint = require('.bint')(256)
-local ao = require('ao')
 --[[
   This module implements the ao Standard Token Specification.
 

@@ -1,5 +1,4 @@
 local bint = require('.bint')(256)
-local ao = require('ao')
 local json = require('json')
 
 local utils = {
@@ -500,7 +499,9 @@ Handlers.add('dice', Handlers.utils.hasMatchingTag('Action', 'Dice'), function(m
             Payout = "divideByPower(totalPayout): " .. divideByPower(totalPayout),
         }
         print(_data)
-        ao.send({ Target = msg.From, Won = playerWon, Data = json.encode(_data) })
+        ao.send({ Target = msg.From, Won = playerWon,
+        Wonn = playerWon, Wonnn = playerWon, --workaround for aos 2.0
+        Data = json.encode(_data) })
     end)
 
     -- Error handling: if something went wrong, revert the balance and notify the user
