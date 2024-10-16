@@ -79,7 +79,6 @@ Handlers.add('airdrop', Handlers.utils.hasMatchingTag('Action', 'Airdrop'), func
             Data = "You received an airdrop"
         })
     else
-        printData("Airdrop", msg.From .. " " .. "Airdrop Request Invalid")
         sendErrorMessage(msg, "Airdrop Request Invalid")
     end
 end)
@@ -366,6 +365,8 @@ Handlers.add('roulette', Handlers.utils.hasMatchingTag('Action', 'Roulette'), fu
 end)
 
 Handlers.add('dice', Handlers.utils.hasMatchingTag('Action', 'Dice'), function(msg)
+    print("Received message: " .. json.encode(msg))
+
     print("--------------- Start Dice ---------------")
 
     if type(msg.Tags.Quantity) ~= 'string' then
